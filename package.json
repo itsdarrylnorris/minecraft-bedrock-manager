@@ -1,0 +1,19 @@
+{
+  "name": "minecraft-manager",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node-fetch": "^2.5.7",
+    "node-fetch": "^2.6.0",
+    "shelljs": "^0.8.4",
+    "typescript": "^4.0.0"
+  },
+  "scripts": {
+    "dev": "tsc; yarn start",
+    "start": "node dist/index.js",
+    "deploy": "yarn ssh 'zsh -s' < ./deploy.sh",
+    "build": "tsc",
+    "ssh": "ssh root@167.99.110.145"
+  }
+}
