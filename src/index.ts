@@ -75,7 +75,7 @@ class MineCraftManager {
       // Send message to Discord that we are starting
       await this.sendMessageToDiscord(this.options.strings.pre_backup_message)
 
-      // Stoping server
+      // Stopping server
       await this.stopMinecraftServer()
 
       // Compress the folder
@@ -100,6 +100,7 @@ class MineCraftManager {
   async moveBackupToPath() {
     this.logging(`Moving backup to ${this.options.backup_path}`)
     // @TODO: Move file? Maybe just mv
+    // mv from path to the backup path
     this.logging(`Done moving backup to ${this.options.backup_path}`)
   }
 
@@ -115,6 +116,7 @@ class MineCraftManager {
     // You should use https://www.npmjs.com/package/shelljs
     // LD_LIBRARY_PATH=. ./bedrock_server
     // @TODO: Skip this if we are on dev?
+    // Darryl stuff
   }
 
   /**
@@ -127,6 +129,7 @@ class MineCraftManager {
 
     // killall screen
     // @TODO: Skip this if we are on dev?
+    // Darryl stuff
   }
 
   /**
@@ -135,6 +138,8 @@ class MineCraftManager {
   async compressFile() {
     this.logging('Compressing file')
     // @TODO: Add logic to compress file
+    // Figure out a library
+    // easier route: using shell script ? shell.js library? --> compress file
     // The location of the file is at this.option.path
     this.logging('Done Compressing file')
   }
@@ -147,12 +152,15 @@ class MineCraftManager {
   async sendMessageToDiscord(string: string) {
     this.logging('Sending this message to discord', string)
     // @TODO Add logic to send Discord message
+    // this.options.discord --> make api call to discord
   }
 
   /**
    * Upload backup file to Google Drive
    */
   async uploadBackupToGoogleDrive() {
+    // Research on library that handles this, need oAuth/token?
+    // difficult = kill me?
     this.logging('Saving backup in Google Drive')
   }
 
