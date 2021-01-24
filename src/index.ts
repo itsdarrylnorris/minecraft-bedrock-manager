@@ -1,41 +1,44 @@
-// var fs = require('fs')
+// var fs = require('fs')
 import fs from 'fs-extra'
 import archiver from 'archiver'
 require('dotenv').config()
+import Discord from 'discord.js'
 
-let discordURL = process && process.env && process.env.DISCORD_URL ? process.env.DISCORD_URL.toString() : ''
+let discordId = process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : ''
+let discordToken = process && process.env && process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.toString() : ''
 
 /**
- * Interface of Minecraft Manager.
+ * Interface of Minecraft Manager.
  */
 interface MineCraftManagerOptionsInterface {
-  // Webhook string
-  discord: MineCraftManagerDiscordInterface | undefined
+  // Webhook string
+  discord: MineCraftManagerDiscordInterface | undefined // Path of the location where all the files lives
 
-  // Path of the location where all the files lives
-  path: string | undefined
+  path: string | undefined // Any options to ensure we can support google drive backups. // @TODO: We need to change the any and past an interface here. Depending on what we need to for Google Drive.
 
-  // Any options to ensure we can support google drive backups.
-  // @TODO: We need to change the any and past an interface here. Depending on what we need to for Google Drive.
-  google_drive: any | undefined
+  google_drive: any | undefined // Strings of whatever we are going to be posting at
 
-  // Strings of whatever we are going to be posting at
-  strings: MineCraftManagerStringsInterface
+  strings: MineCraftManagerStringsInterface // If set, we want to move the file into this location.
 
-  // If set, we want to move the file into this location.
   backup_path: string | undefined
 }
 
 /**
- * Interface of Discord, it contains any information related to discord.
+ * Interface of Discord, it contains any information related to discord.
  */
 interface MineCraftManagerDiscordInterface {
   webhook: string | undefined
-  // @TODO Any other extra information?
+  discordInfo: WebhookInterface
+}
+
+interface WebhookInterface {
+  send: any
+  id: string
+  token: string
 }
 
 /**
- * Handling the strings as configuration so we can easily change them if needed.
+ * Handling the strings as configuration so we can easily change them if needed.
  */
 interface MineCraftManagerStringsInterface {
   pre_backup_message: string | undefined
@@ -44,17 +47,17 @@ interface MineCraftManagerStringsInterface {
 }
 
 /**
- * MineCraftManager Class.
+ * MineCraftManager Class.
  *
  */
 class MineCraftManager {
-  // Options config
+  // Options config
   private options: MineCraftManagerOptionsInterface | any
-
   /**
-   * Constructor
-   * @param options
+   * Constructor
+   * @param options
    */
+
   constructor(options: MineCraftManagerOptionsInterface | any) {
     if (options && options.path) {
       this.options = options
@@ -65,33 +68,29 @@ class MineCraftManager {
         strings: {
           pre_backup_message:
             process.env.options_pre_backup_message ||
-            'We are shutting down the server temporary, we are making a backup.',
+            'We are shutting down the server temporary, we are making a backup.',
           post_backup_message:
-            process.env.options_post_backup_message || 'We are done with the backup, the server is back on.',
-          error_backup_message: process.env.options_error_backup_message || 'Something went wrong build out the backup',
+            process.env.options_post_backup_message || 'We are done with the backup, the server is back on.',
+          error_backup_message: process.env.options_error_backup_message || 'Something went wrong build out the backup',
         },
       }
     }
   }
-
   /**
-   * Start the execution.
+   * Start the execution.
    */
+
   async startBackup() {
     try {
-      // Send message to Discord that we are starting
-      await this.sendMessageToDiscord(this.options.strings.pre_backup_message)
+      // Send message to Discord that we are starting
+      await this.sendMessageToDiscord(this.options.strings.pre_backup_message) // Stopping server
 
-      // Stopping server
-      await this.stopMinecraftServer()
+      await this.stopMinecraftServer() // Compress the folder
 
-      // Compress the folder
-      await this.compressFile()
+      await this.compressFile() // Moving the backup to
 
-      // Moving the backup to
-      await this.moveBackupToPath()
+      await this.moveBackupToPath() // Upload backup to Google Drive
 
-      // Upload backup to Google Drive
       await this.uploadBackupToGoogleDrive()
 
       await this.startMinecraftServer()
@@ -100,136 +99,115 @@ class MineCraftManager {
       this.sendMessageToDiscord(this.options.strings.post_backup_message)
     }
   }
-
   /**
-   * Moves the compress backup file into this.options.backup_path
+   * Moves the compress backup file into this.options.backup_path
    */
+
   async moveBackupToPath() {
-    this.logging(`Moving backup to ${this.options.backup_path}`)
+    this.logging(`Moving backup to ${this.options.backup_path}`)
     var currentPath: string = this.options.path
     var backupPath: string = this.options.backup_path
 
     try {
       if (fs.existsSync(backupPath)) {
         await fs.move(currentPath, backupPath)
-        console.log('Successfully moved to backup.')
+        console.log('Successfully moved to backup.')
       }
     } catch (err) {
       console.error(err)
     }
 
-    // fs.move(currentPath, backupPath, function(err: any) {
-    //   if (err) throw err
-    //   console.log('Successfully moved to backup.')
-    // })
-    this.logging(`Done moving backup to ${this.options.backup_path}`)
+    this.logging(`Done moving backup to ${this.options.backup_path}`)
   }
-
   /**
-   * Starts the server using screen command.
+   * Starts the server using screen command.
    *
-   * This might be a bit tricky because of screen; however we can try this: https://stackoverflow.com/questions/24706815/how-do-i-pass-a-command-to-a-screen-session
+   * This might be a bit tricky because of screen; however we can try this: https://stackoverflow.com/questions/24706815/how-do-i-pass-a-command-to-a-screen-session
    *
    *
    *
    */
+
   async startMinecraftServer() {
-    // You should use https://www.npmjs.com/package/shelljs
-    // LD_LIBRARY_PATH=. ./bedrock_server
-    // @TODO: Skip this if we are on dev?
-    // Darryl stuff
+    // You should use https://www.npmjs.com/package/shelljs
+    // LD_LIBRARY_PATH=. ./bedrock_server
+    // @TODO: Skip this if we are on dev?
+    // Darryl stuff
   }
-
   /**
-   * It uses Shelljs to kill all the screens.
+   * It uses Shelljs to kill all the screens.
    *
    */
+
   async stopMinecraftServer() {
-    this.logging('Stopping server')
-    // You should use https://www.npmjs.com/package/shelljs
-
-    // killall screen
-    // @TODO: Skip this if we are on dev?
-    // Darryl stuff
+    this.logging('Stopping server') // You should use https://www.npmjs.com/package/shelljs // killall screen // @TODO: Skip this if we are on dev? // Darryl stuff
   }
-
   /**
-   * Compress the file from this.options.path
+   * Compress the file from this.options.path
    */
+
   async compressFile() {
-    this.logging('Compressing file')
-    // @TODO: Add logic to compress file
-    // Figure out a library
-    // easier route: using shell script ? shell.js library? --> compress file
-    // The location of the file is at this.option.path
+    this.logging('Compressing file') // @TODO: Add logic to compress file // Figure out a library // easier route: using shell script ? shell.js library? --> compress file // The location of the file is at this.option.path
     var currentPath: string = this.options.path
 
     var output = fs.createWriteStream('target.zip')
     var archive = archiver('zip')
 
     output.on('close', function() {
-      console.log(archive.pointer() + ' total bytes')
-      console.log('archiver has been finalized and the output file descriptor has closed.')
+      console.log(archive.pointer() + ' total bytes')
+      console.log('archiver has been finalized and the output file descriptor has closed.')
     })
 
     archive.on('error', function(err) {
       throw err
     })
 
-    archive.pipe(output)
+    archive.pipe(output) // append files from a sub-directory, putting its contents at the root of archive
 
-    // append files from a sub-directory, putting its contents at the root of archive
     archive.directory(currentPath, false)
 
     archive.finalize()
-    this.logging('Done Compressing file')
+    this.logging('Done Compressing file')
   }
-
   /**
-   * Sends a message to Discord
-   * @param string
-   * @url https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks
+   * Sends a message to Discord
+   * @param string
+   * @url https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks
    */
+
   async sendMessageToDiscord(string: string) {
-    this.logging('Sending this message to discord', string)
-    var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest
-    var xhr = new XMLHttpRequest()
-    xhr.open('POST', discordURL)
-
-    xhr.setRequestHeader('Content-type', 'application/json')
-
-    var params = {
-      username: 'Spider Bot',
-      content: 'The message to send',
+    this.logging('Sending this message to discord', string)
+    try {
+      const webhook: WebhookInterface = new Discord.WebhookClient(discordId, discordToken)
+      webhook.send('We are shutting down the server temporary, we are making a backup.')
+    } catch (err) {
+      console.log(err)
     }
-
-    xhr.send(JSON.stringify(params))
-    // this.options.discord --> make api call to discord
   }
-
   /**
-   * Upload backup file to Google Drive
+   * Upload backup file to Google Drive
    */
-  async uploadBackupToGoogleDrive() {
-    // Research on library that handles this, need oAuth/token?
-    // difficult = kill me?
-    this.logging('Saving backup in Google Drive')
-  }
 
+  async uploadBackupToGoogleDrive() {
+    // Research on library that handles this, need oAuth/token?
+    // difficult = kill me?
+    this.logging('Saving backup in Google Drive')
+  }
   /**
-   * Logging wrapper around console.log with timestamps.
+   * Logging wrapper around console.log with timestamps.
    *
    */
+
   logging = (message: string, payload: any = null) => {
     var date = new Date()
 
-    console.log(`[${date.toISOString()}] ${message}`)
+    console.log(`[${date.toISOString()}] ${message}`)
 
     if (payload) {
       if (typeof payload === 'string' || payload instanceof String) {
-        console.log(`[${date.toISOString()}] ${payload}`)
+        console.log(`[${date.toISOString()}] ${payload}`)
       } else {
-        console.log(`[${date.toISOString()}] ${JSON.stringify(payload)}`)
+        console.log(`[${date.toISOString()}] ${JSON.stringify(payload)}`)
       }
     }
   }
