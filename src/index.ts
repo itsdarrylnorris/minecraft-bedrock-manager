@@ -1,3 +1,10 @@
+// var fs = require('fs')
+import fs from 'fs-extra'
+import archiver from 'archiver'
+require('dotenv').config()
+
+let discordURL = process && process.env && process.env.DISCORD_URL ? process.env.DISCORD_URL.toString() : ''
+
 /**
  * Interface of Minecraft Manager.
  */
@@ -99,8 +106,22 @@ class MineCraftManager {
    */
   async moveBackupToPath() {
     this.logging(`Moving backup to ${this.options.backup_path}`)
-    // @TODO: Move file? Maybe just mv
-    // mv from path to the backup path
+    var currentPath: string = this.options.path
+    var backupPath: string = this.options.backup_path
+
+    try {
+      if (fs.existsSync(backupPath)) {
+        await fs.move(currentPath, backupPath)
+        console.log('Successfully moved to backup.')
+      }
+    } catch (err) {
+      console.error(err)
+    }
+
+    // fs.move(currentPath, backupPath, function(err: any) {
+    //   if (err) throw err
+    //   console.log('Successfully moved to backup.')
+    // })
     this.logging(`Done moving backup to ${this.options.backup_path}`)
   }
 
@@ -141,6 +162,26 @@ class MineCraftManager {
     // Figure out a library
     // easier route: using shell script ? shell.js library? --> compress file
     // The location of the file is at this.option.path
+    var currentPath: string = this.options.path
+
+    var output = fs.createWriteStream('target.zip')
+    var archive = archiver('zip')
+
+    output.on('close', function() {
+      console.log(archive.pointer() + ' total bytes')
+      console.log('archiver has been finalized and the output file descriptor has closed.')
+    })
+
+    archive.on('error', function(err) {
+      throw err
+    })
+
+    archive.pipe(output)
+
+    // append files from a sub-directory, putting its contents at the root of archive
+    archive.directory(currentPath, false)
+
+    archive.finalize()
     this.logging('Done Compressing file')
   }
 
@@ -151,7 +192,18 @@ class MineCraftManager {
    */
   async sendMessageToDiscord(string: string) {
     this.logging('Sending this message to discord', string)
-    // @TODO Add logic to send Discord message
+    var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest
+    var xhr = new XMLHttpRequest()
+    xhr.open('POST', discordURL)
+
+    xhr.setRequestHeader('Content-type', 'application/json')
+
+    var params = {
+      username: 'Spider Bot',
+      content: 'The message to send',
+    }
+
+    xhr.send(JSON.stringify(params))
     // this.options.discord --> make api call to discord
   }
 
