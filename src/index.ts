@@ -1,8 +1,8 @@
-// var fs = require('fs')
-import fs from 'fs-extra'
-import archiver from 'archiver'
+import fs from 'fs'
 require('dotenv').config()
 import Discord from 'discord.js'
+import shell from 'shelljs'
+var zipper = require('zip-local')
 
 let discordId = process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : ''
 let discordToken = process && process.env && process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.toString() : ''
@@ -71,7 +71,8 @@ class MineCraftManager {
             'We are shutting down the server temporary, we are making a backup.',
           post_backup_message:
             process.env.options_post_backup_message || 'We are done with the backup, the server is back on.',
-          error_backup_message: process.env.options_error_backup_message || 'Something went wrong build out the backup',
+          error_backup_message:
+            process.env.options_error_backup_message || 'Something went wrong while building out the backup',
         },
       }
     }
@@ -89,7 +90,7 @@ class MineCraftManager {
 
       await this.compressFile() // Moving the backup to
 
-      await this.moveBackupToPath() // Upload backup to Google Drive
+      // await this.moveBackupToPath() // Upload backup to Google Drive
 
       await this.uploadBackupToGoogleDrive()
 
@@ -103,22 +104,19 @@ class MineCraftManager {
    * Moves the compress backup file into this.options.backup_path
    */
 
-  async moveBackupToPath() {
-    this.logging(`Moving backup to ${this.options.backup_path}`)
-    var currentPath: string = this.options.path
-    var backupPath: string = this.options.backup_path
-
-    try {
-      if (fs.existsSync(backupPath)) {
-        await fs.move(currentPath, backupPath)
-        console.log('Successfully moved to backup.')
-      }
-    } catch (err) {
-      console.error(err)
-    }
-
-    this.logging(`Done moving backup to ${this.options.backup_path}`)
-  }
+  // async moveBackupToPath() {
+  //   this.logging(`Moving backup to ${this.options.backup_path}`)
+  //   var currentPath: string = this.options.path
+  //   var backupPath: string = this.options.backup_path
+  //   try {
+  //     const status = shell.mv(currentPath, backupPath)
+  //     if (status.stderr) console.log(status.stderr)
+  //     else console.log('File moved!')
+  //   } catch (err) {
+  //     console.error(err)
+  //   }
+  //   this.logging(`Done moving backup to ${this.options.backup_path}`)
+  // }
   /**
    * Starts the server using screen command.
    *
@@ -147,27 +145,29 @@ class MineCraftManager {
    */
 
   async compressFile() {
-    this.logging('Compressing file') // @TODO: Add logic to compress file // Figure out a library // easier route: using shell script ? shell.js library? --> compress file // The location of the file is at this.option.path
-    var currentPath: string = this.options.path
+    this.logging('Compressing file')
+    // Why does this.option.path not work
+    // var currentPath: string = this.options.path
 
-    var output = fs.createWriteStream('target.zip')
-    var archive = archiver('zip')
+    // Why does this string work
+    var currentPath: string = '/Users/mandyhom/MinecraftServer'
+    var backupPath: string = this.options.backup_path
+    var date = new Date()
 
-    output.on('close', function() {
-      console.log(archive.pointer() + ' total bytes')
-      console.log('archiver has been finalized and the output file descriptor has closed.')
-    })
+    try {
+      shell.cd(backupPath)
+      await zipper.sync
+        .zip(currentPath)
+        .compress()
+        .save(`${date.toISOString()}-minecraft.zip`)
 
-    archive.on('error', function(err) {
-      throw err
-    })
+      // Optional: Delete MinecraftServer Folder
+      fs.rmdirSync(currentPath, { recursive: true })
+    } catch (err) {
+      console.log(err)
+    }
 
-    archive.pipe(output) // append files from a sub-directory, putting its contents at the root of archive
-
-    archive.directory(currentPath, false)
-
-    archive.finalize()
-    this.logging('Done Compressing file')
+    this.logging('Done Compressing file. Deleted MinecraftServer Folder')
   }
   /**
    * Sends a message to Discord
@@ -178,8 +178,8 @@ class MineCraftManager {
   async sendMessageToDiscord(string: string) {
     this.logging('Sending this message to discord', string)
     try {
-      const webhook: WebhookInterface = new Discord.WebhookClient(discordId, discordToken)
-      webhook.send('We are shutting down the server temporary, we are making a backup.')
+      var webhook: WebhookInterface = new Discord.WebhookClient(discordId, discordToken)
+      await webhook.send('We are shutting down the server temporary, we are making a backup.')
     } catch (err) {
       console.log(err)
     }
