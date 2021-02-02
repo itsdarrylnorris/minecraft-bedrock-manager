@@ -1,11 +1,11 @@
+// import fs from 'fs'
+// import Discord from 'discord.js'
+// import shell from 'shelljs'
+// import zipper from 'zip-local'
 import fs from 'fs'
+import readline from 'readline'
+const { google } = require('googleapis')
 require('dotenv').config()
-import Discord from 'discord.js'
-import shell from 'shelljs'
-var zipper = require('zip-local')
-
-let discordId = process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : ''
-let discordToken = process && process.env && process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.toString() : ''
 
 /**
  * Interface of Minecraft Manager.
@@ -65,6 +65,8 @@ class MineCraftManager {
       this.options = {
         path: process.env.options_path || '~/MinecraftServer/',
         backup_path: process.env.options_path || '~/Backups/',
+        discordId: process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : '',
+        discordToken: process && process.env && process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.toString() : '',
         strings: {
           pre_backup_message:
             process.env.options_pre_backup_message ||
@@ -106,8 +108,8 @@ class MineCraftManager {
 
   // async moveBackupToPath() {
   //   this.logging(`Moving backup to ${this.options.backup_path}`)
-  //   var currentPath: string = this.options.path
-  //   var backupPath: string = this.options.backup_path
+  //   let currentPath: string = this.options.path
+  //   let backupPath: string = this.options.backup_path
   //   try {
   //     const status = shell.mv(currentPath, backupPath)
   //     if (status.stderr) console.log(status.stderr)
@@ -147,25 +149,23 @@ class MineCraftManager {
   async compressFile() {
     this.logging('Compressing file')
     // Why does this.option.path not work
-    // var currentPath: string = this.options.path
+    // let currentPath: string = this.options.path
 
     // Why does this string work
-    var currentPath: string = '/Users/mandyhom/MinecraftServer'
-    var backupPath: string = this.options.backup_path
-    var date = new Date()
+    // let currentPath: string = '/Users/mandyhom/MinecraftServer'
+    // let backupPath: string = this.options.backup_path
+    // let date = new Date()
 
-    try {
-      shell.cd(backupPath)
-      await zipper.sync
-        .zip(currentPath)
-        .compress()
-        .save(`${date.toISOString()}-minecraft.zip`)
+    // try {
+    //   shell.cd(backupPath)
+    //   await zipper.sync
+    //     .zip(currentPath)
+    //     .compress()
+    //     .save(`${date.toISOString()}-minecraft.zip`)
 
-      // Optional: Delete MinecraftServer Folder
-      fs.rmdirSync(currentPath, { recursive: true })
-    } catch (err) {
-      console.log(err)
-    }
+    // } catch (err) {
+    //   console.log(err)
+    // }
 
     this.logging('Done Compressing file. Deleted MinecraftServer Folder')
   }
@@ -177,20 +177,103 @@ class MineCraftManager {
 
   async sendMessageToDiscord(string: string) {
     this.logging('Sending this message to discord', string)
-    try {
-      var webhook: WebhookInterface = new Discord.WebhookClient(discordId, discordToken)
-      await webhook.send('We are shutting down the server temporary, we are making a backup.')
-    } catch (err) {
-      console.log(err)
-    }
+    // try {
+    //   const webhook: WebhookInterface = new Discord.WebhookClient(discordId, discordToken)
+    //   await webhook.send('We are shutting down the server temporary, we are making a backup.')
+    // } catch (err) {
+    //   console.log(err)
+    // }
   }
   /**
    * Upload backup file to Google Drive
    */
 
   async uploadBackupToGoogleDrive() {
-    // Research on library that handles this, need oAuth/token?
-    // difficult = kill me?
+    const SCOPES = ['https://www.googleapis.com/auth/drive']
+    const TOKEN_PATH = 'token.json'
+
+    fs.readFile('credentials.json', (err, content) => {
+      if (err) return console.log('Error loading client secret file:', err)
+      authorize(JSON.parse(content.toString()), storeFiles)
+    })
+
+    /**
+     * Create an OAuth2 client with the given credentials, and then execute the
+     * given callback function.
+     * @param {Object} credentials The authorization client credentials.
+     * @param {function} callback The callback to call with the authorized client.
+     */
+    function authorize(credentials: any, callback: any) {
+      const { client_secret, client_id, redirect_uris } = credentials.installed
+      const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0])
+      // Check if we have previously stored a token.
+      fs.readFile(TOKEN_PATH, (err, token) => {
+        if (err) return getAccessToken(oAuth2Client, callback)
+        oAuth2Client.setCredentials(JSON.stringify(token))
+        console.log(oAuth2Client.refreshTokenPromises)
+        callback(oAuth2Client)
+      })
+    }
+
+    /**
+     * Get and store new token after prompting for user authorization, and then
+     * execute the given callback with the authorized OAuth2 client.
+     * @param {google.auth.OAuth2} oAuth2Client The OAuth2 client to get token for.
+     * @param {getEventsCallback} callback The callback for the authorized client.
+     */
+    function getAccessToken(oAuth2Client: any, callback: any) {
+      const authUrl = oAuth2Client.generateAuthUrl({
+        access_type: 'offline',
+        scope: SCOPES,
+      })
+      console.log('Authorize this app by visiting this url:', authUrl)
+      const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+      })
+      rl.question('Enter the code from that page here: ', code => {
+        rl.close()
+        oAuth2Client.getToken(code, (err: any, token: any) => {
+          if (err) return console.error('Error retrieving access token', err)
+          oAuth2Client.setCredentials(token)
+          fs.writeFile(TOKEN_PATH, JSON.stringify(token), err => {
+            if (err) return console.error(err)
+            console.log('Token stored to', TOKEN_PATH)
+          })
+          callback(oAuth2Client)
+        })
+      })
+    }
+
+    /**
+     * Lists the names and IDs of up to 10 files.
+     * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
+     */
+    function storeFiles(auth: any) {
+      const drive = google.drive({ version: 'v3', auth })
+      var fileMetadata = {
+        name: 'ImageTest.jpeg',
+      }
+      var media = {
+        mimeType: 'image/jpeg',
+        body: fs.createReadStream('/Users/mandyhom/Pictures/Me1.jpg'),
+      }
+      drive.files.create(
+        {
+          resource: fileMetadata,
+          media: media,
+          fields: 'id',
+        },
+        function(err: any, file: any) {
+          if (err) {
+            // Handle error
+            console.error(err)
+          } else {
+            console.log('File Id: ', file.data.id)
+          }
+        },
+      )
+    }
     this.logging('Saving backup in Google Drive')
   }
   /**
@@ -199,7 +282,7 @@ class MineCraftManager {
    */
 
   logging = (message: string, payload: any = null) => {
-    var date = new Date()
+    let date = new Date()
 
     console.log(`[${date.toISOString()}] ${message}`)
 
