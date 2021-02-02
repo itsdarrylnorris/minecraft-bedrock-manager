@@ -1,90 +1,32 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-class MineCraftManager {
-    constructor(options) {
-        this.logging = (message, payload = null) => {
-            var date = new Date();
-            console.log(`[${date.toISOString()}] ${message}`);
-            if (payload) {
-                if (typeof payload === 'string' || payload instanceof String) {
-                    console.log(`[${date.toISOString()}] ${payload}`);
-                }
-                else {
-                    console.log(`[${date.toISOString()}] ${JSON.stringify(payload)}`);
-                }
-            }
-        };
-        if (options && options.path) {
-            this.options = options;
-        }
-        else {
-            this.options = {
-                path: process.env.options_path || '~/MinecraftServer/',
-                backup_path: process.env.options_path || '~/Backups/',
-                strings: {
-                    pre_backup_message: process.env.options_pre_backup_message ||
-                        'We are shutting down the server temporary, we are making a backup.',
-                    post_backup_message: process.env.options_post_backup_message || 'We are done with the backup, the server is back on.',
-                    error_backup_message: process.env.options_error_backup_message || 'Something went wrong build out the backup',
-                },
-            };
-        }
-    }
-    startBackup() {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                this.sendMessageToDiscord(this.options.strings.pre_backup_message);
-                this.stopMinecraftServer();
-                this.compressFile();
-                this.moveBackupToPath();
-                this.uploadBackupToGoogleDrive();
-            }
-            catch (e) {
-                this.logging(e);
-                this.sendMessageToDiscord(this.options.strings.post_backup_message);
-            }
-        });
-    }
-    moveBackupToPath() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.logging(`Moving backup to ${this.options.backup_path}`);
-            this.logging(`Done moving backup to ${this.options.backup_path}`);
-        });
-    }
-    startMinecraftServer() {
-        return __awaiter(this, void 0, void 0, function* () {
-        });
-    }
-    stopMinecraftServer() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.logging('Stopping server');
-        });
-    }
-    compressFile() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.logging('Compressing file');
-            this.logging('Done Compressing file');
-        });
-    }
-    sendMessageToDiscord(string) {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.logging('Sending this message to discord', string);
-        });
-    }
-    uploadBackupToGoogleDrive() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.logging('Saving backup in Google Drive');
-        });
-    }
+Object.defineProperty(exports, "__esModule", { value: true });
+const commander_1 = __importDefault(require("commander"));
+const minecraft_1 = __importDefault(require("./services/minecraft"));
+commander_1.default.version('0.0.1');
+commander_1.default
+    .option('-s, --start-server', 'Start the Minecraft Server')
+    .option('-r, --restart-server', 'Restarts the Minecraft Server')
+    .option('-st, --stop-server', 'Stop Minecraft Server')
+    .option('-l, --logs', 'Show the Minecraft Logs');
+commander_1.default.parse(process.argv);
+const options = commander_1.default.opts();
+if (options.startServer) {
+    const minecraft = new minecraft_1.default({});
+    minecraft.startServer();
 }
-const minecraft = new MineCraftManager({});
-minecraft.startBackup();
+else if (options.restartServer) {
+    const minecraft = new minecraft_1.default({});
+    minecraft.startServer();
+}
+else if (options.stopServer) {
+    const minecraft = new minecraft_1.default({});
+    minecraft.startServer();
+}
+else if (options.logs) {
+    const minecraft = new minecraft_1.default({});
+    minecraft.logs();
+}
 //# sourceMappingURL=index.js.map
