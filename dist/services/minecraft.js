@@ -123,7 +123,7 @@ class Minecraft {
                         }
                         else if (element.includes(this.logs_strings.player_connected)) {
                             const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_connected);
-                            this.sendMessageToDiscord(`${gamerTag} joined the Minecraft server. H ${gamerTag} !!!!`);
+                            this.sendMessageToDiscord(`${gamerTag} joined the Minecraft server. Hi ${gamerTag} !!!!`);
                         }
                     }
                     fileNumber = newFile.split(/\n/).length;

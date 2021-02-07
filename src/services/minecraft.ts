@@ -181,7 +181,7 @@ class Minecraft {
             this.sendMessageToDiscord(`${gamerTag} left the Minecraft server. Bye ${gamerTag}. See you next time :P`)
           } else if (element.includes(this.logs_strings.player_connected)) {
             const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_connected)
-            this.sendMessageToDiscord(`${gamerTag} joined the Minecraft server. H ${gamerTag} !!!!`)
+            this.sendMessageToDiscord(`${gamerTag} joined the Minecraft server. Hi ${gamerTag} !!!!`)
           }
         }
 
