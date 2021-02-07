@@ -37,4 +37,11 @@ yarn deploy
 5. Copy and paste the webhook id to the DISCORD_ID in your .env file.
 6. Copy and paste the webhook token to the DISCORD_TOKEN in your .env file.
 
+For local development you can use these credentials
+
+```
+DISCORD_ID="807879959074832415"
+DISCORD_TOKEN="0FEXP3YxCCU1z_FnwPHLMb-q0ZquR2wHKziHn1IkQxe3RD-KvyCGIFG2VHbZkF8ZsDem"
+```
+
 # Usage

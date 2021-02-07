@@ -21,6 +21,7 @@ interface MinecraftStringsInterface {
 }
 declare class Minecraft {
     private options;
+    private logs_strings;
     constructor(options: MinecraftOptionsInterface | any);
     restartServer(): Promise<void>;
     startServer(): Promise<void>;
@@ -28,6 +29,7 @@ declare class Minecraft {
     compressFile(): Promise<void>;
     sendMessageToDiscord(string: string): Promise<void>;
     logs(): Promise<void>;
+    getGamerTagFromLog(logString: string, logIndentifier: string): string;
     logging: (message: string, payload?: any) => void;
 }
 export default Minecraft;

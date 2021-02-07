@@ -21,6 +21,10 @@ const zip_local_1 = __importDefault(require("zip-local"));
 require('dotenv').config();
 class Minecraft {
     constructor(options) {
+        this.logs_strings = {
+            player_disconnected: '[INFO] Player disconnected:',
+            player_connected: '[INFO] Player connected:',
+        };
         this.logging = (message, payload = null) => {
             let date = new Date();
             console.log(`[${date.toISOString()}] ${message}`);
@@ -97,7 +101,7 @@ class Minecraft {
                 yield webhook.send(string);
             }
             catch (err) {
-                console.log(err);
+                this.logging('Something went wrong posting the discord message', err);
             }
         });
     }
@@ -110,15 +114,24 @@ class Minecraft {
                 if (evt === 'update') {
                     let newFile = yield fs_1.promises.readFile(name, 'utf8');
                     let newFileNumber = newFile.split(/\n/).length;
-                    console.log({ newFileNumber });
                     if (fileNumber < newFileNumber) {
                         const element = newFile.split(/\n/)[newFileNumber - 1];
-                        console.log({ element });
+                        if (element.includes(this.logs_strings.player_disconnected)) {
+                            const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_disconnected);
+                            this.sendMessageToDiscord(`${gamerTag} left the Minecraft server. Bye ${gamerTag}. See you next time :P`);
+                        }
+                        else if (element.includes(this.logs_strings.player_connected)) {
+                            const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_connected);
+                            this.sendMessageToDiscord(`${gamerTag} joined the Minecraft server. HI ${gamerTag} !!!!`);
+                        }
                     }
                     fileNumber = newFile.split(/\n/).length;
                 }
             }));
         });
+    }
+    getGamerTagFromLog(logString, logIndentifier) {
+        return logString.split(logIndentifier)[1].split(',')[0].split(' ')[1];
     }
 }
 exports.default = Minecraft;

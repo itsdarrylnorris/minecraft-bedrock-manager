@@ -1,4 +1,3 @@
-// import fs from 'fs'
 import Discord from 'discord.js'
 import { promises as fs } from 'fs'
 import watch from 'node-watch'
@@ -51,12 +50,17 @@ interface MinecraftStringsInterface {
 }
 
 /**
- *Minecraft.
+ * Minecraft.
  *
  */
 class Minecraft {
   // Options config
   private options: MinecraftOptionsInterface | any
+
+  private logs_strings: any = {
+    player_disconnected: '[INFO] Player disconnected:',
+    player_connected: '[INFO] Player connected:',
+  }
   /**
    * Constructor
    * @param options
@@ -154,7 +158,7 @@ class Minecraft {
       const webhook: WebhookInterface = new Discord.WebhookClient(this.options.discordId, this.options.discordToken)
       await webhook.send(string)
     } catch (err) {
-      console.log(err)
+      this.logging('Something went wrong posting the discord message', err)
     }
   }
 
@@ -168,16 +172,25 @@ class Minecraft {
       if (evt === 'update') {
         let newFile = await fs.readFile(name, 'utf8')
         let newFileNumber = newFile.split(/\n/).length
-        console.log({ newFileNumber })
-
         if (fileNumber < newFileNumber) {
           const element = newFile.split(/\n/)[newFileNumber - 1]
-          console.log({ element })
+
+          if (element.includes(this.logs_strings.player_disconnected)) {
+            const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_disconnected)
+            this.sendMessageToDiscord(`${gamerTag} left the Minecraft server. Bye ${gamerTag}. See you next time :P`)
+          } else if (element.includes(this.logs_strings.player_connected)) {
+            const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_connected)
+            this.sendMessageToDiscord(`${gamerTag} joined the Minecraft server. H ${gamerTag} !!!!`)
+          }
         }
 
         fileNumber = newFile.split(/\n/).length
       }
     })
+  }
+
+  getGamerTagFromLog(logString: string, logIndentifier: string) {
+    return logString.split(logIndentifier)[1].split(',')[0].split(' ')[1]
   }
 
   /**
