@@ -174,7 +174,7 @@ class Minecraft {
         let newFile = await fs.readFile(path, 'utf8')
         let newFileNumber = newFile.split(/\n/).length
         if (fileNumber < newFileNumber) {
-          const element = newFile.split(/\n/)[newFileNumber - 1]
+          const element = newFile.split(/\n/)[newFileNumber - 2]
 
           if (element.includes(this.logs_strings.player_disconnected)) {
             const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_disconnected)
@@ -188,26 +188,6 @@ class Minecraft {
         fileNumber = newFile.split(/\n/).length
       }
     })
-
-    // watch(this.options.log_file, async (evt: any, name: any) => {
-    //   if (evt === 'update') {
-    //     let newFile = await fs.readFile(name, 'utf8')
-    //     let newFileNumber = newFile.split(/\n/).length
-    //     if (fileNumber < newFileNumber) {
-    //       const element = newFile.split(/\n/)[newFileNumber - 1]
-
-    //       if (element.includes(this.logs_strings.player_disconnected)) {
-    //         const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_disconnected)
-    //         this.sendMessageToDiscord(`${gamerTag} left the Minecraft server. Bye ${gamerTag}. See you next time :P`)
-    //       } else if (element.includes(this.logs_strings.player_connected)) {
-    //         const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_connected)
-    //         this.sendMessageToDiscord(`${gamerTag} joined the Minecraft server. H ${gamerTag} !!!!`)
-    //       }
-    //     }
-
-    //     fileNumber = newFile.split(/\n/).length
-    //   }
-    // })
   }
 
   getGamerTagFromLog(logString: string, logIndentifier: string) {

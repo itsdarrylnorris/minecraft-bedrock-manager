@@ -116,7 +116,7 @@ class Minecraft {
                     let newFile = yield fs_1.promises.readFile(path, 'utf8');
                     let newFileNumber = newFile.split(/\n/).length;
                     if (fileNumber < newFileNumber) {
-                        const element = newFile.split(/\n/)[newFileNumber - 1];
+                        const element = newFile.split(/\n/)[newFileNumber - 2];
                         if (element.includes(this.logs_strings.player_disconnected)) {
                             const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_disconnected);
                             this.sendMessageToDiscord(`${gamerTag} left the Minecraft server. Bye ${gamerTag}. See you next time :P`);
