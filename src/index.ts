@@ -18,10 +18,10 @@ if (options.startServer) {
   minecraft.startServer()
 } else if (options.restartServer) {
   const minecraft = new Minecraft({})
-  minecraft.startServer()
+  minecraft.restartServer()
 } else if (options.stopServer) {
   const minecraft = new Minecraft({})
-  minecraft.startServer()
+  minecraft.stopServer()
 } else if (options.logs) {
   const minecraft = new Minecraft({})
   minecraft.logs()

@@ -19,11 +19,11 @@ if (options.startServer) {
 }
 else if (options.restartServer) {
     const minecraft = new minecraft_1.default({});
-    minecraft.startServer();
+    minecraft.restartServer();
 }
 else if (options.stopServer) {
     const minecraft = new minecraft_1.default({});
-    minecraft.startServer();
+    minecraft.stopServer();
 }
 else if (options.logs) {
     const minecraft = new minecraft_1.default({});

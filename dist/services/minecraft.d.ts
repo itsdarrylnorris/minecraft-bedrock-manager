@@ -22,7 +22,7 @@ interface MinecraftStringsInterface {
 declare class Minecraft {
     private options;
     constructor(options: MinecraftOptionsInterface | any);
-    startBackup(): Promise<void>;
+    restartServer(): Promise<void>;
     startServer(): Promise<void>;
     stopServer(): Promise<void>;
     compressFile(): Promise<void>;

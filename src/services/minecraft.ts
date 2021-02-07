@@ -88,7 +88,7 @@ class Minecraft {
   /**
    * Start the execution.
    */
-  async startBackup() {
+  async restartServer() {
     try {
       // Send message to Discord that we are starting
       await this.sendMessageToDiscord(this.options.strings.pre_backup_message) // Stopping server
@@ -169,16 +169,13 @@ class Minecraft {
         let newFile = await fs.readFile(name, 'utf8')
         let newFileNumber = newFile.split(/\n/).length
         console.log({ newFileNumber })
-        for (let index = 0; index < newFileNumber; index++) {
-          console.log({ fileNumber })
-          console.log({ newFileNumber })
-          if (fileNumber < newFileNumber) {
-            const element = newFile.split(/\n/)[index]
-            console.log({ element })
-          }
+
+        if (fileNumber < newFileNumber) {
+          const element = newFile.split(/\n/)[newFileNumber - 1]
+          console.log({ element })
         }
 
-        // fileNumber = newFile.split(/\n/).length
+        fileNumber = newFile.split(/\n/).length
       }
     })
   }
