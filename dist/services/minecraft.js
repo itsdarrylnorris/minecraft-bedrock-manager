@@ -12,9 +12,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const chokidar_1 = __importDefault(require("chokidar"));
 const discord_js_1 = __importDefault(require("discord.js"));
 const fs_1 = require("fs");
-const node_watch_1 = __importDefault(require("node-watch"));
 const os_1 = __importDefault(require("os"));
 const shelljs_1 = __importDefault(require("shelljs"));
 const zip_local_1 = __importDefault(require("zip-local"));
@@ -110,9 +110,10 @@ class Minecraft {
             this.logging('Watching for changes');
             let file = yield fs_1.promises.readFile(this.options.log_file, 'utf8');
             let fileNumber = file.split(/\n/).length;
-            node_watch_1.default(this.options.log_file, (evt, name) => __awaiter(this, void 0, void 0, function* () {
-                if (evt === 'update') {
-                    let newFile = yield fs_1.promises.readFile(name, 'utf8');
+            chokidar_1.default.watch(this.options.log_file).on('all', (evt, path) => __awaiter(this, void 0, void 0, function* () {
+                console.log(evt, path);
+                if (evt === 'change') {
+                    let newFile = yield fs_1.promises.readFile(path, 'utf8');
                     let newFileNumber = newFile.split(/\n/).length;
                     if (fileNumber < newFileNumber) {
                         const element = newFile.split(/\n/)[newFileNumber - 1];

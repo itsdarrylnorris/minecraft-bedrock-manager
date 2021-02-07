@@ -1,6 +1,6 @@
+import chokidar from 'chokidar'
 import Discord from 'discord.js'
 import { promises as fs } from 'fs'
-import watch from 'node-watch'
 import os from 'os'
 import shell from 'shelljs'
 import zipper from 'zip-local'
@@ -168,9 +168,10 @@ class Minecraft {
     let file = await fs.readFile(this.options.log_file, 'utf8')
     let fileNumber = file.split(/\n/).length
 
-    watch(this.options.log_file, async (evt: any, name: any) => {
-      if (evt === 'update') {
-        let newFile = await fs.readFile(name, 'utf8')
+    chokidar.watch(this.options.log_file).on('all', async (evt, path) => {
+      console.log(evt, path)
+      if (evt === 'change') {
+        let newFile = await fs.readFile(path, 'utf8')
         let newFileNumber = newFile.split(/\n/).length
         if (fileNumber < newFileNumber) {
           const element = newFile.split(/\n/)[newFileNumber - 1]
@@ -187,6 +188,26 @@ class Minecraft {
         fileNumber = newFile.split(/\n/).length
       }
     })
+
+    // watch(this.options.log_file, async (evt: any, name: any) => {
+    //   if (evt === 'update') {
+    //     let newFile = await fs.readFile(name, 'utf8')
+    //     let newFileNumber = newFile.split(/\n/).length
+    //     if (fileNumber < newFileNumber) {
+    //       const element = newFile.split(/\n/)[newFileNumber - 1]
+
+    //       if (element.includes(this.logs_strings.player_disconnected)) {
+    //         const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_disconnected)
+    //         this.sendMessageToDiscord(`${gamerTag} left the Minecraft server. Bye ${gamerTag}. See you next time :P`)
+    //       } else if (element.includes(this.logs_strings.player_connected)) {
+    //         const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_connected)
+    //         this.sendMessageToDiscord(`${gamerTag} joined the Minecraft server. H ${gamerTag} !!!!`)
+    //       }
+    //     }
+
+    //     fileNumber = newFile.split(/\n/).length
+    //   }
+    // })
   }
 
   getGamerTagFromLog(logString: string, logIndentifier: string) {
