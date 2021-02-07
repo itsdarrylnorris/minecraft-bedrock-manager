@@ -21,7 +21,7 @@
     "start": "node dist/index.js",
     "deploy": "yarn ssh 'zsh -s' < ./deploy.sh",
     "build": "tsc",
-    "ssh": "ssh root@167.99.110.145"
+    "ssh": "ssh root@134.122.15.191"
   },
   "devDependencies": {
     "@types/ws": "^7.4.0",
