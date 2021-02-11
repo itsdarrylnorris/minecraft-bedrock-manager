@@ -1,6 +1,6 @@
 # Minecraft Manager
 
-Minecraft Manager helps backup your Minecraft server by storing backups of your server to Google Drive as zip files while alerting your Discord Community that a backup is underway.
+Minecraft Manager helps backup your Minecraft server by storing backups of your server as zip files, sending Discord messages that a backup is underway, and sending custom messages to your Discord Community.
 
 - [Building](#building)
 - [Installation](#installation)
@@ -43,5 +43,17 @@ For local development you can use these credentials
 DISCORD_ID="807879959074832415"
 DISCORD_TOKEN="0FEXP3YxCCU1z_FnwPHLMb-q0ZquR2wHKziHn1IkQxe3RD-KvyCGIFG2VHbZkF8ZsDem"
 ```
+
+### Setting up your Discord Application's Bot
+
+1. Go to this [website](https://discord.com/developers/applications) and click on **New Application**.
+2. Enter your applications' name and click on **Create**.
+3. Click on the **Bot** Section and click **Add Bot** to create a bot.
+4. Click on the **General Information** Section and copy your applications' **Client ID**, located below the applications' title and description.
+5. Go to this [Discord Permissions Calculator](https://discordapi.com/permissions.html) website and click on whatever permissions necessary.
+6. Paste the copied **Client ID** into the **Client ID** field.
+7. Click on the **Link** provided and you will be redirected to a Discord authorization page.
+8. Select your Server and select **Continue**.
+9. Double check the Bot's permissions and click on **Authorize**.
 
 # Usage
