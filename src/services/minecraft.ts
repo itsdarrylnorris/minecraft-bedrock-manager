@@ -31,7 +31,7 @@ interface MinecraftOptionsInterface {
  */
 interface MinecraftDiscordInterface {
   webhook: string | undefined
-  discordInfo: WebhookInterface
+  discord_info: WebhookInterface
 }
 
 interface WebhookInterface {
@@ -61,6 +61,9 @@ class Minecraft {
     player_disconnected: '[INFO] Player disconnected:',
     player_connected: '[INFO] Player connected:',
   }
+
+  private minecraft_screen_name: string = 'Minecraft'
+
   /**
    * Constructor
    * @param options
@@ -74,8 +77,8 @@ class Minecraft {
         path: process.env.OPTIONS_PATH || os.homedir() + '/MinecraftServer/',
         backup_path: process.env.BACKUP_PATH || os.homedir() + '/Backups/',
         log_file: process.env.LOG_FILE || os.homedir() + '/MinecraftServer/minecraft-server.log',
-        discordId: process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : '',
-        discordToken: process && process.env && process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.toString() : '',
+        discord_id: process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : '',
+        discord_token: process && process.env && process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.toString() : '',
         strings: {
           pre_backup_message:
             process.env.options_pre_backup_message ||
@@ -116,18 +119,32 @@ class Minecraft {
    * This might be a bit tricky because of screen; however we can try this: https://stackoverflow.com/questions/24706815/how-do-i-pass-a-command-to-a-screen-session
    */
   async startServer() {
-    // You should use https://www.npmjs.com/package/shelljs
-    // LD_LIBRARY_PATH=. ./bedrock_server
-    // @TODO: Skip this if we are on dev?
-    // Darryl stuff
+    this.logging('Starting up the server')
+    this.executeShellScript(
+      `screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}/bedrock_server" `,
+    )
+    this.sendMessageToDiscord('Starting up server')
   }
 
   /**
    * It uses Shelljs to kill all the screens.
-   *
    */
   async stopServer() {
-    this.logging('Stopping server') // You should use https://www.npmjs.com/package/shelljs // killall screen // @TODO: Skip this if we are on dev? // Darryl stuff
+    this.logging('Stopping server')
+    this.executeShellScript(`screen -S ${this.minecraft_screen_name} -X kill`)
+    this.sendMessageToDiscord('Stoping the server')
+  }
+
+  executeShellScript(string: string): string {
+    this.logging(`Executing this shell command: ${string}`)
+    let results = ''
+
+    if (process.env.ENVIROMENT !== 'DEVELOPMENT') {
+      results = shell.exec(string, { silent: true }).stdout
+    }
+    this.logging('Execution output', results)
+
+    return results
   }
 
   /**
@@ -141,7 +158,7 @@ class Minecraft {
       shell.cd(this.options.backup_path)
       await zipper.sync.zip(this.options.path).compress().save(`${date.toISOString()}-minecraft.zip`)
     } catch (err) {
-      console.log(err)
+      this.logging('Error', err)
     }
 
     this.logging('Done Compressing file. Deleted MinecraftServer Folder')
@@ -155,7 +172,7 @@ class Minecraft {
   async sendMessageToDiscord(string: string) {
     this.logging('Sending this message to discord', string)
     try {
-      const webhook: WebhookInterface = new Discord.WebhookClient(this.options.discordId, this.options.discordToken)
+      const webhook: WebhookInterface = new Discord.WebhookClient(this.options.discord_id, this.options.discord_token)
       await webhook.send(string)
     } catch (err) {
       this.logging('Something went wrong posting the discord message', err)

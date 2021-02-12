@@ -1,0 +1,98 @@
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const discord_js_1 = require("discord.js");
+require('dotenv').config();
+const client = new discord_js_1.Client();
+client.commands = new discord_js_1.Collection();
+class Discord {
+    constructor(options) {
+        this.logging = (message, payload = null) => {
+            let date = new Date();
+            console.log(`[${date.toISOString()}] ${message}`);
+            if (payload) {
+                if (typeof payload === 'string' || payload instanceof String) {
+                    console.log(`[${date.toISOString()}] ${payload}`);
+                }
+                else {
+                    console.log(`[${date.toISOString()}] ${JSON.stringify(payload)}`);
+                }
+            }
+        };
+        if (options && options.path) {
+            this.options = options;
+        }
+        else {
+            this.options = {
+                discordClient: process && process.env && process.env.DISCORD_CLIENT ? process.env.DISCORD_CLIENT.toString() : '',
+                prefix: '/',
+            };
+        }
+    }
+    startDiscord() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.startBot();
+                yield this.startCommands();
+                yield this.loginClient();
+            }
+            catch (e) {
+                this.logging(e);
+            }
+        });
+    }
+    startBot() {
+        return __awaiter(this, void 0, void 0, function* () {
+            client.once('ready', () => {
+                this.logging('Bot is online');
+            });
+        });
+    }
+    startCommands() {
+        return __awaiter(this, void 0, void 0, function* () {
+            client.on('message', (message) => {
+                if (!message.content.startsWith(this.options.prefix) || message.author.bot)
+                    return;
+                const args = message.content.slice(this.options.prefix.length).split(/ +/);
+                const command = args.shift().toLowerCase();
+                let author = message.author.username;
+                if (command === 'mm' && message.member.roles.cache.some((r) => r.name === 'Devs')) {
+                    let newMessage = message.toString().replace('/', '');
+                    let split = newMessage.split(' ');
+                    let splitCommand = split && split[0] ? split[0] : '';
+                    let splitValue = split && split[1] ? split[1] : '';
+                    if (splitCommand && splitValue) {
+                        this.logging('Command entered by:' + author, { splitCommand, splitValue });
+                        message.channel.send('Sent command successfully.');
+                    }
+                    else if (splitCommand && !splitValue) {
+                        this.logging('Command entered by:' + author, { splitCommand });
+                        message.channel.send('Sent command successfully.');
+                    }
+                    else {
+                        this.logging(author + 'There was an error when trying to execute that command!');
+                        message.channel.send('There was an error when trying to execute that command!');
+                    }
+                }
+                else {
+                    message.reply('You are not allowed to use this command.');
+                }
+            });
+        });
+    }
+    loginClient() {
+        return __awaiter(this, void 0, void 0, function* () {
+            client.login(this.options.discordClient);
+        });
+    }
+}
+exports.default = Discord;
+//# sourceMappingURL=discord.js.map

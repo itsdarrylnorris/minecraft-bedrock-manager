@@ -18,6 +18,7 @@ const options = program.opts()
 if (options.startServer) {
   const minecraft = new Minecraft({})
   minecraft.startServer()
+  process.exit()
 } else if (options.restartServer) {
   const minecraft = new Minecraft({})
   minecraft.restartServer()

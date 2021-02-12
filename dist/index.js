@@ -4,18 +4,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const commander_1 = __importDefault(require("commander"));
+const discord_1 = __importDefault(require("./services/discord"));
 const minecraft_1 = __importDefault(require("./services/minecraft"));
 commander_1.default.version('0.0.1');
 commander_1.default
     .option('-s, --start-server', 'Start the Minecraft Server')
     .option('-r, --restart-server', 'Restarts the Minecraft Server')
     .option('-st, --stop-server', 'Stop Minecraft Server')
-    .option('-l, --logs', 'Show the Minecraft Logs');
+    .option('-l, --logs', 'Show the Minecraft Logs')
+    .option('-d, --discord', 'Start Discord');
 commander_1.default.parse(process.argv);
 const options = commander_1.default.opts();
 if (options.startServer) {
     const minecraft = new minecraft_1.default({});
     minecraft.startServer();
+    process.exit();
 }
 else if (options.restartServer) {
     const minecraft = new minecraft_1.default({});
@@ -28,5 +31,9 @@ else if (options.stopServer) {
 else if (options.logs) {
     const minecraft = new minecraft_1.default({});
     minecraft.logs();
+}
+else if (options.discord) {
+    const minecraft = new discord_1.default({});
+    minecraft.startDiscord();
 }
 //# sourceMappingURL=index.js.map

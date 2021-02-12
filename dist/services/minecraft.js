@@ -25,6 +25,7 @@ class Minecraft {
             player_disconnected: '[INFO] Player disconnected:',
             player_connected: '[INFO] Player connected:',
         };
+        this.minecraft_screen_name = 'Minecraft';
         this.logging = (message, payload = null) => {
             let date = new Date();
             console.log(`[${date.toISOString()}] ${message}`);
@@ -45,8 +46,8 @@ class Minecraft {
                 path: process.env.OPTIONS_PATH || os_1.default.homedir() + '/MinecraftServer/',
                 backup_path: process.env.BACKUP_PATH || os_1.default.homedir() + '/Backups/',
                 log_file: process.env.LOG_FILE || os_1.default.homedir() + '/MinecraftServer/minecraft-server.log',
-                discordId: process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : '',
-                discordToken: process && process.env && process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.toString() : '',
+                discord_id: process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : '',
+                discord_token: process && process.env && process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.toString() : '',
                 strings: {
                     pre_backup_message: process.env.options_pre_backup_message ||
                         'We are shutting down the server temporary, we are making a backup.',
@@ -72,12 +73,26 @@ class Minecraft {
     }
     startServer() {
         return __awaiter(this, void 0, void 0, function* () {
+            this.logging('Starting up the server');
+            this.executeShellScript(`screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}/bedrock_server" `);
+            this.sendMessageToDiscord('Starting up server');
         });
     }
     stopServer() {
         return __awaiter(this, void 0, void 0, function* () {
             this.logging('Stopping server');
+            this.executeShellScript(`screen -S ${this.minecraft_screen_name} -X kill`);
+            this.sendMessageToDiscord('Stoping the server');
         });
+    }
+    executeShellScript(string) {
+        this.logging(`Executing this shell command: ${string}`);
+        let results = '';
+        if (process.env.ENVIROMENT !== 'DEVELOPMENT') {
+            results = shelljs_1.default.exec(string, { silent: true }).stdout;
+        }
+        this.logging('Execution output', results);
+        return results;
     }
     compressFile() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -88,7 +103,7 @@ class Minecraft {
                 yield zip_local_1.default.sync.zip(this.options.path).compress().save(`${date.toISOString()}-minecraft.zip`);
             }
             catch (err) {
-                console.log(err);
+                this.logging('Error', err);
             }
             this.logging('Done Compressing file. Deleted MinecraftServer Folder');
         });
@@ -97,7 +112,7 @@ class Minecraft {
         return __awaiter(this, void 0, void 0, function* () {
             this.logging('Sending this message to discord', string);
             try {
-                const webhook = new discord_js_1.default.WebhookClient(this.options.discordId, this.options.discordToken);
+                const webhook = new discord_js_1.default.WebhookClient(this.options.discord_id, this.options.discord_token);
                 yield webhook.send(string);
             }
             catch (err) {

@@ -7,7 +7,7 @@ interface MinecraftOptionsInterface {
 }
 interface MinecraftDiscordInterface {
     webhook: string | undefined;
-    discordInfo: WebhookInterface;
+    discord_info: WebhookInterface;
 }
 interface WebhookInterface {
     send: any;
@@ -22,10 +22,12 @@ interface MinecraftStringsInterface {
 declare class Minecraft {
     private options;
     private logs_strings;
+    private minecraft_screen_name;
     constructor(options: MinecraftOptionsInterface | any);
     restartServer(): Promise<void>;
     startServer(): Promise<void>;
     stopServer(): Promise<void>;
+    executeShellScript(string: string): string;
     compressFile(): Promise<void>;
     sendMessageToDiscord(string: string): Promise<void>;
     logs(): Promise<void>;
