@@ -56,6 +56,7 @@ interface MinecraftStringsInterface {
 class Minecraft {
   // Options config
   private options: MinecraftOptionsInterface | any
+  private logging: any
 
   private logs_strings: any = {
     player_disconnected: '[INFO] Player disconnected:',
@@ -156,7 +157,10 @@ class Minecraft {
 
     try {
       shell.cd(this.options.backup_path)
-      await zipper.sync.zip(this.options.path).compress().save(`${date.toISOString()}-minecraft.zip`)
+      await zipper.sync
+        .zip(this.options.path)
+        .compress()
+        .save(`${date.toISOString()}-minecraft.zip`)
     } catch (err) {
       this.logging('Error', err)
     }
@@ -208,25 +212,10 @@ class Minecraft {
   }
 
   getGamerTagFromLog(logString: string, logIndentifier: string) {
-    return logString.split(logIndentifier)[1].split(',')[0].split(' ')[1]
-  }
-
-  /**
-   * Logging wrapper around console.log with timestamps.
-   *
-   */
-  logging = (message: string, payload: any = null) => {
-    let date = new Date()
-
-    console.log(`[${date.toISOString()}] ${message}`)
-
-    if (payload) {
-      if (typeof payload === 'string' || payload instanceof String) {
-        console.log(`[${date.toISOString()}] ${payload}`)
-      } else {
-        console.log(`[${date.toISOString()}] ${JSON.stringify(payload)}`)
-      }
-    }
+    return logString
+      .split(logIndentifier)[1]
+      .split(',')[0]
+      .split(' ')[1]
   }
 }
 export default Minecraft
