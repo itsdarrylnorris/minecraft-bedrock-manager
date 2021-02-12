@@ -1,4 +1,5 @@
 import { Client, Collection, Message } from 'discord.js'
+import { logging } from '../utils'
 require('dotenv').config()
 
 /**
@@ -50,7 +51,7 @@ class Discord {
       // Logging into Discord Client
       await this.loginClient()
     } catch (e) {
-      this.logging(e)
+      logging('Error Start Discord', e)
     }
   }
 
@@ -84,13 +85,13 @@ class Discord {
         let splitValue: string = split && split[1] ? split[1] : ''
 
         if (splitCommand && splitValue) {
-          this.logging('Command entered by:' + author, { splitCommand, splitValue })
+          logging('Command entered by:' + author, { splitCommand, splitValue })
           message.channel.send('Sent command successfully.')
         } else if (splitCommand && !splitValue) {
-          this.logging('Command entered by:' + author, { splitCommand })
+          logging('Command entered by:' + author, { splitCommand })
           message.channel.send('Sent command successfully.')
         } else {
-          this.logging(author + 'There was an error when trying to execute that command!')
+          logging(author + 'There was an error when trying to execute that command!')
           message.channel.send('There was an error when trying to execute that command!')
         }
       } else {

@@ -32,6 +32,5 @@ declare class Minecraft {
     sendMessageToDiscord(string: string): Promise<void>;
     logs(): Promise<void>;
     getGamerTagFromLog(logString: string, logIndentifier: string): string;
-    logging: (message: string, payload?: any) => void;
 }
 export default Minecraft;

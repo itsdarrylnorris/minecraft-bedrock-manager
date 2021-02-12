@@ -4,6 +4,7 @@ import { promises as fs } from 'fs'
 import os from 'os'
 import shell from 'shelljs'
 import zipper from 'zip-local'
+import { logging } from '../utils'
 require('dotenv').config()
 
 /**
@@ -56,7 +57,6 @@ interface MinecraftStringsInterface {
 class Minecraft {
   // Options config
   private options: MinecraftOptionsInterface | any
-  private logging: any
 
   private logs_strings: any = {
     player_disconnected: '[INFO] Player disconnected:',
@@ -109,7 +109,7 @@ class Minecraft {
 
       await this.startServer()
     } catch (e) {
-      this.logging(e)
+      logging(e)
       this.sendMessageToDiscord(this.options.strings.post_backup_message)
     }
   }
@@ -120,7 +120,7 @@ class Minecraft {
    * This might be a bit tricky because of screen; however we can try this: https://stackoverflow.com/questions/24706815/how-do-i-pass-a-command-to-a-screen-session
    */
   async startServer() {
-    this.logging('Starting up the server')
+    logging('Starting up the server')
     this.executeShellScript(
       `screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}/bedrock_server" `,
     )
@@ -131,19 +131,19 @@ class Minecraft {
    * It uses Shelljs to kill all the screens.
    */
   async stopServer() {
-    this.logging('Stopping server')
+    logging('Stopping server')
     this.executeShellScript(`screen -S ${this.minecraft_screen_name} -X kill`)
     this.sendMessageToDiscord('Stoping the server')
   }
 
   executeShellScript(string: string): string {
-    this.logging(`Executing this shell command: ${string}`)
+    logging(`Executing this shell command: ${string}`)
     let results = ''
 
     if (process.env.ENVIROMENT !== 'DEVELOPMENT') {
       results = shell.exec(string, { silent: true }).stdout
     }
-    this.logging('Execution output', results)
+    logging('Execution output', results)
 
     return results
   }
@@ -152,20 +152,17 @@ class Minecraft {
    * Compress the file from this.options.path
    */
   async compressFile() {
-    this.logging('Compressing file')
+    logging('Compressing file')
     let date = new Date()
 
     try {
       shell.cd(this.options.backup_path)
-      await zipper.sync
-        .zip(this.options.path)
-        .compress()
-        .save(`${date.toISOString()}-minecraft.zip`)
+      await zipper.sync.zip(this.options.path).compress().save(`${date.toISOString()}-minecraft.zip`)
     } catch (err) {
-      this.logging('Error', err)
+      logging('Error', err)
     }
 
-    this.logging('Done Compressing file. Deleted MinecraftServer Folder')
+    logging('Done Compressing file. Deleted MinecraftServer Folder')
   }
 
   /**
@@ -174,17 +171,17 @@ class Minecraft {
    * @url https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks
    */
   async sendMessageToDiscord(string: string) {
-    this.logging('Sending this message to discord', string)
+    logging('Sending this message to discord', string)
     try {
       const webhook: WebhookInterface = new Discord.WebhookClient(this.options.discord_id, this.options.discord_token)
       await webhook.send(string)
     } catch (err) {
-      this.logging('Something went wrong posting the discord message', err)
+      logging('Something went wrong posting the discord message', err)
     }
   }
 
   async logs() {
-    this.logging('Watching for changes')
+    logging('Watching for changes')
 
     let file = await fs.readFile(this.options.log_file, 'utf8')
     let fileNumber = file.split(/\n/).length
@@ -212,10 +209,7 @@ class Minecraft {
   }
 
   getGamerTagFromLog(logString: string, logIndentifier: string) {
-    return logString
-      .split(logIndentifier)[1]
-      .split(',')[0]
-      .split(' ')[1]
+    return logString.split(logIndentifier)[1].split(',')[0].split(' ')[1]
   }
 }
 export default Minecraft

@@ -18,6 +18,7 @@ const fs_1 = require("fs");
 const os_1 = __importDefault(require("os"));
 const shelljs_1 = __importDefault(require("shelljs"));
 const zip_local_1 = __importDefault(require("zip-local"));
+const utils_1 = require("../utils");
 require('dotenv').config();
 class Minecraft {
     constructor(options) {
@@ -26,18 +27,6 @@ class Minecraft {
             player_connected: '[INFO] Player connected:',
         };
         this.minecraft_screen_name = 'Minecraft';
-        this.logging = (message, payload = null) => {
-            let date = new Date();
-            console.log(`[${date.toISOString()}] ${message}`);
-            if (payload) {
-                if (typeof payload === 'string' || payload instanceof String) {
-                    console.log(`[${date.toISOString()}] ${payload}`);
-                }
-                else {
-                    console.log(`[${date.toISOString()}] ${JSON.stringify(payload)}`);
-                }
-            }
-        };
         if (options && options.path) {
             this.options = options;
         }
@@ -66,63 +55,63 @@ class Minecraft {
                 yield this.startServer();
             }
             catch (e) {
-                this.logging(e);
+                utils_1.logging(e);
                 this.sendMessageToDiscord(this.options.strings.post_backup_message);
             }
         });
     }
     startServer() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.logging('Starting up the server');
+            utils_1.logging('Starting up the server');
             this.executeShellScript(`screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}/bedrock_server" `);
             this.sendMessageToDiscord('Starting up server');
         });
     }
     stopServer() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.logging('Stopping server');
+            utils_1.logging('Stopping server');
             this.executeShellScript(`screen -S ${this.minecraft_screen_name} -X kill`);
             this.sendMessageToDiscord('Stoping the server');
         });
     }
     executeShellScript(string) {
-        this.logging(`Executing this shell command: ${string}`);
+        utils_1.logging(`Executing this shell command: ${string}`);
         let results = '';
         if (process.env.ENVIROMENT !== 'DEVELOPMENT') {
             results = shelljs_1.default.exec(string, { silent: true }).stdout;
         }
-        this.logging('Execution output', results);
+        utils_1.logging('Execution output', results);
         return results;
     }
     compressFile() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.logging('Compressing file');
+            utils_1.logging('Compressing file');
             let date = new Date();
             try {
                 shelljs_1.default.cd(this.options.backup_path);
                 yield zip_local_1.default.sync.zip(this.options.path).compress().save(`${date.toISOString()}-minecraft.zip`);
             }
             catch (err) {
-                this.logging('Error', err);
+                utils_1.logging('Error', err);
             }
-            this.logging('Done Compressing file. Deleted MinecraftServer Folder');
+            utils_1.logging('Done Compressing file. Deleted MinecraftServer Folder');
         });
     }
     sendMessageToDiscord(string) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.logging('Sending this message to discord', string);
+            utils_1.logging('Sending this message to discord', string);
             try {
                 const webhook = new discord_js_1.default.WebhookClient(this.options.discord_id, this.options.discord_token);
                 yield webhook.send(string);
             }
             catch (err) {
-                this.logging('Something went wrong posting the discord message', err);
+                utils_1.logging('Something went wrong posting the discord message', err);
             }
         });
     }
     logs() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.logging('Watching for changes');
+            utils_1.logging('Watching for changes');
             let file = yield fs_1.promises.readFile(this.options.log_file, 'utf8');
             let fileNumber = file.split(/\n/).length;
             chokidar_1.default.watch(this.options.log_file).on('all', (evt, path) => __awaiter(this, void 0, void 0, function* () {
