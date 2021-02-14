@@ -75,7 +75,7 @@ class Minecraft {
       this.options = options
     } else {
       this.options = {
-        path: process.env.OPTIONS_PATH || os.homedir() + '/MinecraftServer/',
+        path: process.env.OPTIONS_PATH || os.homedir() + '/MinecraftServer/worlds',
         backup_path: process.env.BACKUP_PATH || os.homedir() + '/Backups/',
         log_file: process.env.LOG_FILE || os.homedir() + '/MinecraftServer/minecraft-server.log',
         discord_id: process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : '',
@@ -133,14 +133,14 @@ class Minecraft {
   async stopServer() {
     logging('Stopping server')
     this.executeShellScript(`screen -S ${this.minecraft_screen_name} -X kill`)
-    this.sendMessageToDiscord('Stoping the server')
+    this.sendMessageToDiscord('Stopping the server')
   }
 
   executeShellScript(string: string): string {
     logging(`Executing this shell command: ${string}`)
     let results = ''
 
-    if (process.env.ENVIROMENT !== 'DEVELOPMENT') {
+    if (process.env.ENVIRONMENT !== 'DEVELOPMENT') {
       results = shell.exec(string, { silent: true }).stdout
     }
     logging('Execution output', results)
@@ -157,7 +157,10 @@ class Minecraft {
 
     try {
       shell.cd(this.options.backup_path)
-      await zipper.sync.zip(this.options.path).compress().save(`${date.toISOString()}-minecraft.zip`)
+      await zipper.sync
+        .zip(this.options.path)
+        .compress()
+        .save(`${date.toISOString()}-minecraft.zip`)
     } catch (err) {
       logging('Error', err)
     }
@@ -196,10 +199,10 @@ class Minecraft {
 
           if (element.includes(this.logs_strings.player_disconnected)) {
             const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_disconnected)
-            this.sendMessageToDiscord(`${gamerTag} left the Minecraft server. Bye ${gamerTag}. See you next time :P`)
+            this.sendMessageToDiscord(`${gamerTag} left the Minecraft server.`)
           } else if (element.includes(this.logs_strings.player_connected)) {
             const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_connected)
-            this.sendMessageToDiscord(`${gamerTag} joined the Minecraft server. Hi ${gamerTag} !!!!`)
+            this.sendMessageToDiscord(`${gamerTag} joined the Minecraft server.`)
           }
         }
 
@@ -209,7 +212,10 @@ class Minecraft {
   }
 
   getGamerTagFromLog(logString: string, logIndentifier: string) {
-    return logString.split(logIndentifier)[1].split(',')[0].split(' ')[1]
+    return logString
+      .split(logIndentifier)[1]
+      .split(',')[0]
+      .split(' ')[1]
   }
 }
 export default Minecraft

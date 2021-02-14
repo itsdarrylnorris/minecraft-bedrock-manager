@@ -14,7 +14,6 @@ interface DiscordOptionsInterface {
 class Discord {
   // Options config
   private options: DiscordOptionsInterface | any
-  private logging: any
   private client: Client
 
   /**
@@ -43,7 +42,7 @@ class Discord {
   async startDiscord() {
     try {
       // Wakes up Bot
-      await this.startBot()
+      this.startBot()
 
       // Starts the Commands
       await this.startCommands()
@@ -58,9 +57,9 @@ class Discord {
   /**
    * Wakes up Bot
    */
-  async startBot() {
+  startBot() {
     this.client.once('ready', () => {
-      this.logging('Bot is online')
+      logging('Bot is online.')
     })
   }
 
@@ -73,11 +72,13 @@ class Discord {
       const args: any = message.content.slice(this.options.prefix.length).split(/ +/)
       const command: string = args.shift()!.toLowerCase()
       let author: string = message.author.username
+      let splitDiscordRole = this.options.discordRole.split(',')
 
+      // Fix the split value
       // Adjust the command and role based on server
       if (
         command === 'mm' &&
-        message.member!.roles.cache.some((r: { name: string }) => r.name === this.options.discordRole)
+        message.member!.roles.cache.some((r: { name: string }) => splitDiscordRole.includes(r.name))
       ) {
         let newMessage: string = message.toString().replace('/', '')
         let split: string[] = newMessage.split(' ')
