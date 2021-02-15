@@ -3,7 +3,6 @@ import Discord from 'discord.js'
 import { promises as fs } from 'fs'
 import os from 'os'
 import shell from 'shelljs'
-import zipper from 'zip-local'
 import { logging } from '../utils'
 require('dotenv').config()
 
@@ -116,12 +115,13 @@ class Minecraft {
    */
   async restartServer() {
     try {
-      // Send message to Discord that we are starting
-      await this.sendMessageToDiscord(this.options.strings.pre_backup_message) // Stopping server
+      // Send message to Discord that a backup has begun
+      await this.sendMessageToDiscord(this.options.strings.pre_backup_message)
 
       // Stops Minecraft server
       await this.stopServer()
 
+      // Starts Minecraft server
       await this.startServer()
     } catch (e) {
       logging(e)
@@ -136,11 +136,24 @@ class Minecraft {
    * This might be a bit tricky because of screen; however we can try this: https://stackoverflow.com/questions/24706815/how-do-i-pass-a-command-to-a-screen-session
    */
   async startServer() {
+    // Backups
+    await this.backupServer()
     logging(this.options.strings.start_server_message)
     this.executeShellScript(
       `cd ${this.options.path} && screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}bedrock_server" `,
     )
     this.sendMessageToDiscord(this.options.strings.start_server_message)
+  }
+
+  async backupServer() {
+    let date = new Date()
+    shell.exec(`cd ${this.options.world_path}`)
+    shell.exec(`git add .`)
+    if (shell.exec(`git commit -m "Automatic Backup: ${date.toISOString()}"`).code !== 0) {
+      shell.echo('Error: Git commit failed')
+      shell.exit(1)
+    }
+    shell.exec(`git push`)
   }
 
   /**
@@ -157,34 +170,12 @@ class Minecraft {
     let results = ''
 
     if (process.env.ENVIRONMENT !== 'DEVELOPMENT') {
-      results = shell.exec(string, { silent: true }).stdout
+      results = shell.exec(string, { silent: true })
     }
     logging('Execution output', results)
 
     return results
   }
-
-  /**
-   * Compress the file from this.options.path
-   */
-  async compressFile() {
-    logging(this.options.strings.start_compressing_files_message)
-    let date = new Date()
-
-    try {
-      shell.cd(this.options.backup_path)
-      await zipper.sync
-        .zip(this.options.path)
-        .compress()
-        .save(`${date.toISOString()}-minecraft.zip`)
-    } catch (err) {
-      logging('Error', err)
-    }
-
-    logging(this.options.strings.end_compressed_files_message)
-    return
-  }
-
   /**
    * Sends a message to Discord
    * @param string

@@ -33,9 +33,9 @@ declare class Minecraft {
     constructor(options: MinecraftOptionsInterface | any);
     restartServer(): Promise<void>;
     startServer(): Promise<void>;
+    backupServer(): Promise<void>;
     stopServer(): Promise<void>;
     executeShellScript(string: string): string;
-    compressFile(): Promise<void>;
     sendMessageToDiscord(string: string): Promise<void>;
     logs(): Promise<void>;
     getGamerTagFromLog(logString: string, logIndentifier: string): string;

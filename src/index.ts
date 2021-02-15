@@ -32,10 +32,12 @@ const main = async () => {
     process.exit()
   } else if (options.restartServer) {
     const minecraft = new Minecraft({})
-    minecraft.restartServer()
+    await minecraft.restartServer()
+    process.exit()
   } else if (options.stopServer) {
     const minecraft = new Minecraft({})
-    minecraft.stopServer()
+    await minecraft.stopServer()
+    process.exit()
   } else if (options.logs) {
     const minecraft = new Minecraft({})
     minecraft.logs()

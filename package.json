@@ -12,12 +12,10 @@
     "discord.js": "^12.5.1",
     "dotenv": "^8.2.0",
     "figlet": "^1.5.0",
-    "googleapis": "^67.0.0",
     "node-fetch": "^2.6.0",
     "node-watch": "^0.7.1",
     "shelljs": "^0.8.4",
-    "typescript": "^4.0.0",
-    "zip-local": "^0.3.4"
+    "typescript": "^4.0.0"
   },
   "scripts": {
     "dev": "tsc --watch",
@@ -26,8 +24,8 @@
     "deploy-beta": "yarn ssh-beta 'zsh -s' < ./deploy.sh",
     "deploy-all": "yarn deploy && yarn deploy-beta",
     "build": "tsc",
-    "ssh": "ssh root@ligthminecraft.com",
-    "ssh-beta": "ssh root@beta.ligthminecraft.com"
+    "ssh": "ssh root@lightminecraft.com",
+    "ssh-beta": "ssh root@beta.lightminecraft.com"
   },
   "devDependencies": {
     "@types/figlet": "^1.2.1",

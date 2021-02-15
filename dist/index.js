@@ -40,11 +40,13 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     }
     else if (options.restartServer) {
         const minecraft = new minecraft_1.default({});
-        minecraft.restartServer();
+        yield minecraft.restartServer();
+        process.exit();
     }
     else if (options.stopServer) {
         const minecraft = new minecraft_1.default({});
-        minecraft.stopServer();
+        yield minecraft.stopServer();
+        process.exit();
     }
     else if (options.logs) {
         const minecraft = new minecraft_1.default({});

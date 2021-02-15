@@ -17,7 +17,6 @@ const discord_js_1 = __importDefault(require("discord.js"));
 const fs_1 = require("fs");
 const os_1 = __importDefault(require("os"));
 const shelljs_1 = __importDefault(require("shelljs"));
-const zip_local_1 = __importDefault(require("zip-local"));
 const utils_1 = require("../utils");
 require('dotenv').config();
 class Minecraft {
@@ -71,9 +70,22 @@ class Minecraft {
     }
     startServer() {
         return __awaiter(this, void 0, void 0, function* () {
+            yield this.backupServer();
             utils_1.logging(this.options.strings.start_server_message);
             this.executeShellScript(`cd ${this.options.path} && screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}bedrock_server" `);
             this.sendMessageToDiscord(this.options.strings.start_server_message);
+        });
+    }
+    backupServer() {
+        return __awaiter(this, void 0, void 0, function* () {
+            let date = new Date();
+            shelljs_1.default.exec(`cd ${this.options.world_path}`);
+            shelljs_1.default.exec(`git add .`);
+            if (shelljs_1.default.exec(`git commit -m "Automatic Backup: ${date.toISOString()}"`).code !== 0) {
+                shelljs_1.default.echo('Error: Git commit failed');
+                shelljs_1.default.exit(1);
+            }
+            shelljs_1.default.exec(`git push`);
         });
     }
     stopServer() {
@@ -87,28 +99,10 @@ class Minecraft {
         utils_1.logging(`Executing this shell command: ${string}`);
         let results = '';
         if (process.env.ENVIRONMENT !== 'DEVELOPMENT') {
-            results = shelljs_1.default.exec(string, { silent: true }).stdout;
+            results = shelljs_1.default.exec(string, { silent: true });
         }
         utils_1.logging('Execution output', results);
         return results;
-    }
-    compressFile() {
-        return __awaiter(this, void 0, void 0, function* () {
-            utils_1.logging(this.options.strings.start_compressing_files_message);
-            let date = new Date();
-            try {
-                shelljs_1.default.cd(this.options.backup_path);
-                yield zip_local_1.default.sync
-                    .zip(this.options.path)
-                    .compress()
-                    .save(`${date.toISOString()}-minecraft.zip`);
-            }
-            catch (err) {
-                utils_1.logging('Error', err);
-            }
-            utils_1.logging(this.options.strings.end_compressed_files_message);
-            return;
-        });
     }
     sendMessageToDiscord(string) {
         return __awaiter(this, void 0, void 0, function* () {
