@@ -65,24 +65,20 @@ class Minecraft {
         return __awaiter(this, void 0, void 0, function* () {
             utils_1.logging('Starting up the server');
             this.executeShellScript(`cd ${this.options.path} && screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}bedrock_server" `);
-            this.sendMessageToDiscord('Starting up server');
-            return;
+            this.sendMessageToDiscord(`[${os_1.default.hostname()}] Starting up server`);
         });
     }
     stopServer() {
         return __awaiter(this, void 0, void 0, function* () {
             utils_1.logging('Stopping server');
             this.executeShellScript(`screen -S ${this.minecraft_screen_name} -X kill`);
-            this.sendMessageToDiscord('Stopping the server');
-            return;
+            this.sendMessageToDiscord(`[${os_1.default.hostname()}] Stopping the server`);
         });
     }
     executeShellScript(string) {
         utils_1.logging(`Executing this shell command: ${string}`);
         let results = '';
-        if (process.env.ENVIRONMENT !== 'DEVELOPMENT') {
-            results = shelljs_1.default.exec(string, { silent: true }).stdout;
-        }
+        results = shelljs_1.default.exec(string, { silent: true }).stdout;
         utils_1.logging('Execution output', results);
         return results;
     }

@@ -125,8 +125,7 @@ class Minecraft {
     this.executeShellScript(
       `cd ${this.options.path} && screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}bedrock_server" `,
     )
-    this.sendMessageToDiscord('Starting up server')
-    return
+    this.sendMessageToDiscord(`[${os.hostname()}] Starting up server`)
   }
 
   /**
@@ -135,17 +134,13 @@ class Minecraft {
   async stopServer() {
     logging('Stopping server')
     this.executeShellScript(`screen -S ${this.minecraft_screen_name} -X kill`)
-    this.sendMessageToDiscord('Stopping the server')
-    return
+    this.sendMessageToDiscord(`[${os.hostname()}] Stopping the server`)
   }
 
   executeShellScript(string: string): string {
     logging(`Executing this shell command: ${string}`)
     let results = ''
-
-    if (process.env.ENVIRONMENT !== 'DEVELOPMENT') {
-      results = shell.exec(string, { silent: true }).stdout
-    }
+    results = shell.exec(string, { silent: true }).stdout
     logging('Execution output', results)
 
     return results
