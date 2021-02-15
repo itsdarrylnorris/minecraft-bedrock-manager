@@ -51,7 +51,6 @@ class Minecraft {
             try {
                 yield this.sendMessageToDiscord(this.options.strings.pre_backup_message);
                 yield this.stopServer();
-                yield this.compressFile();
                 yield this.startServer();
             }
             catch (e) {
@@ -65,14 +64,14 @@ class Minecraft {
         return __awaiter(this, void 0, void 0, function* () {
             utils_1.logging('Starting up the server');
             this.executeShellScript(`cd ${this.options.path} && screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}bedrock_server" `);
-            this.sendMessageToDiscord(`[${os_1.default.hostname()}] Starting up server`);
+            this.sendMessageToDiscord(`Starting up server`);
         });
     }
     stopServer() {
         return __awaiter(this, void 0, void 0, function* () {
             utils_1.logging('Stopping server');
             this.executeShellScript(`screen -S ${this.minecraft_screen_name} -X kill`);
-            this.sendMessageToDiscord(`[${os_1.default.hostname()}] Stopping the server`);
+            this.sendMessageToDiscord(`Stopping the server`);
         });
     }
     executeShellScript(string) {
@@ -104,7 +103,7 @@ class Minecraft {
             utils_1.logging('Sending this message to discord', string);
             try {
                 const webhook = new discord_js_1.default.WebhookClient(this.options.discord_id, this.options.discord_token);
-                yield webhook.send(string);
+                yield webhook.send(`[${os_1.default.hostname()}] ${string}`);
             }
             catch (err) {
                 utils_1.logging('Something went wrong posting the discord message', err);

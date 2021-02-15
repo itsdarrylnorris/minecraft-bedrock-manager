@@ -104,9 +104,6 @@ class Minecraft {
       // Stops Minecraft server
       await this.stopServer()
 
-      // Compress the folder
-      await this.compressFile()
-
       await this.startServer()
     } catch (e) {
       logging(e)
@@ -125,7 +122,7 @@ class Minecraft {
     this.executeShellScript(
       `cd ${this.options.path} && screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}bedrock_server" `,
     )
-    this.sendMessageToDiscord(`[${os.hostname()}] Starting up server`)
+    this.sendMessageToDiscord(`Starting up server`)
   }
 
   /**
@@ -134,7 +131,7 @@ class Minecraft {
   async stopServer() {
     logging('Stopping server')
     this.executeShellScript(`screen -S ${this.minecraft_screen_name} -X kill`)
-    this.sendMessageToDiscord(`[${os.hostname()}] Stopping the server`)
+    this.sendMessageToDiscord(`Stopping the server`)
   }
 
   executeShellScript(string: string): string {
@@ -176,7 +173,7 @@ class Minecraft {
     logging('Sending this message to discord', string)
     try {
       const webhook: WebhookInterface = new Discord.WebhookClient(this.options.discord_id, this.options.discord_token)
-      await webhook.send(string)
+      await webhook.send(`[${os.hostname()}] ${string}`)
     } catch (err) {
       logging('Something went wrong posting the discord message', err)
     }
