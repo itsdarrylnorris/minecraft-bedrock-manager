@@ -75,7 +75,7 @@ class Minecraft {
       this.options = options
     } else {
       this.options = {
-        path: process.env.OPTIONS_PATH || os.homedir() + '/MinecraftServer/worlds',
+        path: process.env.OPTIONS_PATH || os.homedir() + '/MinecraftServer/',
         backup_path: process.env.BACKUP_PATH || os.homedir() + '/Backups/',
         log_file: process.env.LOG_FILE || os.homedir() + '/MinecraftServer/minecraft-server.log',
         discord_id: process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : '',
@@ -140,7 +140,10 @@ class Minecraft {
   executeShellScript(string: string): string {
     logging(`Executing this shell command: ${string}`)
     let results = ''
-    results = shell.exec(string, { silent: true }).stdout
+
+    if (process.env.ENVIRONMENT !== 'DEVELOPMENT') {
+      results = shell.exec(string, { silent: true }).stdout
+    }
     logging('Execution output', results)
 
     return results

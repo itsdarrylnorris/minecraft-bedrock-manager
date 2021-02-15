@@ -32,7 +32,7 @@ class Minecraft {
         }
         else {
             this.options = {
-                path: process.env.OPTIONS_PATH || os_1.default.homedir() + '/MinecraftServer/worlds',
+                path: process.env.OPTIONS_PATH || os_1.default.homedir() + '/MinecraftServer/',
                 backup_path: process.env.BACKUP_PATH || os_1.default.homedir() + '/Backups/',
                 log_file: process.env.LOG_FILE || os_1.default.homedir() + '/MinecraftServer/minecraft-server.log',
                 discord_id: process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : '',
@@ -78,7 +78,9 @@ class Minecraft {
     executeShellScript(string) {
         utils_1.logging(`Executing this shell command: ${string}`);
         let results = '';
-        results = shelljs_1.default.exec(string, { silent: true }).stdout;
+        if (process.env.ENVIRONMENT !== 'DEVELOPMENT') {
+            results = shelljs_1.default.exec(string, { silent: true }).stdout;
+        }
         utils_1.logging('Execution output', results);
         return results;
     }
