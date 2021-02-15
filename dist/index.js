@@ -26,7 +26,6 @@ if (NO_COMMAND_SPECIFIED || options.help) {
 else if (options.startServer) {
     const minecraft = new minecraft_1.default({});
     minecraft.startServer();
-    process.exit();
 }
 else if (options.restartServer) {
     const minecraft = new minecraft_1.default({});

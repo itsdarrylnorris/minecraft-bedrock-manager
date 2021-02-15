@@ -28,7 +28,6 @@ if (NO_COMMAND_SPECIFIED || options.help) {
 } else if (options.startServer) {
   const minecraft = new Minecraft({})
   minecraft.startServer()
-  process.exit()
 } else if (options.restartServer) {
   const minecraft = new Minecraft({})
   minecraft.restartServer()
