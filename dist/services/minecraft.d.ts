@@ -1,7 +1,6 @@
 interface MinecraftOptionsInterface {
     discord: MinecraftDiscordInterface | undefined;
     path: string | undefined;
-    google_drive: any | undefined;
     strings: MinecraftStringsInterface;
     backup_path: string | undefined;
 }
@@ -18,6 +17,14 @@ interface MinecraftStringsInterface {
     pre_backup_message: string | undefined;
     post_backup_message: string | undefined;
     error_backup_message: string | undefined;
+    start_server_message: string | undefined;
+    stop_server_message: string | undefined;
+    start_compressing_files_message: string | undefined;
+    end_compressed_files_message: string | undefined;
+    sending_discord_message: string | undefined;
+    error_discord_message: string | undefined;
+    gamertag_join_server_message: string | undefined;
+    gamertag_left_server_message: string | undefined;
 }
 declare class Minecraft {
     private options;

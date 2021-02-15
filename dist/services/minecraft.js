@@ -33,15 +33,24 @@ class Minecraft {
         else {
             this.options = {
                 path: process.env.OPTIONS_PATH || os_1.default.homedir() + '/MinecraftServer/',
+                world_path: process.env.WORLD_PATH || os_1.default.homedir() + '/MinecraftServer/worlds',
                 backup_path: process.env.BACKUP_PATH || os_1.default.homedir() + '/Backups/',
                 log_file: process.env.LOG_FILE || os_1.default.homedir() + '/MinecraftServer/minecraft-server.log',
                 discord_id: process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : '',
                 discord_token: process && process.env && process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.toString() : '',
                 strings: {
                     pre_backup_message: process.env.options_pre_backup_message ||
-                        'We are shutting down the server temporary, we are making a backup.',
-                    post_backup_message: process.env.options_post_backup_message || 'We are done with the backup, the server is back on.',
-                    error_backup_message: process.env.options_error_backup_message || 'Something went wrong while building out the backup',
+                        'We are shutting down the server temporarily. We are making a backup.',
+                    post_backup_message: process.env.options_post_backup_message || 'We are done with the backup. The server is back on.',
+                    error_backup_message: process.env.options_error_backup_message || 'Something went wrong while building out the backup.',
+                    start_server_message: process.env.options_start_server_message || 'Starting up the server.',
+                    stop_server_message: process.env.options_stop_server_message || 'Stopping the server.',
+                    start_compressing_files_message: process.env.options_start_compressing_files_message || 'Starting to compress files.',
+                    end_compressed_files_message: process.env.options_end_compressed_files_message || 'Files are now compressed.',
+                    sending_discord_message: process.env.options_sending_discord_message || 'Sending this message to Discord.',
+                    error_discord_message: process.env.options_error_discord_message || 'Something went wrong when sending the Discord message.',
+                    gamertag_join_server_message: process.env.options_gamertag_join_server_message || 'joined the Minecraft server.',
+                    gamertag_left_server_message: process.env.options_gamertag_left_server_message || 'left the Minecraft server.',
                 },
             };
         }
@@ -62,16 +71,16 @@ class Minecraft {
     }
     startServer() {
         return __awaiter(this, void 0, void 0, function* () {
-            utils_1.logging('Starting up the server');
+            utils_1.logging(this.options.strings.start_server_message);
             this.executeShellScript(`cd ${this.options.path} && screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}bedrock_server" `);
-            this.sendMessageToDiscord(`Starting up server`);
+            this.sendMessageToDiscord(this.options.strings.start_server_message);
         });
     }
     stopServer() {
         return __awaiter(this, void 0, void 0, function* () {
-            utils_1.logging('Stopping server');
+            utils_1.logging(this.options.strings.stop_server_message);
             this.executeShellScript(`screen -S ${this.minecraft_screen_name} -X kill`);
-            this.sendMessageToDiscord(`Stopping the server`);
+            this.sendMessageToDiscord(this.options.strings.stop_server_message);
         });
     }
     executeShellScript(string) {
@@ -85,28 +94,31 @@ class Minecraft {
     }
     compressFile() {
         return __awaiter(this, void 0, void 0, function* () {
-            utils_1.logging('Compressing file');
+            utils_1.logging(this.options.strings.start_compressing_files_message);
             let date = new Date();
             try {
                 shelljs_1.default.cd(this.options.backup_path);
-                yield zip_local_1.default.sync.zip(this.options.path).compress().save(`${date.toISOString()}-minecraft.zip`);
+                yield zip_local_1.default.sync
+                    .zip(this.options.path)
+                    .compress()
+                    .save(`${date.toISOString()}-minecraft.zip`);
             }
             catch (err) {
                 utils_1.logging('Error', err);
             }
-            utils_1.logging('Done Compressing file. Deleted MinecraftServer Folder');
+            utils_1.logging(this.options.strings.end_compressed_files_message);
             return;
         });
     }
     sendMessageToDiscord(string) {
         return __awaiter(this, void 0, void 0, function* () {
-            utils_1.logging('Sending this message to discord', string);
+            utils_1.logging(this.options.strings.sending_discord_message, string);
             try {
                 const webhook = new discord_js_1.default.WebhookClient(this.options.discord_id, this.options.discord_token);
                 yield webhook.send(`[${os_1.default.hostname()}] ${string}`);
             }
             catch (err) {
-                utils_1.logging('Something went wrong posting the discord message', err);
+                utils_1.logging(this.options.strings.error_discord_message, err);
             }
             return;
         });
@@ -125,11 +137,11 @@ class Minecraft {
                         const element = newFile.split(/\n/)[newFileNumber - 2];
                         if (element.includes(this.logs_strings.player_disconnected)) {
                             const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_disconnected);
-                            this.sendMessageToDiscord(`${gamerTag} left the Minecraft server.`);
+                            this.sendMessageToDiscord(gamerTag + ' ' + this.options.strings.gamertag_left_server_message);
                         }
                         else if (element.includes(this.logs_strings.player_connected)) {
                             const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_connected);
-                            this.sendMessageToDiscord(`${gamerTag} joined the Minecraft server.`);
+                            this.sendMessageToDiscord(gamerTag + ' ' + this.options.strings.gamertag_join_server_message);
                         }
                     }
                     fileNumber = newFile.split(/\n/).length;
@@ -138,7 +150,10 @@ class Minecraft {
         });
     }
     getGamerTagFromLog(logString, logIndentifier) {
-        return logString.split(logIndentifier)[1].split(',')[0].split(' ')[1];
+        return logString
+            .split(logIndentifier)[1]
+            .split(',')[0]
+            .split(' ')[1];
     }
 }
 exports.default = Minecraft;

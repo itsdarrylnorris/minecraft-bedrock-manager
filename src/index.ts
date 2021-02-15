@@ -7,16 +7,16 @@ import Minecraft from './services/minecraft'
 program.version('0.0.1')
 
 program
-  .option('-h, --help', 'Display help for command')
-  .option('-s, --start-server', 'Start the Minecraft Server')
+  .option('-h, --help', 'Display help commands')
+  .option('-s, --start-server', 'Starts the Minecraft Server')
   .option('-r, --restart-server', 'Restarts the Minecraft Server')
-  .option('-st, --stop-server', 'Stop Minecraft Server')
-  .option('-l, --logs', 'Show the Minecraft Logs')
-  .option('-d, --discord', 'Start Discord')
+  .option('-st, --stop-server', 'Stops Minecraft Server')
+  .option('-l, --logs', 'Shows the Minecraft Logs')
+  .option('-d, --discord', 'Starts Discord')
 
 program.parse(process.argv)
 
-const main = () => {
+const main = async () => {
   const options = program.opts()
   // Check the program.args obj
   const NO_COMMAND_SPECIFIED = Object.keys(options).length === 0
@@ -28,7 +28,8 @@ const main = () => {
     program.help()
   } else if (options.startServer) {
     const minecraft = new Minecraft({})
-    minecraft.startServer()
+    await minecraft.startServer()
+    process.exit()
   } else if (options.restartServer) {
     const minecraft = new Minecraft({})
     minecraft.restartServer()

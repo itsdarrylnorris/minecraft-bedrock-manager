@@ -28,10 +28,12 @@ class Discord {
       this.options = options
     } else {
       this.options = {
-        discordClient:
+        discord_client:
           process && process.env && process.env.DISCORD_CLIENT ? process.env.DISCORD_CLIENT.toString() : '',
-        discordRole: process && process.env && process.env.DISCORD_ROLE ? process.env.DISCORD_ROLE.toString() : '',
-        prefix: '/',
+        discord_role: process && process.env && process.env.DISCORD_ROLE ? process.env.DISCORD_ROLE.toString() : '',
+        strings: {
+          discord_message_prefix: '/',
+        },
       }
     }
   }
@@ -68,11 +70,11 @@ class Discord {
    */
   async startCommands() {
     this.client.on('message', (message: Message) => {
-      if (!message.content.startsWith(this.options.prefix) || message.author.bot) return
-      const args: any = message.content.slice(this.options.prefix.length).split(/ +/)
+      if (!message.content.startsWith(this.options.strings.discord_message_prefix) || message.author.bot) return
+      const args: any = message.content.slice(this.options.strings.discord_message_prefix.length).split(/ +/)
       const command: string = args.shift()!.toLowerCase()
       let author: string = message.author.username
-      let splitDiscordRole = this.options.discordRole.split(',')
+      let splitDiscordRole = this.options.discord_role.split(',')
 
       // Fix the split value
       // Adjust the command and role based on server
@@ -105,7 +107,7 @@ class Discord {
    * Logging into Discord Client
    */
   async loginClient() {
-    this.client.login(this.options.discordClient)
+    this.client.login(this.options.discord_client)
   }
 }
 export default Discord

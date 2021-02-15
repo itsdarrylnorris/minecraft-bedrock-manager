@@ -17,9 +17,6 @@ interface MinecraftOptionsInterface {
   // Path of the location where all the files lives
   path: string | undefined
 
-  // Any options to ensure we can support google drive backups. // @TODO: We need to change the any and past an interface here. Depending on what we need to for Google Drive.
-  google_drive: any | undefined
-
   // Strings of whatever we are going to be posting at
   strings: MinecraftStringsInterface
 
@@ -48,6 +45,14 @@ interface MinecraftStringsInterface {
   pre_backup_message: string | undefined
   post_backup_message: string | undefined
   error_backup_message: string | undefined
+  start_server_message: string | undefined
+  stop_server_message: string | undefined
+  start_compressing_files_message: string | undefined
+  end_compressed_files_message: string | undefined
+  sending_discord_message: string | undefined
+  error_discord_message: string | undefined
+  gamertag_join_server_message: string | undefined
+  gamertag_left_server_message: string | undefined
 }
 
 /**
@@ -76,6 +81,7 @@ class Minecraft {
     } else {
       this.options = {
         path: process.env.OPTIONS_PATH || os.homedir() + '/MinecraftServer/',
+        world_path: process.env.WORLD_PATH || os.homedir() + '/MinecraftServer/worlds',
         backup_path: process.env.BACKUP_PATH || os.homedir() + '/Backups/',
         log_file: process.env.LOG_FILE || os.homedir() + '/MinecraftServer/minecraft-server.log',
         discord_id: process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : '',
@@ -83,11 +89,23 @@ class Minecraft {
         strings: {
           pre_backup_message:
             process.env.options_pre_backup_message ||
-            'We are shutting down the server temporary, we are making a backup.',
+            'We are shutting down the server temporarily. We are making a backup.',
           post_backup_message:
-            process.env.options_post_backup_message || 'We are done with the backup, the server is back on.',
+            process.env.options_post_backup_message || 'We are done with the backup. The server is back on.',
           error_backup_message:
-            process.env.options_error_backup_message || 'Something went wrong while building out the backup',
+            process.env.options_error_backup_message || 'Something went wrong while building out the backup.',
+          start_server_message: process.env.options_start_server_message || 'Starting up the server.',
+          stop_server_message: process.env.options_stop_server_message || 'Stopping the server.',
+          start_compressing_files_message:
+            process.env.options_start_compressing_files_message || 'Starting to compress files.',
+          end_compressed_files_message: process.env.options_end_compressed_files_message || 'Files are now compressed.',
+          sending_discord_message: process.env.options_sending_discord_message || 'Sending this message to Discord.',
+          error_discord_message:
+            process.env.options_error_discord_message || 'Something went wrong when sending the Discord message.',
+          gamertag_join_server_message:
+            process.env.options_gamertag_join_server_message || 'joined the Minecraft server.',
+          gamertag_left_server_message:
+            process.env.options_gamertag_left_server_message || 'left the Minecraft server.',
         },
       }
     }
@@ -118,20 +136,20 @@ class Minecraft {
    * This might be a bit tricky because of screen; however we can try this: https://stackoverflow.com/questions/24706815/how-do-i-pass-a-command-to-a-screen-session
    */
   async startServer() {
-    logging('Starting up the server')
+    logging(this.options.strings.start_server_message)
     this.executeShellScript(
       `cd ${this.options.path} && screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}bedrock_server" `,
     )
-    this.sendMessageToDiscord(`Starting up server`)
+    this.sendMessageToDiscord(this.options.strings.start_server_message)
   }
 
   /**
    * It uses Shelljs to kill all the screens.
    */
   async stopServer() {
-    logging('Stopping server')
+    logging(this.options.strings.stop_server_message)
     this.executeShellScript(`screen -S ${this.minecraft_screen_name} -X kill`)
-    this.sendMessageToDiscord(`Stopping the server`)
+    this.sendMessageToDiscord(this.options.strings.stop_server_message)
   }
 
   executeShellScript(string: string): string {
@@ -150,17 +168,20 @@ class Minecraft {
    * Compress the file from this.options.path
    */
   async compressFile() {
-    logging('Compressing file')
+    logging(this.options.strings.start_compressing_files_message)
     let date = new Date()
 
     try {
       shell.cd(this.options.backup_path)
-      await zipper.sync.zip(this.options.path).compress().save(`${date.toISOString()}-minecraft.zip`)
+      await zipper.sync
+        .zip(this.options.path)
+        .compress()
+        .save(`${date.toISOString()}-minecraft.zip`)
     } catch (err) {
       logging('Error', err)
     }
 
-    logging('Done Compressing file. Deleted MinecraftServer Folder')
+    logging(this.options.strings.end_compressed_files_message)
     return
   }
 
@@ -170,12 +191,12 @@ class Minecraft {
    * @url https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks
    */
   async sendMessageToDiscord(string: string) {
-    logging('Sending this message to discord', string)
+    logging(this.options.strings.sending_discord_message, string)
     try {
       const webhook: WebhookInterface = new Discord.WebhookClient(this.options.discord_id, this.options.discord_token)
       await webhook.send(`[${os.hostname()}] ${string}`)
     } catch (err) {
-      logging('Something went wrong posting the discord message', err)
+      logging(this.options.strings.error_discord_message, err)
     }
     return
   }
@@ -196,10 +217,10 @@ class Minecraft {
 
           if (element.includes(this.logs_strings.player_disconnected)) {
             const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_disconnected)
-            this.sendMessageToDiscord(`${gamerTag} left the Minecraft server.`)
+            this.sendMessageToDiscord(gamerTag + ' ' + this.options.strings.gamertag_left_server_message)
           } else if (element.includes(this.logs_strings.player_connected)) {
             const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_connected)
-            this.sendMessageToDiscord(`${gamerTag} joined the Minecraft server.`)
+            this.sendMessageToDiscord(gamerTag + ' ' + this.options.strings.gamertag_join_server_message)
           }
         }
 
@@ -209,7 +230,10 @@ class Minecraft {
   }
 
   getGamerTagFromLog(logString: string, logIndentifier: string) {
-    return logString.split(logIndentifier)[1].split(',')[0].split(' ')[1]
+    return logString
+      .split(logIndentifier)[1]
+      .split(',')[0]
+      .split(' ')[1]
   }
 }
 export default Minecraft

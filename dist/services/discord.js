@@ -22,9 +22,11 @@ class Discord {
         }
         else {
             this.options = {
-                discordClient: process && process.env && process.env.DISCORD_CLIENT ? process.env.DISCORD_CLIENT.toString() : '',
-                discordRole: process && process.env && process.env.DISCORD_ROLE ? process.env.DISCORD_ROLE.toString() : '',
-                prefix: '/',
+                discord_client: process && process.env && process.env.DISCORD_CLIENT ? process.env.DISCORD_CLIENT.toString() : '',
+                discord_role: process && process.env && process.env.DISCORD_ROLE ? process.env.DISCORD_ROLE.toString() : '',
+                strings: {
+                    discord_message_prefix: '/',
+                },
             };
         }
     }
@@ -48,12 +50,12 @@ class Discord {
     startCommands() {
         return __awaiter(this, void 0, void 0, function* () {
             this.client.on('message', (message) => {
-                if (!message.content.startsWith(this.options.prefix) || message.author.bot)
+                if (!message.content.startsWith(this.options.strings.discord_message_prefix) || message.author.bot)
                     return;
-                const args = message.content.slice(this.options.prefix.length).split(/ +/);
+                const args = message.content.slice(this.options.strings.discord_message_prefix.length).split(/ +/);
                 const command = args.shift().toLowerCase();
                 let author = message.author.username;
-                let splitDiscordRole = this.options.discordRole.split(',');
+                let splitDiscordRole = this.options.discord_role.split(',');
                 if (command === 'mm' &&
                     message.member.roles.cache.some((r) => splitDiscordRole.includes(r.name))) {
                     let newMessage = message.toString().replace('/', '');
@@ -81,7 +83,7 @@ class Discord {
     }
     loginClient() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.client.login(this.options.discordClient);
+            this.client.login(this.options.discord_client);
         });
     }
 }
