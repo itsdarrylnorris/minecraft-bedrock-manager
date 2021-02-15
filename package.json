@@ -27,7 +27,7 @@
     "deploy-all": "yarn deploy && yarn deploy-beta",
     "build": "tsc",
     "ssh": "ssh root@ligthminecraft.com",
-    "ssh-beta": "ssh root@161.35.140.8"
+    "ssh-beta": "ssh root@beta.ligthminecraft.com"
   },
   "devDependencies": {
     "@types/figlet": "^1.2.1",
