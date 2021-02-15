@@ -4,11 +4,10 @@ interface DiscordOptionsInterface {
 }
 declare class Discord {
     private options;
-    private logging;
     private client;
     constructor(options: DiscordOptionsInterface | any);
     startDiscord(): Promise<void>;
-    startBot(): Promise<void>;
+    startBot(): void;
     startCommands(): Promise<void>;
     loginClient(): Promise<void>;
 }

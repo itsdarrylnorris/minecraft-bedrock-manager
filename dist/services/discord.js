@@ -31,7 +31,7 @@ class Discord {
     startDiscord() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield this.startBot();
+                this.startBot();
                 yield this.startCommands();
                 yield this.loginClient();
             }
@@ -41,10 +41,8 @@ class Discord {
         });
     }
     startBot() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.client.once('ready', () => {
-                this.logging('Bot is online');
-            });
+        this.client.once('ready', () => {
+            utils_1.logging('Bot is online.');
         });
     }
     startCommands() {
@@ -55,8 +53,9 @@ class Discord {
                 const args = message.content.slice(this.options.prefix.length).split(/ +/);
                 const command = args.shift().toLowerCase();
                 let author = message.author.username;
+                let splitDiscordRole = this.options.discordRole.split(',');
                 if (command === 'mm' &&
-                    message.member.roles.cache.some((r) => r.name === this.options.discordRole)) {
+                    message.member.roles.cache.some((r) => splitDiscordRole.includes(r.name))) {
                     let newMessage = message.toString().replace('/', '');
                     let split = newMessage.split(' ');
                     let splitCommand = split && split[0] ? split[0] : '';

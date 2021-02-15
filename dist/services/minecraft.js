@@ -32,7 +32,7 @@ class Minecraft {
         }
         else {
             this.options = {
-                path: process.env.OPTIONS_PATH || os_1.default.homedir() + '/MinecraftServer/',
+                path: process.env.OPTIONS_PATH || os_1.default.homedir() + '/MinecraftServer/worlds',
                 backup_path: process.env.BACKUP_PATH || os_1.default.homedir() + '/Backups/',
                 log_file: process.env.LOG_FILE || os_1.default.homedir() + '/MinecraftServer/minecraft-server.log',
                 discord_id: process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : '',
@@ -63,7 +63,7 @@ class Minecraft {
     startServer() {
         return __awaiter(this, void 0, void 0, function* () {
             utils_1.logging('Starting up the server');
-            this.executeShellScript(`screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}/bedrock_server" `);
+            this.executeShellScript(`cd ${this.options.path} && screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}bedrock_server" `);
             this.sendMessageToDiscord('Starting up server');
         });
     }
@@ -71,13 +71,13 @@ class Minecraft {
         return __awaiter(this, void 0, void 0, function* () {
             utils_1.logging('Stopping server');
             this.executeShellScript(`screen -S ${this.minecraft_screen_name} -X kill`);
-            this.sendMessageToDiscord('Stoping the server');
+            this.sendMessageToDiscord('Stopping the server');
         });
     }
     executeShellScript(string) {
         utils_1.logging(`Executing this shell command: ${string}`);
         let results = '';
-        if (process.env.ENVIROMENT !== 'DEVELOPMENT') {
+        if (process.env.ENVIRONMENT !== 'DEVELOPMENT') {
             results = shelljs_1.default.exec(string, { silent: true }).stdout;
         }
         utils_1.logging('Execution output', results);
@@ -123,11 +123,11 @@ class Minecraft {
                         const element = newFile.split(/\n/)[newFileNumber - 2];
                         if (element.includes(this.logs_strings.player_disconnected)) {
                             const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_disconnected);
-                            this.sendMessageToDiscord(`${gamerTag} left the Minecraft server. Bye ${gamerTag}. See you next time :P`);
+                            this.sendMessageToDiscord(`${gamerTag} left the Minecraft server.`);
                         }
                         else if (element.includes(this.logs_strings.player_connected)) {
                             const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_connected);
-                            this.sendMessageToDiscord(`${gamerTag} joined the Minecraft server. Hi ${gamerTag} !!!!`);
+                            this.sendMessageToDiscord(`${gamerTag} joined the Minecraft server.`);
                         }
                     }
                     fileNumber = newFile.split(/\n/).length;

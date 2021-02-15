@@ -6,10 +6,12 @@
   "dependencies": {
     "@types/node-fetch": "^2.5.7",
     "@types/shelljs": "^0.8.8",
+    "chalk": "^4.1.0",
     "chokidar": "^3.5.1",
     "commander": "^7.0.0",
     "discord.js": "^12.5.1",
     "dotenv": "^8.2.0",
+    "figlet": "^1.5.0",
     "googleapis": "^67.0.0",
     "node-fetch": "^2.6.0",
     "node-watch": "^0.7.1",
@@ -18,13 +20,17 @@
     "zip-local": "^0.3.4"
   },
   "scripts": {
-    "dev": "tsc; yarn start",
+    "dev": "tsc --watch",
     "start": "node dist/index.js",
     "deploy": "yarn ssh 'zsh -s' < ./deploy.sh",
+    "deploy-beta": "yarn ssh-beta 'zsh -s' < ./deploy.sh",
+    "deploy-all": "yarn deploy && yarn deploy-beta",
     "build": "tsc",
-    "ssh": "ssh root@134.122.15.191"
+    "ssh": "ssh root@ligthminecraft.com",
+    "ssh-beta": "ssh root@161.35.140.8"
   },
   "devDependencies": {
+    "@types/figlet": "^1.2.1",
     "@types/ws": "^7.4.0",
     "ws": "^7.4.2"
   }

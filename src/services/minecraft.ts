@@ -122,7 +122,7 @@ class Minecraft {
   async startServer() {
     logging('Starting up the server')
     this.executeShellScript(
-      `screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}/bedrock_server" `,
+      `cd ${this.options.path} && screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}bedrock_server" `,
     )
     this.sendMessageToDiscord('Starting up server')
   }
@@ -157,10 +157,7 @@ class Minecraft {
 
     try {
       shell.cd(this.options.backup_path)
-      await zipper.sync
-        .zip(this.options.path)
-        .compress()
-        .save(`${date.toISOString()}-minecraft.zip`)
+      await zipper.sync.zip(this.options.path).compress().save(`${date.toISOString()}-minecraft.zip`)
     } catch (err) {
       logging('Error', err)
     }
@@ -212,10 +209,7 @@ class Minecraft {
   }
 
   getGamerTagFromLog(logString: string, logIndentifier: string) {
-    return logString
-      .split(logIndentifier)[1]
-      .split(',')[0]
-      .split(' ')[1]
+    return logString.split(logIndentifier)[1].split(',')[0].split(' ')[1]
   }
 }
 export default Minecraft
