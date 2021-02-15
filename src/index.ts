@@ -16,28 +16,32 @@ program
 
 program.parse(process.argv)
 
-const options = program.opts()
-// Check the program.args obj
-const NO_COMMAND_SPECIFIED = Object.keys(options).length === 0
+const main = () => {
+  const options = program.opts()
+  // Check the program.args obj
+  const NO_COMMAND_SPECIFIED = Object.keys(options).length === 0
 
-// Handle it however you like
-if (NO_COMMAND_SPECIFIED || options.help) {
-  console.log(chalk.bgHex('#52307c').bold(figlet.textSync('minecraft-manager', { horizontalLayout: 'full' })))
-  // e.g. display usage
-  program.help()
-} else if (options.startServer) {
-  const minecraft = new Minecraft({})
-  minecraft.startServer()
-} else if (options.restartServer) {
-  const minecraft = new Minecraft({})
-  minecraft.restartServer()
-} else if (options.stopServer) {
-  const minecraft = new Minecraft({})
-  minecraft.stopServer()
-} else if (options.logs) {
-  const minecraft = new Minecraft({})
-  minecraft.logs()
-} else if (options.discord) {
-  const minecraft = new Discord({})
-  minecraft.startDiscord()
+  // Handle it however you like
+  if (NO_COMMAND_SPECIFIED || options.help) {
+    console.log(chalk.bgHex('#52307c').bold(figlet.textSync('minecraft-manager', { horizontalLayout: 'full' })))
+    // e.g. display usage
+    program.help()
+  } else if (options.startServer) {
+    const minecraft = new Minecraft({})
+    minecraft.startServer()
+  } else if (options.restartServer) {
+    const minecraft = new Minecraft({})
+    minecraft.restartServer()
+  } else if (options.stopServer) {
+    const minecraft = new Minecraft({})
+    minecraft.stopServer()
+  } else if (options.logs) {
+    const minecraft = new Minecraft({})
+    minecraft.logs()
+  } else if (options.discord) {
+    const minecraft = new Discord({})
+    minecraft.startDiscord()
+  }
 }
+
+main()

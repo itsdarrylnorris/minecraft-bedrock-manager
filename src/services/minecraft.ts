@@ -112,6 +112,7 @@ class Minecraft {
       logging(e)
       this.sendMessageToDiscord(this.options.strings.post_backup_message)
     }
+    return
   }
 
   /**
@@ -125,6 +126,7 @@ class Minecraft {
       `cd ${this.options.path} && screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}bedrock_server" `,
     )
     this.sendMessageToDiscord('Starting up server')
+    return
   }
 
   /**
@@ -134,6 +136,7 @@ class Minecraft {
     logging('Stopping server')
     this.executeShellScript(`screen -S ${this.minecraft_screen_name} -X kill`)
     this.sendMessageToDiscord('Stopping the server')
+    return
   }
 
   executeShellScript(string: string): string {
@@ -163,6 +166,7 @@ class Minecraft {
     }
 
     logging('Done Compressing file. Deleted MinecraftServer Folder')
+    return
   }
 
   /**
@@ -178,6 +182,7 @@ class Minecraft {
     } catch (err) {
       logging('Something went wrong posting the discord message', err)
     }
+    return
   }
 
   async logs() {

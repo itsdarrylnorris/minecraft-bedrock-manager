@@ -17,30 +17,33 @@ commander_1.default
     .option('-l, --logs', 'Show the Minecraft Logs')
     .option('-d, --discord', 'Start Discord');
 commander_1.default.parse(process.argv);
-const options = commander_1.default.opts();
-const NO_COMMAND_SPECIFIED = Object.keys(options).length === 0;
-if (NO_COMMAND_SPECIFIED || options.help) {
-    console.log(chalk_1.default.bgHex('#52307c').bold(figlet_1.default.textSync('minecraft-manager', { horizontalLayout: 'full' })));
-    commander_1.default.help();
-}
-else if (options.startServer) {
-    const minecraft = new minecraft_1.default({});
-    minecraft.startServer();
-}
-else if (options.restartServer) {
-    const minecraft = new minecraft_1.default({});
-    minecraft.restartServer();
-}
-else if (options.stopServer) {
-    const minecraft = new minecraft_1.default({});
-    minecraft.stopServer();
-}
-else if (options.logs) {
-    const minecraft = new minecraft_1.default({});
-    minecraft.logs();
-}
-else if (options.discord) {
-    const minecraft = new discord_1.default({});
-    minecraft.startDiscord();
-}
+const main = () => {
+    const options = commander_1.default.opts();
+    const NO_COMMAND_SPECIFIED = Object.keys(options).length === 0;
+    if (NO_COMMAND_SPECIFIED || options.help) {
+        console.log(chalk_1.default.bgHex('#52307c').bold(figlet_1.default.textSync('minecraft-manager', { horizontalLayout: 'full' })));
+        commander_1.default.help();
+    }
+    else if (options.startServer) {
+        const minecraft = new minecraft_1.default({});
+        minecraft.startServer();
+    }
+    else if (options.restartServer) {
+        const minecraft = new minecraft_1.default({});
+        minecraft.restartServer();
+    }
+    else if (options.stopServer) {
+        const minecraft = new minecraft_1.default({});
+        minecraft.stopServer();
+    }
+    else if (options.logs) {
+        const minecraft = new minecraft_1.default({});
+        minecraft.logs();
+    }
+    else if (options.discord) {
+        const minecraft = new discord_1.default({});
+        minecraft.startDiscord();
+    }
+};
+main();
 //# sourceMappingURL=index.js.map
