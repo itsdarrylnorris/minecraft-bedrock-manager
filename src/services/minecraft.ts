@@ -2,7 +2,7 @@ import chokidar from 'chokidar'
 import Discord from 'discord.js'
 import { promises as fs } from 'fs'
 import os from 'os'
-import shell from 'shelljs'
+import shell, { ShellString } from 'shelljs'
 import { logging } from '../utils'
 require('dotenv').config()
 
@@ -132,13 +132,11 @@ class Minecraft {
 
   /**
    * Starts the server using screen command.
-   *
-   * This might be a bit tricky because of screen; however we can try this: https://stackoverflow.com/questions/24706815/how-do-i-pass-a-command-to-a-screen-session
    */
   async startServer() {
     // Backups
-    await this.backupServer()
     logging(this.options.strings.start_server_message)
+    await this.backupServer()
     this.executeShellScript(
       `cd ${this.options.path} && screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}bedrock_server" `,
     )
@@ -147,27 +145,25 @@ class Minecraft {
 
   async backupServer() {
     let date = new Date()
-    shell.exec(`cd ${this.options.world_path}`)
-    shell.exec(`git add .`)
-    if (shell.exec(`git commit -m "Automatic Backup: ${date.toISOString()}"`).code !== 0) {
-      shell.echo('Error: Git commit failed')
-      shell.exit(1)
+    this.executeShellScript(`cd ${this.options.world_path}`)
+    this.executeShellScript(`git add .`)
+
+    let execCommit = this.executeShellScript(`git commit -m "Automatic Backup: ${date.toISOString()}"`)
+    if (execCommit && execCommit.code && execCommit.code !== 0) {
+      throw new Error('Git Commit Failed')
     }
-    shell.exec(`git push`)
+    this.executeShellScript(`git push`)
   }
 
-  /**
-   * It uses Shelljs to kill all the screens.
-   */
   async stopServer() {
     logging(this.options.strings.stop_server_message)
     this.executeShellScript(`screen -S ${this.minecraft_screen_name} -X kill`)
     this.sendMessageToDiscord(this.options.strings.stop_server_message)
   }
 
-  executeShellScript(string: string): string {
+  executeShellScript(string: string): ShellString | undefined {
     logging(`Executing this shell command: ${string}`)
-    let results = ''
+    let results: ShellString | undefined
 
     if (process.env.ENVIRONMENT !== 'DEVELOPMENT') {
       results = shell.exec(string, { silent: true })

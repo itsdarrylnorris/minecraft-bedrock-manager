@@ -70,8 +70,8 @@ class Minecraft {
     }
     startServer() {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.backupServer();
             utils_1.logging(this.options.strings.start_server_message);
+            yield this.backupServer();
             this.executeShellScript(`cd ${this.options.path} && screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}bedrock_server" `);
             this.sendMessageToDiscord(this.options.strings.start_server_message);
         });
@@ -79,13 +79,13 @@ class Minecraft {
     backupServer() {
         return __awaiter(this, void 0, void 0, function* () {
             let date = new Date();
-            shelljs_1.default.exec(`cd ${this.options.world_path}`);
-            shelljs_1.default.exec(`git add .`);
-            if (shelljs_1.default.exec(`git commit -m "Automatic Backup: ${date.toISOString()}"`).code !== 0) {
-                shelljs_1.default.echo('Error: Git commit failed');
-                shelljs_1.default.exit(1);
+            this.executeShellScript(`cd ${this.options.world_path}`);
+            this.executeShellScript(`git add .`);
+            let execCommit = this.executeShellScript(`git commit -m "Automatic Backup: ${date.toISOString()}"`);
+            if (execCommit && execCommit.code && execCommit.code !== 0) {
+                throw new Error('Git Commit Failed');
             }
-            shelljs_1.default.exec(`git push`);
+            this.executeShellScript(`git push`);
         });
     }
     stopServer() {
@@ -97,7 +97,7 @@ class Minecraft {
     }
     executeShellScript(string) {
         utils_1.logging(`Executing this shell command: ${string}`);
-        let results = '';
+        let results;
         if (process.env.ENVIRONMENT !== 'DEVELOPMENT') {
             results = shelljs_1.default.exec(string, { silent: true });
         }

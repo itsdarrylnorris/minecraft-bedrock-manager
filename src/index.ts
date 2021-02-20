@@ -3,6 +3,7 @@ import program from 'commander'
 import figlet from 'figlet'
 import Discord from './services/discord'
 import Minecraft from './services/minecraft'
+import { logging } from './utils'
 
 program.version('0.0.1')
 
@@ -13,6 +14,7 @@ program
   .option('-st, --stop-server', 'Stops Minecraft Server')
   .option('-l, --logs', 'Shows the Minecraft Logs')
   .option('-d, --discord', 'Starts Discord')
+  .option('-b, --backup', 'Backup')
 
 program.parse(process.argv)
 
@@ -27,9 +29,13 @@ const main = async () => {
     // e.g. display usage
     program.help()
   } else if (options.startServer) {
-    const minecraft = new Minecraft({})
-    await minecraft.startServer()
-    process.exit()
+    try {
+      const minecraft = new Minecraft({})
+      await minecraft.startServer()
+      process.exit()
+    } catch (error) {
+      logging('Error:', error)
+    }
   } else if (options.restartServer) {
     const minecraft = new Minecraft({})
     await minecraft.restartServer()
@@ -44,6 +50,13 @@ const main = async () => {
   } else if (options.discord) {
     const minecraft = new Discord({})
     minecraft.startDiscord()
+  } else if (options.backup) {
+    try {
+      const minecraft = new Minecraft({})
+      await minecraft.backupServer()
+    } catch (error) {
+      logging('Error:', error)
+    }
   }
 }
 

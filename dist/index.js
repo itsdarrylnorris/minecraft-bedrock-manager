@@ -17,6 +17,7 @@ const commander_1 = __importDefault(require("commander"));
 const figlet_1 = __importDefault(require("figlet"));
 const discord_1 = __importDefault(require("./services/discord"));
 const minecraft_1 = __importDefault(require("./services/minecraft"));
+const utils_1 = require("./utils");
 commander_1.default.version('0.0.1');
 commander_1.default
     .option('-h, --help', 'Display help commands')
@@ -24,7 +25,8 @@ commander_1.default
     .option('-r, --restart-server', 'Restarts the Minecraft Server')
     .option('-st, --stop-server', 'Stops Minecraft Server')
     .option('-l, --logs', 'Shows the Minecraft Logs')
-    .option('-d, --discord', 'Starts Discord');
+    .option('-d, --discord', 'Starts Discord')
+    .option('-b, --backup', 'Backup');
 commander_1.default.parse(process.argv);
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const options = commander_1.default.opts();
@@ -34,9 +36,14 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         commander_1.default.help();
     }
     else if (options.startServer) {
-        const minecraft = new minecraft_1.default({});
-        yield minecraft.startServer();
-        process.exit();
+        try {
+            const minecraft = new minecraft_1.default({});
+            yield minecraft.startServer();
+            process.exit();
+        }
+        catch (error) {
+            utils_1.logging('Error:', error);
+        }
     }
     else if (options.restartServer) {
         const minecraft = new minecraft_1.default({});
@@ -55,6 +62,15 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     else if (options.discord) {
         const minecraft = new discord_1.default({});
         minecraft.startDiscord();
+    }
+    else if (options.backup) {
+        try {
+            const minecraft = new minecraft_1.default({});
+            yield minecraft.backupServer();
+        }
+        catch (error) {
+            utils_1.logging('Error:', error);
+        }
     }
 });
 main();
