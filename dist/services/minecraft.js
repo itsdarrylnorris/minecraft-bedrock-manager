@@ -79,13 +79,8 @@ class Minecraft {
     backupServer() {
         return __awaiter(this, void 0, void 0, function* () {
             let date = new Date();
-            this.executeShellScript(`cd ${this.options.world_path}`);
-            this.executeShellScript(`git add .`);
-            let execCommit = this.executeShellScript(`git commit -m "Automatic Backup: ${date.toISOString()}"`);
-            if (execCommit && execCommit.code && execCommit.code !== 0) {
-                throw new Error('Git Commit Failed');
-            }
-            this.executeShellScript(`git push`);
+            let script = `cd ${this.options.world_path} && git add . && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`;
+            this.executeShellScript(script);
         });
     }
     stopServer() {
