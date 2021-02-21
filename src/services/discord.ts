@@ -43,10 +43,10 @@ class Discord {
    */
   async startDiscord() {
     try {
-      // Wakes up Bot
+      // Wakes up Discord Bot
       this.startBot()
 
-      // Starts the Commands
+      // Starts the Discord commands
       await this.startCommands()
 
       // Logging into Discord Client
@@ -66,7 +66,7 @@ class Discord {
   }
 
   /**
-   * Starts the Commands
+   * Starts the Discord commands
    */
   async startCommands() {
     this.client.on('message', (message: Message) => {
@@ -76,7 +76,6 @@ class Discord {
       let author: string = message.author.username
       let splitDiscordRole = this.options.discord_role.split(',')
 
-      // Fix the split value
       // Adjust the command and role based on server
       if (
         command === 'mm' &&

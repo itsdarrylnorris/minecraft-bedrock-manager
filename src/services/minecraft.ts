@@ -80,7 +80,6 @@ class Minecraft {
     } else {
       this.options = {
         path: process.env.OPTIONS_PATH || os.homedir() + '/MinecraftServer/',
-        world_path: process.env.WORLD_PATH || os.homedir() + '/MinecraftServer/worlds',
         backup_path: process.env.BACKUP_PATH || os.homedir() + '/Backups/',
         log_file: process.env.LOG_FILE || os.homedir() + '/MinecraftServer/minecraft-server.log',
         discord_id: process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : '',
@@ -125,6 +124,7 @@ class Minecraft {
       await this.startServer()
     } catch (e) {
       logging(e)
+      // Sends Discord message that backup is completed
       this.sendMessageToDiscord(this.options.strings.post_backup_message)
     }
     return
@@ -134,8 +134,9 @@ class Minecraft {
    * Starts the server using screen command.
    */
   async startServer() {
-    // Backups
     logging(this.options.strings.start_server_message)
+
+    // Backups the Server
     await this.backupServer()
     this.executeShellScript(
       `cd ${this.options.path} && screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}bedrock_server" `,
@@ -143,20 +144,25 @@ class Minecraft {
     this.sendMessageToDiscord(this.options.strings.start_server_message)
   }
 
+  // Commits backup to Git Repo
   async backupServer() {
     let date = new Date()
     let script = `cd ${
-      this.options.world_path
+      this.options.path
     } && git add . && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`
     this.executeShellScript(script)
   }
 
+  /**
+   * Stops the server
+   */
   async stopServer() {
     logging(this.options.strings.stop_server_message)
     this.executeShellScript(`screen -S ${this.minecraft_screen_name} -X kill`)
     this.sendMessageToDiscord(this.options.strings.stop_server_message)
   }
 
+  // Executes Shell Script
   executeShellScript(string: string): ShellString | undefined {
     logging(`Executing this shell command: ${string}`)
     let results: ShellString | undefined
@@ -168,10 +174,10 @@ class Minecraft {
 
     return results
   }
+
   /**
    * Sends a message to Discord
    * @param string
-   * @url https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks
    */
   async sendMessageToDiscord(string: string) {
     logging(this.options.strings.sending_discord_message, string)

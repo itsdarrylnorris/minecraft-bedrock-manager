@@ -49,11 +49,53 @@ DISCORD_TOKEN="0FEXP3YxCCU1z_FnwPHLMb-q0ZquR2wHKziHn1IkQxe3RD-KvyCGIFG2VHbZkF8Zs
 1. Go to this [website](https://discord.com/developers/applications) and click on **New Application**.
 2. Enter your applications' name and click on **Create**.
 3. Click on the **Bot** Section and click **Add Bot** to create a bot.
-4. Click on the **General Information** Section and copy your applications' **Client ID**, located below the applications' title and description.
-5. Go to this [Discord Permissions Calculator](https://discordapi.com/permissions.html) website and click on whatever permissions necessary.
-6. Paste the copied **Client ID** into the **Client ID** field.
-7. Click on the **Link** provided and you will be redirected to a Discord authorization page.
-8. Select your Server and select **Continue**.
-9. Double check the Bot's permissions and click on **Authorize**.
+4. Copy the Bot's Token by clicking on **Copy** and paste to the DISCORD_CLIENT in your .env file.
+5. Click on the **General Information** Section and copy your applications' **Client ID**, located below the applications' title and description.
+6. Go to this [Discord Permissions Calculator](https://discordapi.com/permissions.html) website and click on whatever permissions necessary.
+7. Paste the copied **Client ID** into the **Client ID** field.
+8. Click on the **Link** provided and you will be redirected to a Discord authorization page.
+9. Select your Server and select **Continue**.
+10. Double check the Bot's permissions and click on **Authorize**.
+
+### Additional set up for your .env file
+
+If you have followed the instructions starting from the top, you should have the following so far:
+
+- DISCORD_ID
+- DISCORD_TOKEN
+- DISCORD_CLIENT
+
+You will also need to add:
+
+- DISCORD_ROLE
+
+Add all the Discord server's roles that will have access to the Discord commands.
+
+- ENVIRONMENT
+
+Configure the environment value to either Development or Production
+
+Example of .env file:
+
+```
+DISCORD_ID=[Discord ID]
+DISCORD_TOKEN=[Discord Token]
+DISCORD_CLIENT=[Discord Client]
+DISCORD_ROLE="Devs, Admin"
+ENVIRONMENT=DEVELOPMENT
+```
+
+### Setting up your .gitignore file in local and production environment
+
+Add the following:
+
+```
+./*
+!worlds/*
+!behavior_packs/*
+!resource_packs/*
+```
+
+### Setting up your GitHub Repository
 
 # Usage
