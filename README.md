@@ -71,6 +71,14 @@ You will also need to add:
 
 Add all the Discord server's roles that will have access to the Discord commands.
 
+- DISCORD_PREFIX
+
+Add your preferred prefix to start the Discord command. Example: **/** mm start server
+
+- DISCORD_COMMAND
+
+Add your preferred text to start the Discord command. Add the text after the Discord Prefix. Example: /**mm** start server
+
 - ENVIRONMENT
 
 Configure the environment value to either Development or Production
@@ -82,6 +90,8 @@ DISCORD_ID=[Discord ID]
 DISCORD_TOKEN=[Discord Token]
 DISCORD_CLIENT=[Discord Client]
 DISCORD_ROLE="Devs, Admin"
+DISCORD_PREFIX=/
+DISCORD_COMMAND=mm
 ENVIRONMENT=DEVELOPMENT
 ```
 
@@ -90,10 +100,36 @@ ENVIRONMENT=DEVELOPMENT
 Add the following:
 
 ```
-./*
-!worlds/*
-!behavior_packs/*
-!resource_packs/*
+Dedicated_Server.txt
+bedrock_server
+bedrock_server_how_to.html
+definitions
+development_behavior_packs
+development_resource_packs
+development_skin_packs
+install.sh
+libCrypto.so
+minecraft-server-activity.log
+minecraft-server.log
+minecraftbe
+minecraftpe
+old-whitelist.json
+premium_cache
+release-notes.txt
+snap
+structures
+treatments
+world_templates
+
+#### The keepers
+# whitelist.json
+# worlds
+# server.properties
+# behavior_packs
+# resource_packs
+# permissions.json
+# valid_known_packs.json
+####
 ```
 
 ### Setting up your GitHub Repository

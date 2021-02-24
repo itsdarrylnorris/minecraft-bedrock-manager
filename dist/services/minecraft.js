@@ -16,7 +16,6 @@ const chokidar_1 = __importDefault(require("chokidar"));
 const discord_js_1 = __importDefault(require("discord.js"));
 const fs_1 = require("fs");
 const os_1 = __importDefault(require("os"));
-const shelljs_1 = __importDefault(require("shelljs"));
 const utils_1 = require("../utils");
 require('dotenv').config();
 class Minecraft {
@@ -32,7 +31,6 @@ class Minecraft {
         else {
             this.options = {
                 path: process.env.OPTIONS_PATH || os_1.default.homedir() + '/MinecraftServer/',
-                world_path: process.env.WORLD_PATH || os_1.default.homedir() + '/MinecraftServer/worlds',
                 backup_path: process.env.BACKUP_PATH || os_1.default.homedir() + '/Backups/',
                 log_file: process.env.LOG_FILE || os_1.default.homedir() + '/MinecraftServer/minecraft-server.log',
                 discord_id: process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : '',
@@ -72,32 +70,23 @@ class Minecraft {
         return __awaiter(this, void 0, void 0, function* () {
             utils_1.logging(this.options.strings.start_server_message);
             yield this.backupServer();
-            this.executeShellScript(`cd ${this.options.path} && screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}bedrock_server" `);
+            utils_1.executeShellScript(`cd ${this.options.path} && screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}bedrock_server" `);
             this.sendMessageToDiscord(this.options.strings.start_server_message);
         });
     }
     backupServer() {
         return __awaiter(this, void 0, void 0, function* () {
             let date = new Date();
-            let script = `cd ${this.options.world_path} && git add . && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`;
-            this.executeShellScript(script);
+            let script = `cd ${this.options.path} && git add . && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`;
+            utils_1.executeShellScript(script);
         });
     }
     stopServer() {
         return __awaiter(this, void 0, void 0, function* () {
             utils_1.logging(this.options.strings.stop_server_message);
-            this.executeShellScript(`screen -S ${this.minecraft_screen_name} -X kill`);
+            utils_1.executeShellScript(`screen -S ${this.minecraft_screen_name} -X kill`);
             this.sendMessageToDiscord(this.options.strings.stop_server_message);
         });
-    }
-    executeShellScript(string) {
-        utils_1.logging(`Executing this shell command: ${string}`);
-        let results;
-        if (process.env.ENVIRONMENT !== 'DEVELOPMENT') {
-            results = shelljs_1.default.exec(string, { silent: true });
-        }
-        utils_1.logging('Execution output', results);
-        return results;
     }
     sendMessageToDiscord(string) {
         return __awaiter(this, void 0, void 0, function* () {

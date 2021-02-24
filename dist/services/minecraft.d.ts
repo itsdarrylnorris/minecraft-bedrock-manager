@@ -1,4 +1,3 @@
-import { ShellString } from 'shelljs';
 interface MinecraftOptionsInterface {
     discord: MinecraftDiscordInterface | undefined;
     path: string | undefined;
@@ -36,7 +35,6 @@ declare class Minecraft {
     startServer(): Promise<void>;
     backupServer(): Promise<void>;
     stopServer(): Promise<void>;
-    executeShellScript(string: string): ShellString | undefined;
     sendMessageToDiscord(string: string): Promise<void>;
     logs(): Promise<void>;
     getGamerTagFromLog(logString: string, logIndentifier: string): string;

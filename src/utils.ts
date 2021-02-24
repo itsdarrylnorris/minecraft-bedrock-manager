@@ -1,3 +1,5 @@
+import shell, { ShellString } from 'shelljs'
+
 const logging = function(message: string, payload: any = null) {
   let date = new Date()
 
@@ -12,4 +14,16 @@ const logging = function(message: string, payload: any = null) {
   }
 }
 
-export { logging }
+const executeShellScript = function(string: string): ShellString | undefined {
+  logging(`Executing this shell command: ${string}`)
+  let results: ShellString | undefined
+
+  if (process.env.ENVIRONMENT !== 'DEVELOPMENT') {
+    results = shell.exec(string, { silent: true })
+  }
+  logging('Execution output', results)
+
+  return results
+}
+
+export { logging, executeShellScript }

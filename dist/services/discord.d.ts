@@ -5,6 +5,7 @@ interface DiscordOptionsInterface {
 declare class Discord {
     private options;
     private client;
+    private discord_screen_name;
     constructor(options: DiscordOptionsInterface | any);
     startDiscord(): Promise<void>;
     startBot(): void;

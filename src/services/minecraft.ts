@@ -2,8 +2,7 @@ import chokidar from 'chokidar'
 import Discord from 'discord.js'
 import { promises as fs } from 'fs'
 import os from 'os'
-import shell, { ShellString } from 'shelljs'
-import { logging } from '../utils'
+import { executeShellScript, logging } from '../utils'
 require('dotenv').config()
 
 /**
@@ -138,7 +137,7 @@ class Minecraft {
 
     // Backups the Server
     await this.backupServer()
-    this.executeShellScript(
+    executeShellScript(
       `cd ${this.options.path} && screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}bedrock_server" `,
     )
     this.sendMessageToDiscord(this.options.strings.start_server_message)
@@ -150,7 +149,7 @@ class Minecraft {
     let script = `cd ${
       this.options.path
     } && git add . && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`
-    this.executeShellScript(script)
+    executeShellScript(script)
   }
 
   /**
@@ -158,21 +157,8 @@ class Minecraft {
    */
   async stopServer() {
     logging(this.options.strings.stop_server_message)
-    this.executeShellScript(`screen -S ${this.minecraft_screen_name} -X kill`)
+    executeShellScript(`screen -S ${this.minecraft_screen_name} -X kill`)
     this.sendMessageToDiscord(this.options.strings.stop_server_message)
-  }
-
-  // Executes Shell Script
-  executeShellScript(string: string): ShellString | undefined {
-    logging(`Executing this shell command: ${string}`)
-    let results: ShellString | undefined
-
-    if (process.env.ENVIRONMENT !== 'DEVELOPMENT') {
-      results = shell.exec(string, { silent: true })
-    }
-    logging('Execution output', results)
-
-    return results
   }
 
   /**

@@ -14,6 +14,7 @@ const utils_1 = require("../utils");
 require('dotenv').config();
 class Discord {
     constructor(options) {
+        this.discord_screen_name = 'Discord';
         const client = new discord_js_1.Client();
         client.commands = new discord_js_1.Collection();
         this.client = client;
@@ -24,8 +25,15 @@ class Discord {
             this.options = {
                 discord_client: process && process.env && process.env.DISCORD_CLIENT ? process.env.DISCORD_CLIENT.toString() : '',
                 discord_role: process && process.env && process.env.DISCORD_ROLE ? process.env.DISCORD_ROLE.toString() : '',
+                discord_command: process && process.env && process.env.DISCORD_COMMAND ? process.env.DISCORD_COMMAND.toString() : '',
+                discord_message_prefix: process && process.env && process.env.DISCORD_PREFIX ? process.env.DISCORD_PREFIX.toString() : '',
                 strings: {
-                    discord_message_prefix: '/',
+                    start_command: 'start server',
+                    stop_command: 'stop server',
+                    restart_command: 'restart server',
+                    help_command: 'help',
+                    add_command: 'add',
+                    remove_command: 'remove',
                 },
             };
         }
@@ -44,30 +52,98 @@ class Discord {
     }
     startBot() {
         this.client.once('ready', () => {
+            utils_1.executeShellScript(`screen -S ${this.discord_screen_name}`);
             utils_1.logging('Bot is online.');
         });
     }
     startCommands() {
         return __awaiter(this, void 0, void 0, function* () {
             this.client.on('message', (message) => {
-                if (!message.content.startsWith(this.options.strings.discord_message_prefix) || message.author.bot)
+                if (!message.content.startsWith(this.options.discord_message_prefix) || message.author.bot)
                     return;
-                const args = message.content.slice(this.options.strings.discord_message_prefix.length).split(/ +/);
-                const command = args.shift().toLowerCase();
+                const args = message.content.slice(this.options.discord_message_prefix.length);
+                const command = args.toLowerCase();
                 let author = message.author.username;
                 let splitDiscordRole = this.options.discord_role.split(',');
-                if (command === 'mm' &&
+                if (command === `${this.options.discord_command} ${this.options.strings.start_command}` &&
                     message.member.roles.cache.some((r) => splitDiscordRole.includes(r.name))) {
+                    try {
+                        utils_1.logging('Command entered by: ' + author, command);
+                        utils_1.executeShellScript(`mm -s`);
+                        message.channel.send('Sent command successfully.');
+                    }
+                    catch (error) {
+                        utils_1.logging(error);
+                        message.channel.send('There was an error when trying to execute that command!');
+                    }
+                }
+                else if (command === `${this.options.discord_command} ${this.options.strings.stop_command}` &&
+                    message.member.roles.cache.some((r) => splitDiscordRole.includes(r.name))) {
+                    utils_1.logging('Command entered by: ' + author, command);
+                    utils_1.executeShellScript(`mm -st`);
+                    try {
+                        message.channel.send('Sent command successfully.');
+                    }
+                    catch (error) {
+                        utils_1.logging(error);
+                        message.channel.send('There was an error when trying to execute that command!');
+                    }
+                }
+                else if (command === `${this.options.discord_command} ${this.options.strings.restart_command}` &&
+                    message.member.roles.cache.some((r) => splitDiscordRole.includes(r.name))) {
+                    utils_1.logging('Command entered by: ' + author, command);
+                    utils_1.executeShellScript(`mm -r`);
+                    try {
+                        message.channel.send('Sent command successfully.');
+                    }
+                    catch (error) {
+                        utils_1.logging(error);
+                        message.channel.send('There was an error when trying to execute that command!');
+                    }
+                }
+                else if (command === `${this.options.discord_command} ${this.options.strings.help_command}` &&
+                    message.member.roles.cache.some((r) => splitDiscordRole.includes(r.name))) {
+                    try {
+                        message.channel.send('Available Commands: /mm start server, /mm stop server, /mm restart server, /mm help, /mm add [Gamertag], /mm remove [Gamertag]');
+                    }
+                    catch (error) {
+                        utils_1.logging(error);
+                        message.channel.send('There was an error when trying to execute that command!');
+                    }
+                }
+                else if (command === `${this.options.discord_command} ${this.options.strings.add_command}` &&
+                    message.member.roles.cache.some((r) => splitDiscordRole.includes(r.name))) {
+                    utils_1.logging(command);
                     let newMessage = message.toString().replace('/', '');
                     let split = newMessage.split(' ');
                     let splitCommand = split && split[0] ? split[0] : '';
                     let splitValue = split && split[1] ? split[1] : '';
                     if (splitCommand && splitValue) {
-                        utils_1.logging('Command entered by:' + author, { splitCommand, splitValue });
+                        utils_1.logging('Command entered by: ' + author, { splitCommand, splitValue });
                         message.channel.send('Sent command successfully.');
                     }
                     else if (splitCommand && !splitValue) {
-                        utils_1.logging('Command entered by:' + author, { splitCommand });
+                        utils_1.logging('Command entered by: ' + author, { splitCommand });
+                        message.channel.send('Sent command successfully.');
+                    }
+                    else {
+                        utils_1.logging(author + 'There was an error when trying to execute that command!');
+                        message.channel.send('There was an error when trying to execute that command!');
+                    }
+                }
+                else if (command === `${this.options.discord_command} ${this.options.strings.remove_command}` &&
+                    message.member.roles.cache.some((r) => splitDiscordRole.includes(r.name))) {
+                    utils_1.logging(command);
+                    let newMessage = message.toString().replace('/', '');
+                    let split = newMessage.split(' ');
+                    let splitCommand = split && split[0] ? split[0] : '';
+                    let splitValue = split && split[1] ? split[1] : '';
+                    if (splitCommand && splitValue) {
+                        utils_1.logging('Command entered by: ' + author, { splitCommand, splitValue });
+                        message.channel.send('Sent command successfully.');
+                    }
+                    else if (splitCommand && !splitValue) {
+                        utils_1.logging('Command entered by: r' + author, { splitCommand });
                         message.channel.send('Sent command successfully.');
                     }
                     else {

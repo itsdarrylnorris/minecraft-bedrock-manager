@@ -60,8 +60,14 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         minecraft.logs();
     }
     else if (options.discord) {
-        const minecraft = new discord_1.default({});
-        minecraft.startDiscord();
+        try {
+            const minecraft = new discord_1.default({});
+            yield minecraft.startDiscord();
+            process.exit();
+        }
+        catch (error) {
+            utils_1.logging('Error:', error);
+        }
     }
     else if (options.backup) {
         try {
