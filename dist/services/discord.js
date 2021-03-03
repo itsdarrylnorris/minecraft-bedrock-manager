@@ -8,8 +8,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const discord_js_1 = require("discord.js");
+const os_1 = __importDefault(require("os"));
 const utils_1 = require("../utils");
 require('dotenv').config();
 class Discord {
@@ -23,6 +27,7 @@ class Discord {
         }
         else {
             this.options = {
+                path: process.env.OPTIONS_PATH || os_1.default.homedir() + '/MinecraftServer/',
                 discord_client: process && process.env && process.env.DISCORD_CLIENT ? process.env.DISCORD_CLIENT.toString() : '',
                 discord_role: process && process.env && process.env.DISCORD_ROLE ? process.env.DISCORD_ROLE.toString() : '',
                 discord_command: process && process.env && process.env.DISCORD_COMMAND ? process.env.DISCORD_COMMAND.toString() : '',
@@ -52,7 +57,7 @@ class Discord {
     }
     startBot() {
         this.client.once('ready', () => {
-            utils_1.executeShellScript(`screen -S ${this.discord_screen_name}`);
+            utils_1.executeShellScript(`cd ${this.options.path} && screen -L -Logfile minecraft-server.log -dmS ${this.discord_screen_name}`);
             utils_1.logging('Bot is online.');
         });
     }

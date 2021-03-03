@@ -1,5 +1,6 @@
 import shell, { ShellString } from 'shelljs'
 
+// Logging
 const logging = function(message: string, payload: any = null) {
   let date = new Date()
 
@@ -14,6 +15,7 @@ const logging = function(message: string, payload: any = null) {
   }
 }
 
+// Executing Shell Script
 const executeShellScript = function(string: string): ShellString | undefined {
   logging(`Executing this shell command: ${string}`)
   let results: ShellString | undefined

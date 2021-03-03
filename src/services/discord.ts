@@ -1,4 +1,5 @@
 import { Client, Collection, Message } from 'discord.js'
+import os from 'os'
 import { executeShellScript, logging } from '../utils'
 require('dotenv').config()
 
@@ -30,6 +31,7 @@ class Discord {
       this.options = options
     } else {
       this.options = {
+        path: process.env.OPTIONS_PATH || os.homedir() + '/MinecraftServer/',
         discord_client:
           process && process.env && process.env.DISCORD_CLIENT ? process.env.DISCORD_CLIENT.toString() : '',
         discord_role: process && process.env && process.env.DISCORD_ROLE ? process.env.DISCORD_ROLE.toString() : '',
@@ -72,8 +74,9 @@ class Discord {
    */
   startBot() {
     this.client.once('ready', () => {
-      // Figure out how to detach the screen
-      executeShellScript(`screen -S ${this.discord_screen_name}`)
+      executeShellScript(
+        `cd ${this.options.path} && screen -L -Logfile minecraft-server.log -dmS ${this.discord_screen_name}`,
+      )
       logging('Bot is online.')
     })
   }

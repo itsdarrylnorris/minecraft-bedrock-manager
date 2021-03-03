@@ -48,13 +48,8 @@ const main = async () => {
     const minecraft = new Minecraft({})
     minecraft.logs()
   } else if (options.discord) {
-    try {
-      const minecraft = new Discord({})
-      await minecraft.startDiscord()
-      process.exit()
-    } catch (error) {
-      logging('Error:', error)
-    }
+    const minecraft = new Discord({})
+    minecraft.startDiscord()
   } else if (options.backup) {
     try {
       const minecraft = new Minecraft({})
