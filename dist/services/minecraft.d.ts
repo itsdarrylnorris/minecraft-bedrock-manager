@@ -3,6 +3,7 @@ interface MinecraftOptionsInterface {
     path: string | undefined;
     strings: MinecraftStringsInterface;
     backup_path: string | undefined;
+    download_path: string | undefined;
 }
 interface MinecraftDiscordInterface {
     webhook: string | undefined;
@@ -14,6 +15,7 @@ interface WebhookInterface {
     token: string;
 }
 interface MinecraftStringsInterface {
+    max_number_files_in_downloads_folder: number;
     pre_backup_message: string | undefined;
     post_backup_message: string | undefined;
     error_backup_message: string | undefined;
@@ -25,6 +27,13 @@ interface MinecraftStringsInterface {
     error_discord_message: string | undefined;
     gamertag_join_server_message: string | undefined;
     gamertag_left_server_message: string | undefined;
+    version_download: string | undefined;
+    download_button: string | undefined;
+    not_up_to_date_server_message: string | undefined;
+    updated_server_message: string | undefined;
+    error_downloading_version: string | undefined;
+    deleted_oldest_version_success: string | undefined;
+    error_deleting_oldest_version: string | undefined;
 }
 declare class Minecraft {
     private options;
@@ -34,6 +43,10 @@ declare class Minecraft {
     restartServer(): Promise<void>;
     startServer(): Promise<void>;
     backupServer(): Promise<void>;
+    checkForLatestVersion(): Promise<string | undefined>;
+    getLastItemInDownload(versionLink: string | undefined): Promise<void>;
+    updateServer(versionLink: string | undefined): Promise<void>;
+    deleteOldestFile(): Promise<void>;
     stopServer(): Promise<void>;
     sendMessageToDiscord(string: string): Promise<void>;
     logs(): Promise<void>;

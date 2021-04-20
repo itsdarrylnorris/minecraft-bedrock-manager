@@ -74,7 +74,7 @@ class Discord {
                     message.member.roles.cache.some((r) => splitDiscordRole.includes(r.name))) {
                     try {
                         utils_1.logging('Command entered by: ' + author, command);
-                        utils_1.executeShellScript(`mm -s`);
+                        utils_1.executeShellScript(`cd ${this.options.path} && mm -s`);
                         message.channel.send('Sent command successfully.');
                     }
                     catch (error) {
@@ -85,7 +85,7 @@ class Discord {
                 else if (command === `${this.options.discord_command} ${this.options.strings.stop_command}` &&
                     message.member.roles.cache.some((r) => splitDiscordRole.includes(r.name))) {
                     utils_1.logging('Command entered by: ' + author, command);
-                    utils_1.executeShellScript(`mm -st`);
+                    utils_1.executeShellScript(`cd ${this.options.path} && mm -st`);
                     try {
                         message.channel.send('Sent command successfully.');
                     }
@@ -97,7 +97,7 @@ class Discord {
                 else if (command === `${this.options.discord_command} ${this.options.strings.restart_command}` &&
                     message.member.roles.cache.some((r) => splitDiscordRole.includes(r.name))) {
                     utils_1.logging('Command entered by: ' + author, command);
-                    utils_1.executeShellScript(`mm -r`);
+                    utils_1.executeShellScript(`cd ${this.options.path} && mm -r`);
                     try {
                         message.channel.send('Sent command successfully.');
                     }

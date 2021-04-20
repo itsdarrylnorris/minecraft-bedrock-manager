@@ -15,6 +15,7 @@ interface DiscordOptionsInterface {
 class Discord {
   // Options config
   private options: DiscordOptionsInterface | any
+
   private client: Client
 
   private discord_screen_name: string = 'Discord'
@@ -91,7 +92,7 @@ class Discord {
       const args: any = message.content.slice(this.options.discord_message_prefix.length)
       const command: string = args.toLowerCase()
       let author: string = message.author.username
-      let splitDiscordRole = this.options.discord_role.split(',')
+      let splitDiscordRole: string = this.options.discord_role.split(',')
 
       // Command 1: Start Server Command
       // /mm start server
@@ -101,7 +102,7 @@ class Discord {
       ) {
         try {
           logging('Command entered by: ' + author, command)
-          executeShellScript(`mm -s`)
+          executeShellScript(`cd ${this.options.path} && mm -s`)
           message.channel.send('Sent command successfully.')
         } catch (error) {
           logging(error)
@@ -115,7 +116,7 @@ class Discord {
         message.member!.roles.cache.some((r: { name: string }) => splitDiscordRole.includes(r.name))
       ) {
         logging('Command entered by: ' + author, command)
-        executeShellScript(`mm -st`)
+        executeShellScript(`cd ${this.options.path} && mm -st`)
         try {
           message.channel.send('Sent command successfully.')
         } catch (error) {
@@ -130,7 +131,7 @@ class Discord {
         message.member!.roles.cache.some((r: { name: string }) => splitDiscordRole.includes(r.name))
       ) {
         logging('Command entered by: ' + author, command)
-        executeShellScript(`mm -r`)
+        executeShellScript(`cd ${this.options.path} && mm -r`)
         try {
           message.channel.send('Sent command successfully.')
         } catch (error) {
