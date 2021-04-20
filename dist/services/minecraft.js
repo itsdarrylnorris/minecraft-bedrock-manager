@@ -18,7 +18,6 @@ const discord_js_1 = __importDefault(require("discord.js"));
 const fs_1 = require("fs");
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const os_1 = __importDefault(require("os"));
-const shelljs_1 = __importDefault(require("shelljs"));
 const utils_1 = require("../utils");
 require('dotenv').config();
 class Minecraft {
@@ -83,7 +82,7 @@ class Minecraft {
     }
     startServer() {
         return __awaiter(this, void 0, void 0, function* () {
-            utils_1.logging(this.options.strings.start_server_message);
+            utils_1.logging(this.options.strings.stop_server_message);
             yield this.backupServer();
             let versionLink = yield this.checkForLatestVersion();
             yield this.getLastItemInDownload(versionLink);
@@ -113,7 +112,7 @@ class Minecraft {
                 return versionLink;
             }
             catch (err) {
-                console.log(err);
+                utils_1.logging('Checking for latest version', err);
             }
         });
     }
@@ -131,7 +130,7 @@ class Minecraft {
                 }
             }
             catch (err) {
-                console.log(err);
+                utils_1.logging('Error with getting last item', err);
             }
         });
     }
@@ -140,11 +139,11 @@ class Minecraft {
             try {
                 const latestVersionZip = versionLink && versionLink.split('/')[versionLink.split('/').length - 1];
                 utils_1.logging(this.options.strings.not_up_to_date_server_message + latestVersionZip);
-                shelljs_1.default.exec(`cd ${this.options.download_path} && wget ${versionLink} && cd ${this.options.path} && unzip -o "${this.options.download_path}${latestVersionZip}" -x "*server.properties*" "*permissions.json*" "*whitelist.json*" "*valid_known_packs.json*"`);
+                utils_1.executeShellScript(`cd ${this.options.download_path} && wget ${versionLink} && cd ${this.options.path} && unzip -o "${this.options.download_path}${latestVersionZip}" -x "*server.properties*" "*permissions.json*" "*whitelist.json*" "*valid_known_packs.json*"`);
             }
             catch (err) {
-                utils_1.logging(this.options.strings.error_downloading_version);
-                console.log(err);
+                utils_1.logging('Error with downloading version', this.options.strings.error_downloading_version);
+                utils_1.logging('Updating server', err);
             }
         });
     }
@@ -155,13 +154,13 @@ class Minecraft {
                 const count = files.filter(item => item.includes('zip')).length;
                 if (count > this.options.numbers.max_number_files_in_downloads_folder) {
                     let oldFile = files[1];
-                    shelljs_1.default.exec(`cd ${this.options.download_path} && rm ${oldFile}`);
+                    utils_1.executeShellScript(`cd ${this.options.download_path} && rm ${oldFile}`);
                     utils_1.logging(this.options.strings.deleted_oldest_version_success + oldFile);
                 }
             }
             catch (err) {
-                utils_1.logging(this.options.strings.error_deleting_oldest_version);
-                console.log(err);
+                utils_1.logging('Error with deleting oldest version', this.options.strings.error_deleting_oldest_version);
+                utils_1.logging('Deleting oldest files', err);
             }
         });
     }
