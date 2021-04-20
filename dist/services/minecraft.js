@@ -34,7 +34,7 @@ class Minecraft {
             this.options = {
                 path: process.env.OPTIONS_PATH || os_1.default.homedir() + '/MinecraftServer/',
                 backup_path: process.env.BACKUP_PATH || os_1.default.homedir() + '/Backups/',
-                download_path: process.env.DOWNLOAD_PATH || os_1.default.homedir() + '/Downloads3/',
+                download_path: process.env.DOWNLOAD_PATH || os_1.default.homedir() + '/downloads/',
                 log_file: process.env.LOG_FILE || os_1.default.homedir() + '/MinecraftServer/minecraft-server.log',
                 discord_id: process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : '',
                 discord_token: process && process.env && process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.toString() : '',

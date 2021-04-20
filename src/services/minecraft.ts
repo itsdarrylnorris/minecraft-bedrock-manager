@@ -93,7 +93,7 @@ class Minecraft {
       this.options = {
         path: process.env.OPTIONS_PATH || os.homedir() + '/MinecraftServer/',
         backup_path: process.env.BACKUP_PATH || os.homedir() + '/Backups/',
-        download_path: process.env.DOWNLOAD_PATH || os.homedir() + '/Downloads3/', // @TODO: change
+        download_path: process.env.DOWNLOAD_PATH || os.homedir() + '/downloads/', 
         log_file: process.env.LOG_FILE || os.homedir() + '/MinecraftServer/minecraft-server.log',
         discord_id: process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : '',
         discord_token: process && process.env && process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.toString() : '',
