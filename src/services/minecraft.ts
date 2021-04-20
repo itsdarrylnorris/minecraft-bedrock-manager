@@ -187,7 +187,9 @@ class Minecraft {
     this.sendMessageToDiscord(this.options.strings.start_server_message)
   }
 
-  // Commits backup to Git Repository
+  /**
+   * Commits backup to Git Repository.
+   */
   async backupServer() {
     let date: Date = new Date()
     let script: string = `cd ${
@@ -196,7 +198,9 @@ class Minecraft {
     executeShellScript(script)
   }
 
-  // Checks for latest version
+  /**
+   * Checks for latest version.
+   */
   async checkForLatestVersion() {
     try {
       let downloadURL: string = this.options.strings.version_download
@@ -209,11 +213,15 @@ class Minecraft {
       const versionLink: string | undefined = Object.values(buttonData)[3].href
       return versionLink
     } catch (err) {
-      console.log(err)
+      logging('Checking for latest version', err)
     }
   }
 
-  // Gets last item in Download Folder
+  /**
+   * Gets last item in Download Folder.
+   *
+   * @param versionLink The link of the latest version from the website.
+   */
   async getLastItemInDownload(versionLink: string | undefined) {
     try {
       const latestVersionZip: string | undefined =
@@ -226,11 +234,15 @@ class Minecraft {
         logging(this.options.strings.updated_server_message)
       }
     } catch (err) {
-      console.log(err)
+      logging('Error with getting last item', err)
     }
   }
 
-  // Updates server
+  /**
+   * Updates Minecraft Server.
+   *
+   * @param versionLink The link of the latest version from the website.
+   */
   async updateServer(versionLink: string | undefined) {
     try {
       const latestVersionZip: string | undefined =
@@ -240,12 +252,14 @@ class Minecraft {
         `cd ${this.options.download_path} && wget ${versionLink} && cd ${this.options.path} && unzip -o "${this.options.download_path}${latestVersionZip}" -x "*server.properties*" "*permissions.json*" "*whitelist.json*" "*valid_known_packs.json*"`,
       )
     } catch (err) {
-      logging(this.options.strings.error_downloading_version)
-      console.log(err)
+      logging('Error with downloading version', this.options.strings.error_downloading_version)
+      logging('Updating server', err)
     }
   }
 
-  // Deletes oldest file if Download folder exceeds preferred capacity
+  /**
+   * Deletes oldest file if Download folder exceeds preferred capacity.
+   */
   async deleteOldestFile() {
     try {
       let files: Array<string> = await fs.readdir(this.options.download_path)
@@ -256,13 +270,13 @@ class Minecraft {
         logging(this.options.strings.deleted_oldest_version_success + oldFile)
       }
     } catch (err) {
-      logging(this.options.strings.error_deleting_oldest_version)
-      console.log(err)
+      logging('Error with deleting oldest version', this.options.strings.error_deleting_oldest_version)
+      logging('Deleting oldest files', err)
     }
   }
 
   /**
-   * Stops the server
+   * Stops the server.
    */
   async stopServer() {
     logging(this.options.strings.stop_server_message)
@@ -271,8 +285,9 @@ class Minecraft {
   }
 
   /**
-   * Sends a message to Discord
-   * @param string
+   * Sends a message to Discord.
+   *
+   * @param string String message for Discord.
    */
   async sendMessageToDiscord(string: string) {
     logging(this.options.strings.sending_discord_message, string)
@@ -285,6 +300,9 @@ class Minecraft {
     return
   }
 
+  /**
+   * Adding logging for Discord.
+   */
   async logs() {
     logging('Watching for changes')
 
