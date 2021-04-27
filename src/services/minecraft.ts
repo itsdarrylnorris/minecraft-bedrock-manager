@@ -306,6 +306,8 @@ class Minecraft {
 
   /**
    * Adding logging for Discord.
+   *
+   * @todo: Set this into a screen so we do not have to d it manually.
    */
   async logs() {
     logging('Watching for changes')
@@ -314,7 +316,6 @@ class Minecraft {
     let fileNumber = file.split(/\n/).length
 
     chokidar.watch(this.options.log_file).on('all', async (evt, path) => {
-      console.log(evt, path)
       if (evt === 'change') {
         let newFile = await fs.readFile(path, 'utf8')
         let newFileNumber = newFile.split(/\n/).length

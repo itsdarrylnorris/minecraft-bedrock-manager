@@ -22,12 +22,7 @@
   "scripts": {
     "dev": "tsc --watch",
     "start": "node dist/index.js",
-    "deploy": "yarn ssh 'zsh -s' < ./deploy.sh",
-    "deploy-beta": "yarn ssh-beta 'zsh -s' < ./deploy.sh",
-    "deploy-all": "yarn deploy && yarn deploy-beta",
-    "build": "tsc",
-    "ssh": "ssh root@lightminecraft.com",
-    "ssh-beta": "ssh root@beta.lightminecraft.com"
+    "build": "tsc"
   },
   "devDependencies": {
     "@types/figlet": "^1.2.1",

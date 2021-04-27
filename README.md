@@ -135,3 +135,5 @@ world_templates
 ### Setting up your GitHub Repository
 
 # Usage
+
+# TODO How to use the logs
