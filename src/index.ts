@@ -53,7 +53,7 @@ const main = async () => {
   } else if (options.backup) {
     try {
       const minecraft = new Minecraft({})
-      await minecraft.backupServer()
+      minecraft.backupServer()
     } catch (error) {
       logging('Error:', error)
     }

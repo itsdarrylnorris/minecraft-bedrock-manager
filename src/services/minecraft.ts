@@ -93,7 +93,7 @@ class Minecraft {
       this.options = {
         path: process.env.OPTIONS_PATH || os.homedir() + '/MinecraftServer/',
         backup_path: process.env.BACKUP_PATH || os.homedir() + '/Backups/',
-        download_path: process.env.DOWNLOAD_PATH || os.homedir() + '/downloads/', 
+        download_path: process.env.DOWNLOAD_PATH || os.homedir() + '/downloads/',
         log_file: process.env.LOG_FILE || os.homedir() + '/MinecraftServer/minecraft-server.log',
         discord_id: process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : '',
         discord_token: process && process.env && process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.toString() : '',
@@ -168,7 +168,7 @@ class Minecraft {
     logging(this.options.strings.stop_server_message)
 
     // Backups Server
-    await this.backupServer()
+    this.backupServer()
 
     // Checks for latest version
     let versionLink: string | undefined = await this.checkForLatestVersion()
@@ -190,7 +190,7 @@ class Minecraft {
   /**
    * Commits backup to Git Repository.
    */
-  async backupServer() {
+  backupServer(): void {
     let date: Date = new Date()
     let script: string = `cd ${
       this.options.path
@@ -201,7 +201,7 @@ class Minecraft {
   /**
    * Checks for latest version.
    */
-  async checkForLatestVersion() {
+  async checkForLatestVersion(): Promise<string> {
     try {
       let downloadURL: string = this.options.strings.version_download
       const response = await fetch(downloadURL)
@@ -209,12 +209,14 @@ class Minecraft {
       const $: cheerio.Root = cheerio.load(html)
       const button: cheerio.Cheerio = $(this.options.strings.download_button)
       const buttonData: cheerio.Element = button[0]
-      Object.values(buttonData)
-      const versionLink: string | undefined = Object.values(buttonData)[3].href
-      return versionLink
+      // @TODO Mandy fix this please :)
+      // @ts-ignore
+      return Object.values(buttonData)[3].href || ''
     } catch (err) {
       logging('Checking for latest version', err)
     }
+
+    return ''
   }
 
   /**
@@ -243,11 +245,14 @@ class Minecraft {
    *
    * @param versionLink The link of the latest version from the website.
    */
-  async updateServer(versionLink: string | undefined) {
+  updateServer(versionLink: string | undefined): void {
     try {
       const latestVersionZip: string | undefined =
         versionLink && versionLink.split('/')[versionLink.split('/').length - 1]
       logging(this.options.strings.not_up_to_date_server_message + latestVersionZip)
+
+      // @TODO: We need to set the proper permissions to bedrock_server.
+      // @TODO: We need to investigate proper permission and then add it in here.
       executeShellScript(
         `cd ${this.options.download_path} && wget ${versionLink} && cd ${this.options.path} && unzip -o "${this.options.download_path}${latestVersionZip}" -x "*server.properties*" "*permissions.json*" "*whitelist.json*" "*valid_known_packs.json*"`,
       )
@@ -260,10 +265,10 @@ class Minecraft {
   /**
    * Deletes oldest file if Download folder exceeds preferred capacity.
    */
-  async deleteOldestFile() {
+  async deleteOldestFile(): Promise<void> {
     try {
       let files: Array<string> = await fs.readdir(this.options.download_path)
-      const count: number = files.filter(item => item.includes('zip')).length
+      const count: number = files.filter((item) => item.includes('zip')).length
       if (count > this.options.numbers.max_number_files_in_downloads_folder) {
         let oldFile: string = files[1]
         executeShellScript(`cd ${this.options.download_path} && rm ${oldFile}`)
@@ -289,7 +294,7 @@ class Minecraft {
    *
    * @param string String message for Discord.
    */
-  async sendMessageToDiscord(string: string) {
+  async sendMessageToDiscord(string: string): Promise<void> {
     logging(this.options.strings.sending_discord_message, string)
     try {
       const webhook: WebhookInterface = new Discord.WebhookClient(this.options.discord_id, this.options.discord_token)
@@ -297,7 +302,6 @@ class Minecraft {
     } catch (err) {
       logging(this.options.strings.error_discord_message, err)
     }
-    return
   }
 
   /**
@@ -331,11 +335,13 @@ class Minecraft {
     })
   }
 
-  getGamerTagFromLog(logString: string, logIndentifier: string) {
-    return logString
-      .split(logIndentifier)[1]
-      .split(',')[0]
-      .split(' ')[1]
+  /**
+   * Gets Gamertag from Log
+   *
+   * @todo: We need to find the xuid as well and send to Discord.
+   */
+  getGamerTagFromLog(logString: string, logIndentifier: string): string {
+    return logString.split(logIndentifier)[1].split(',')[0].split(' ')[1]
   }
 }
 export default Minecraft
