@@ -1,4 +1,4 @@
-# Minecraft Manager
+# Minecraft Bedrock Manager
 
 Minecraft Manager helps backup your Minecraft server by storing backups of your server as zip files, sending Discord messages that a backup is underway, and sending custom messages to your Discord Community. 
 
