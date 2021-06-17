@@ -209,8 +209,6 @@ class Minecraft {
       const $: cheerio.Root = cheerio.load(html)
       const button: cheerio.Cheerio = $(this.options.strings.download_button)
       const buttonData: cheerio.Element = button[0]
-      // @TODO Mandy fix this please :)
-      // @ts-ignore
       return Object.values(buttonData)[3].href || ''
     } catch (err) {
       logging('Checking for latest version', err)
@@ -253,8 +251,12 @@ class Minecraft {
 
       // @TODO: We need to set the proper permissions to bedrock_server.
       // @TODO: We need to investigate proper permission and then add it in here.
+      // @TODO: Make it readable! +
       executeShellScript(
-        `cd ${this.options.download_path} && wget ${versionLink} && cd ${this.options.path} && unzip -o "${this.options.download_path}${latestVersionZip}" -x "*server.properties*" "*permissions.json*" "*whitelist.json*" "*valid_known_packs.json*"`,
+        `cd ${this.options.download_path} && wget ${versionLink} && cd ${this.options.path} && ` +
+          `unzip -o "${this.options.download_path}${latestVersionZip}" -x "*server.properties*" "*permissions.json*" "*whitelist.json*" "*valid_known_packs.json*" 
+        && 
+        chmod 777 ${this.options.path}/bedrock_server`,
       )
     } catch (err) {
       logging('Error with downloading version', this.options.strings.error_downloading_version)
@@ -268,7 +270,7 @@ class Minecraft {
   async deleteOldestFile(): Promise<void> {
     try {
       let files: Array<string> = await fs.readdir(this.options.download_path)
-      const count: number = files.filter((item) => item.includes('zip')).length
+      const count: number = files.filter(item => item.includes('zip')).length
       if (count > this.options.numbers.max_number_files_in_downloads_folder) {
         let oldFile: string = files[1]
         executeShellScript(`cd ${this.options.download_path} && rm ${oldFile}`)
@@ -307,7 +309,7 @@ class Minecraft {
   /**
    * Adding logging for Discord.
    *
-   * @todo: Set this into a screen so we do not have to d it manually.
+   * @TODO: Set this into a screen so we do not have to d it manually.
    */
   async logs() {
     logging('Watching for changes')
@@ -339,10 +341,13 @@ class Minecraft {
   /**
    * Gets Gamertag from Log
    *
-   * @todo: We need to find the xuid as well and send to Discord.
+   * @TODO: We need to find the xuid as well and send to Discord.
    */
   getGamerTagFromLog(logString: string, logIndentifier: string): string {
-    return logString.split(logIndentifier)[1].split(',')[0].split(' ')[1]
+    return logString
+      .split(logIndentifier)[1]
+      .split(',')[0]
+      .split(' ')[1]
   }
 }
 export default Minecraft
