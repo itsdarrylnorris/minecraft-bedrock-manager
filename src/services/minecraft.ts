@@ -1,19 +1,16 @@
 import cheerio from 'cheerio'
 import chokidar from 'chokidar'
-import Discord from 'discord.js'
 import { promises as fs } from 'fs'
 import fetch from 'node-fetch'
 import os from 'os'
 import { executeShellScript, logging } from '../utils'
+import Discord from './discord'
 require('dotenv').config()
 
 /**
  * Interface of Minecraft.
  */
 interface MinecraftOptionsInterface {
-  // Webhook string
-  discord: MinecraftDiscordInterface | undefined
-
   // Path of the location where all the files lives
   path: string | undefined
 
@@ -28,20 +25,6 @@ interface MinecraftOptionsInterface {
 }
 
 /**
- * Interface of Discord, it contains any information related to discord.
- */
-interface MinecraftDiscordInterface {
-  webhook: string | undefined
-  discord_info: WebhookInterface
-}
-
-interface WebhookInterface {
-  send: any
-  id: string
-  token: string
-}
-
-/**
  * Handling the strings as configuration so we can easily change them if needed.
  */
 interface MinecraftStringsInterface {
@@ -53,8 +36,6 @@ interface MinecraftStringsInterface {
   stop_server_message: string | undefined
   start_compressing_files_message: string | undefined
   end_compressed_files_message: string | undefined
-  sending_discord_message: string | undefined
-  error_discord_message: string | undefined
   gamertag_join_server_message: string | undefined
   gamertag_left_server_message: string | undefined
   version_download: string | undefined
@@ -81,6 +62,8 @@ class Minecraft {
 
   private minecraft_screen_name: string = 'Minecraft'
 
+  private discord_instance: Discord
+
   /**
    * Constructor
    * @param options
@@ -95,8 +78,6 @@ class Minecraft {
         backup_path: process.env.BACKUP_PATH || os.homedir() + '/Backups/',
         download_path: process.env.DOWNLOAD_PATH || os.homedir() + '/downloads/',
         log_file: process.env.LOG_FILE || os.homedir() + '/MinecraftServer/minecraft-server.log',
-        discord_id: process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : '',
-        discord_token: process && process.env && process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.toString() : '',
         numbers: {
           max_number_files_in_downloads_folder: process.env.options_max_number_files_in_downloads_folder || 3,
         },
@@ -113,9 +94,6 @@ class Minecraft {
           start_compressing_files_message:
             process.env.options_start_compressing_files_message || 'Starting to compress files.',
           end_compressed_files_message: process.env.options_end_compressed_files_message || 'Files are now compressed.',
-          sending_discord_message: process.env.options_sending_discord_message || 'Sending this message to Discord.',
-          error_discord_message:
-            process.env.options_error_discord_message || 'Something went wrong when sending the Discord message.',
           gamertag_join_server_message:
             process.env.options_gamertag_join_server_message || 'joined the Minecraft server.',
           gamertag_left_server_message:
@@ -136,6 +114,8 @@ class Minecraft {
         },
       }
     }
+
+    this.discord_instance = new Discord({})
   }
 
   /**
@@ -144,7 +124,7 @@ class Minecraft {
   async restartServer() {
     try {
       // Sends message to Discord that a backup has begun
-      await this.sendMessageToDiscord(this.options.strings.pre_backup_message)
+      await this.discord_instance.sendMessageToDiscord(this.options.strings.pre_backup_message)
 
       // Stops Minecraft server
       await this.stopServer()
@@ -153,7 +133,7 @@ class Minecraft {
       await this.startServer()
 
       // Sends message to Discord that backup is complete
-      this.sendMessageToDiscord(this.options.strings.post_backup_message)
+      this.discord_instance.sendMessageToDiscord(this.options.strings.post_backup_message)
     } catch (e) {
       logging(e)
     }
@@ -184,7 +164,7 @@ class Minecraft {
     )
 
     // Sends message to Discord that server is starting up
-    this.sendMessageToDiscord(this.options.strings.start_server_message)
+    this.discord_instance.sendMessageToDiscord(this.options.strings.start_server_message)
   }
 
   /**
@@ -270,7 +250,7 @@ class Minecraft {
   async deleteOldestFile(): Promise<void> {
     try {
       let files: Array<string> = await fs.readdir(this.options.download_path)
-      const count: number = files.filter(item => item.includes('zip')).length
+      const count: number = files.filter((item) => item.includes('zip')).length
       if (count > this.options.numbers.max_number_files_in_downloads_folder) {
         let oldFile: string = files[1]
         executeShellScript(`cd ${this.options.download_path} && rm ${oldFile}`)
@@ -288,22 +268,7 @@ class Minecraft {
   async stopServer() {
     logging(this.options.strings.stop_server_message)
     executeShellScript(`screen -S ${this.minecraft_screen_name} -X kill`)
-    this.sendMessageToDiscord(this.options.strings.stop_server_message)
-  }
-
-  /**
-   * Sends a message to Discord.
-   *
-   * @param string String message for Discord.
-   */
-  async sendMessageToDiscord(string: string): Promise<void> {
-    logging(this.options.strings.sending_discord_message, string)
-    try {
-      const webhook: WebhookInterface = new Discord.WebhookClient(this.options.discord_id, this.options.discord_token)
-      await webhook.send(`[${os.hostname()}] ${string}`)
-    } catch (err) {
-      logging(this.options.strings.error_discord_message, err)
-    }
+    this.discord_instance.sendMessageToDiscord(this.options.strings.stop_server_message)
   }
 
   /**
@@ -326,10 +291,14 @@ class Minecraft {
 
           if (element.includes(this.logs_strings.player_disconnected)) {
             const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_disconnected)
-            this.sendMessageToDiscord(gamerTag + ' ' + this.options.strings.gamertag_left_server_message)
+            this.discord_instance.sendMessageToDiscord(
+              gamerTag + ' ' + this.options.strings.gamertag_left_server_message,
+            )
           } else if (element.includes(this.logs_strings.player_connected)) {
             const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_connected)
-            this.sendMessageToDiscord(gamerTag + ' ' + this.options.strings.gamertag_join_server_message)
+            this.discord_instance.sendMessageToDiscord(
+              gamerTag + ' ' + this.options.strings.gamertag_join_server_message,
+            )
           }
         }
 
@@ -344,10 +313,7 @@ class Minecraft {
    * @TODO: We need to find the xuid as well and send to Discord.
    */
   getGamerTagFromLog(logString: string, logIndentifier: string): string {
-    return logString
-      .split(logIndentifier)[1]
-      .split(',')[0]
-      .split(' ')[1]
+    return logString.split(logIndentifier)[1].split(',')[0].split(' ')[1]
   }
 }
 export default Minecraft

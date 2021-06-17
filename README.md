@@ -113,7 +113,6 @@ minecraft-server-activity.log
 minecraft-server.log
 minecraftbe
 minecraftpe
-old-whitelist.json
 premium_cache
 release-notes.txt
 snap

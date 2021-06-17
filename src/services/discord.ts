@@ -1,4 +1,4 @@
-import { Client, Collection, Message } from 'discord.js'
+import { Client, Collection, Message, WebhookClient } from 'discord.js'
 import os from 'os'
 import { executeShellScript, logging } from '../utils'
 require('dotenv').config()
@@ -8,7 +8,26 @@ require('dotenv').config()
  */
 interface DiscordOptionsInterface {
   message: Message
+  // Webhook string
+  discord: MinecraftDiscordInterface | undefined
+  sending_discord_message: string | undefined
+  error_discord_message: string | undefined
 }
+
+/**
+ * Interface of Discord, it contains any information related to discord.
+ */
+interface MinecraftDiscordInterface {
+  webhook: string | undefined
+  discord_info: WebhookInterface
+}
+
+interface WebhookInterface {
+  send: any
+  id: string
+  token: string
+}
+
 /**
  * Discord
  */
@@ -40,6 +59,11 @@ class Discord {
           process && process.env && process.env.DISCORD_COMMAND ? process.env.DISCORD_COMMAND.toString() : '',
         discord_message_prefix:
           process && process.env && process.env.DISCORD_PREFIX ? process.env.DISCORD_PREFIX.toString() : '',
+        discord_id: process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : '',
+        discord_token: process && process.env && process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.toString() : '',
+        sending_discord_message: process.env.options_sending_discord_message || 'Sending this message to Discord.',
+        error_discord_message:
+          process.env.options_error_discord_message || 'Something went wrong when sending the Discord message.',
         strings: {
           start_command: 'start server',
           stop_command: 'stop server',
@@ -49,6 +73,21 @@ class Discord {
           remove_command: 'remove',
         },
       }
+    }
+  }
+
+  /**
+   * Sends a message to Discord.
+   *
+   * @param string String message for Discord.
+   */
+  async sendMessageToDiscord(string: string): Promise<void> {
+    logging(this.options.strings.sending_discord_message, string)
+    try {
+      const webhook: WebhookInterface = new WebhookClient(this.options.discord_id, this.options.discord_token)
+      await webhook.send(`[${os.hostname()}] ${string}`)
+    } catch (err) {
+      logging(this.options.strings.error_discord_message, err)
     }
   }
 
