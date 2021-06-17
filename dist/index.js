@@ -8,83 +8,70 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-class MineCraftManager {
-    constructor(options) {
-        this.logging = (message, payload = null) => {
-            var date = new Date();
-            console.log(`[${date.toISOString()}] ${message}`);
-            if (payload) {
-                if (typeof payload === 'string' || payload instanceof String) {
-                    console.log(`[${date.toISOString()}] ${payload}`);
-                }
-                else {
-                    console.log(`[${date.toISOString()}] ${JSON.stringify(payload)}`);
-                }
-            }
-        };
-        if (options && options.path) {
-            this.options = options;
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const chalk_1 = __importDefault(require("chalk"));
+const commander_1 = __importDefault(require("commander"));
+const figlet_1 = __importDefault(require("figlet"));
+const discord_1 = __importDefault(require("./services/discord"));
+const minecraft_1 = __importDefault(require("./services/minecraft"));
+const utils_1 = require("./utils");
+commander_1.default.version('0.0.1');
+commander_1.default
+    .option('-h, --help', 'Display help commands')
+    .option('-s, --start-server', 'Starts the Minecraft Server')
+    .option('-r, --restart-server', 'Restarts the Minecraft Server')
+    .option('-st, --stop-server', 'Stops Minecraft Server')
+    .option('-l, --logs', 'Shows the Minecraft Logs')
+    .option('-d, --discord', 'Starts Discord')
+    .option('-b, --backup', 'Backup');
+commander_1.default.parse(process.argv);
+const main = () => __awaiter(void 0, void 0, void 0, function* () {
+    const options = commander_1.default.opts();
+    const NO_COMMAND_SPECIFIED = Object.keys(options).length === 0;
+    if (NO_COMMAND_SPECIFIED || options.help) {
+        console.log(chalk_1.default.bgHex('#52307c').bold(figlet_1.default.textSync('minecraft-manager', { horizontalLayout: 'full' })));
+        commander_1.default.help();
+    }
+    else if (options.startServer) {
+        try {
+            const minecraft = new minecraft_1.default({});
+            yield minecraft.startServer();
+            process.exit();
         }
-        else {
-            this.options = {
-                path: process.env.options_path || '~/MinecraftServer/',
-                backup_path: process.env.options_path || '~/Backups/',
-                strings: {
-                    pre_backup_message: process.env.options_pre_backup_message ||
-                        'We are shutting down the server temporary, we are making a backup.',
-                    post_backup_message: process.env.options_post_backup_message || 'We are done with the backup, the server is back on.',
-                    error_backup_message: process.env.options_error_backup_message || 'Something went wrong build out the backup',
-                },
-            };
+        catch (error) {
+            utils_1.logging('Error:', error);
         }
     }
-    startBackup() {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                this.sendMessageToDiscord(this.options.strings.pre_backup_message);
-                this.stopMinecraftServer();
-                this.compressFile();
-                this.moveBackupToPath();
-                this.uploadBackupToGoogleDrive();
-            }
-            catch (e) {
-                this.logging(e);
-                this.sendMessageToDiscord(this.options.strings.post_backup_message);
-            }
-        });
+    else if (options.restartServer) {
+        const minecraft = new minecraft_1.default({});
+        yield minecraft.restartServer();
+        process.exit();
     }
-    moveBackupToPath() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.logging(`Moving backup to ${this.options.backup_path}`);
-            this.logging(`Done moving backup to ${this.options.backup_path}`);
-        });
+    else if (options.stopServer) {
+        const minecraft = new minecraft_1.default({});
+        yield minecraft.stopServer();
+        process.exit();
     }
-    startMinecraftServer() {
-        return __awaiter(this, void 0, void 0, function* () {
-        });
+    else if (options.logs) {
+        const minecraft = new minecraft_1.default({});
+        minecraft.logs();
     }
-    stopMinecraftServer() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.logging('Stopping server');
-        });
+    else if (options.discord) {
+        const minecraft = new discord_1.default({});
+        minecraft.startDiscord();
     }
-    compressFile() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.logging('Compressing file');
-            this.logging('Done Compressing file');
-        });
+    else if (options.backup) {
+        try {
+            const minecraft = new minecraft_1.default({});
+            yield minecraft.backupServer();
+        }
+        catch (error) {
+            utils_1.logging('Error:', error);
+        }
     }
-    sendMessageToDiscord(string) {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.logging('Sending this message to discord', string);
-        });
-    }
-    uploadBackupToGoogleDrive() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.logging('Saving backup in Google Drive');
-        });
-    }
-}
-const minecraft = new MineCraftManager({});
-minecraft.startBackup();
+});
+main();
 //# sourceMappingURL=index.js.map

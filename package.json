@@ -4,16 +4,29 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "@types/cheerio": "^0.22.28",
     "@types/node-fetch": "^2.5.7",
-    "node-fetch": "^2.6.0",
+    "@types/shelljs": "^0.8.8",
+    "chalk": "^4.1.0",
+    "cheerio": "^1.0.0-rc.5",
+    "chokidar": "^3.5.1",
+    "commander": "^7.0.0",
+    "discord.js": "^12.5.1",
+    "dotenv": "^8.2.0",
+    "figlet": "^1.5.0",
+    "node-fetch": "^2.6.1",
+    "node-watch": "^0.7.1",
     "shelljs": "^0.8.4",
     "typescript": "^4.0.0"
   },
   "scripts": {
-    "dev": "tsc; yarn start",
+    "dev": "tsc --watch",
     "start": "node dist/index.js",
-    "deploy": "yarn ssh 'zsh -s' < ./deploy.sh",
-    "build": "tsc",
-    "ssh": "ssh root@167.99.110.145"
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@types/figlet": "^1.2.1",
+    "@types/ws": "^7.4.0",
+    "ws": "^7.4.2"
   }
 }
