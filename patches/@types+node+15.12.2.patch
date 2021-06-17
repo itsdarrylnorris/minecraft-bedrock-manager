@@ -1,0 +1,13 @@
+diff --git a/node_modules/@types/node/console.d.ts b/node_modules/@types/node/console.d.ts
+index e5f9cba..a3765b4 100755
+--- a/node_modules/@types/node/console.d.ts
++++ b/node_modules/@types/node/console.d.ts
+@@ -106,7 +106,7 @@ declare module 'console' {
+             timeStamp(label?: string): void;
+         }
+ 
+-        var console: Console;
++        // var console: Console;
+ 
+         namespace NodeJS {
+             interface ConsoleConstructorOptions {

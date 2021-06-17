@@ -4,20 +4,20 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
-    "@types/cheerio": "^0.22.28",
-    "@types/node-fetch": "^2.5.7",
+    "@types/cheerio": "^0.22.29",
+    "@types/node-fetch": "^2.5.10",
     "@types/shelljs": "^0.8.8",
-    "chalk": "^4.1.0",
-    "cheerio": "^1.0.0-rc.5",
-    "chokidar": "^3.5.1",
-    "commander": "^7.0.0",
-    "discord.js": "^12.5.1",
-    "dotenv": "^8.2.0",
+    "chalk": "^4.1.1",
+    "cheerio": "^1.0.0-rc.10",
+    "chokidar": "^3.5.2",
+    "commander": "^7.2.0",
+    "discord.js": "^12.5.3",
+    "dotenv": "^10.0.0",
     "figlet": "^1.5.0",
     "node-fetch": "^2.6.1",
     "node-watch": "^0.7.1",
     "shelljs": "^0.8.4",
-    "typescript": "^4.0.0"
+    "typescript": "^4.3.3"
   },
   "scripts": {
     "dev": "tsc --watch",
@@ -25,8 +25,10 @@
     "build": "tsc"
   },
   "devDependencies": {
-    "@types/figlet": "^1.2.1",
-    "@types/ws": "^7.4.0",
-    "ws": "^7.4.2"
+    "@types/figlet": "^1.5.1",
+    "@types/node": "^15.12.2",
+    "@types/ws": "^7.4.5",
+    "patch-package": "^6.4.7",
+    "ws": "^7.5.0"
   }
 }
