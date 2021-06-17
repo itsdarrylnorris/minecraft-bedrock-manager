@@ -11,3 +11,16 @@ index e5f9cba..a3765b4 100755
  
          namespace NodeJS {
              interface ConsoleConstructorOptions {
+diff --git a/node_modules/@types/node/globals.d.ts b/node_modules/@types/node/globals.d.ts
+index fd6836c..f04d908 100755
+--- a/node_modules/@types/node/globals.d.ts
++++ b/node_modules/@types/node/globals.d.ts
+@@ -42,7 +42,7 @@ interface RequireResolve extends NodeJS.RequireResolve { }
+ interface NodeModule extends NodeJS.Module { }
+ 
+ declare var process: NodeJS.Process;
+-declare var console: Console;
++// declare var console: Console;
+ 
+ declare var __filename: string;
+ declare var __dirname: string;
