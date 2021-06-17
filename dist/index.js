@@ -66,7 +66,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     else if (options.backup) {
         try {
             const minecraft = new minecraft_1.default({});
-            yield minecraft.backupServer();
+            minecraft.backupServer();
         }
         catch (error) {
             utils_1.logging('Error:', error);

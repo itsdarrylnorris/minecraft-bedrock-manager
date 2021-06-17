@@ -32,6 +32,10 @@ class Discord {
                 discord_role: process && process.env && process.env.DISCORD_ROLE ? process.env.DISCORD_ROLE.toString() : '',
                 discord_command: process && process.env && process.env.DISCORD_COMMAND ? process.env.DISCORD_COMMAND.toString() : '',
                 discord_message_prefix: process && process.env && process.env.DISCORD_PREFIX ? process.env.DISCORD_PREFIX.toString() : '',
+                discord_id: process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : '',
+                discord_token: process && process.env && process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.toString() : '',
+                sending_discord_message: process.env.options_sending_discord_message || 'Sending this message to Discord.',
+                error_discord_message: process.env.options_error_discord_message || 'Something went wrong when sending the Discord message.',
                 strings: {
                     start_command: 'start server',
                     stop_command: 'stop server',
@@ -42,6 +46,18 @@ class Discord {
                 },
             };
         }
+    }
+    sendMessageToDiscord(string) {
+        return __awaiter(this, void 0, void 0, function* () {
+            utils_1.logging(this.options.strings.sending_discord_message, string);
+            try {
+                const webhook = new discord_js_1.WebhookClient(this.options.discord_id, this.options.discord_token);
+                yield webhook.send(`[${os_1.default.hostname()}] ${string}`);
+            }
+            catch (err) {
+                utils_1.logging(this.options.strings.error_discord_message, err);
+            }
+        });
     }
     startDiscord() {
         return __awaiter(this, void 0, void 0, function* () {
