@@ -62,6 +62,8 @@ class Minecraft {
 
   private minecraft_screen_name: string = 'Minecraft'
 
+  private discord_screen_name: string = 'Discord'
+
   private discord_instance: Discord
 
   /**
@@ -221,6 +223,7 @@ class Minecraft {
   /**
    * Updates Minecraft Server.
    *
+   * @TODO: chmod -R 744 bedrock_server?
    * @param versionLink The link of the latest version from the website.
    */
   updateServer(versionLink: string | undefined): void {
@@ -229,14 +232,13 @@ class Minecraft {
         versionLink && versionLink.split('/')[versionLink.split('/').length - 1]
       logging(this.options.strings.not_up_to_date_server_message + latestVersionZip)
 
-      // @TODO: We need to set the proper permissions to bedrock_server.
       // @TODO: We need to investigate proper permission and then add it in here.
-      // @TODO: Make it readable! +
       executeShellScript(
-        `cd ${this.options.download_path} && wget ${versionLink} && cd ${this.options.path} && ` +
-          `unzip -o "${this.options.download_path}${latestVersionZip}" -x "*server.properties*" "*permissions.json*" "*whitelist.json*" "*valid_known_packs.json*" 
-        && 
-        chmod 777 ${this.options.path}/bedrock_server`,
+        `cd ${this.options.download_path} && ` +
+          `wget ${versionLink} && ` +
+          `cd ${this.options.path} && ` +
+          `unzip -o "${this.options.download_path}${latestVersionZip}" -x "*server.properties*" "*permissions.json*" "*whitelist.json*" "*valid_known_packs.json*" && ` +
+          `chmod 777 ${this.options.path}/bedrock_server`,
       )
     } catch (err) {
       logging('Error with downloading version', this.options.strings.error_downloading_version)
@@ -250,7 +252,7 @@ class Minecraft {
   async deleteOldestFile(): Promise<void> {
     try {
       let files: Array<string> = await fs.readdir(this.options.download_path)
-      const count: number = files.filter((item) => item.includes('zip')).length
+      const count: number = files.filter(item => item.includes('zip')).length
       if (count > this.options.numbers.max_number_files_in_downloads_folder) {
         let oldFile: string = files[1]
         executeShellScript(`cd ${this.options.download_path} && rm ${oldFile}`)
@@ -274,9 +276,11 @@ class Minecraft {
   /**
    * Adding logging for Discord.
    *
-   * @TODO: Set this into a screen so we do not have to d it manually.
    */
   async logs() {
+    executeShellScript(
+      `cd ${this.options.path} && screen -L -Logfile minecraft-discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.log_file}" `,
+    )
     logging('Watching for changes')
 
     let file = await fs.readFile(this.options.log_file, 'utf8')
@@ -313,7 +317,10 @@ class Minecraft {
    * @TODO: We need to find the xuid as well and send to Discord.
    */
   getGamerTagFromLog(logString: string, logIndentifier: string): string {
-    return logString.split(logIndentifier)[1].split(',')[0].split(' ')[1]
+    return logString
+      .split(logIndentifier)[1]
+      .split(',')[0]
+      .split(' ')[1]
   }
 }
 export default Minecraft

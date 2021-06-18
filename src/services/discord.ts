@@ -1,4 +1,5 @@
-import { Client, Collection, Message, WebhookClient } from 'discord.js'
+// import { Client, Collection, Message, WebhookClient } from 'discord.js'
+import { Collection, Message, WebhookClient } from 'discord.js'
 import os from 'os'
 import { executeShellScript, logging } from '../utils'
 require('dotenv').config()
@@ -28,6 +29,13 @@ interface WebhookInterface {
   token: string
 }
 
+interface DiscordJSInterface {
+  on: any
+  once: any
+  login: any
+  Client: any
+}
+
 /**
  * Discord
  */
@@ -35,16 +43,18 @@ class Discord {
   // Options config
   private options: DiscordOptionsInterface | any
 
-  private client: Client
+  private client: DiscordJSInterface
 
   private discord_screen_name: string = 'Discord'
+
+  static Client: any
 
   /**
    * Constructor
    * @param options
    */
   constructor(options: DiscordOptionsInterface | any) {
-    const client = new Client()
+    const client = new Discord.Client()
     client.commands = new Collection()
     this.client = client
     if (options && options.path) {
@@ -57,13 +67,15 @@ class Discord {
         discord_role: process && process.env && process.env.DISCORD_ROLE ? process.env.DISCORD_ROLE.toString() : '',
         discord_command:
           process && process.env && process.env.DISCORD_COMMAND ? process.env.DISCORD_COMMAND.toString() : '',
-        discord_message_prefix:
-          process && process.env && process.env.DISCORD_PREFIX ? process.env.DISCORD_PREFIX.toString() : '',
         discord_id: process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : '',
         discord_token: process && process.env && process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.toString() : '',
         sending_discord_message: process.env.options_sending_discord_message || 'Sending this message to Discord.',
         error_discord_message:
           process.env.options_error_discord_message || 'Something went wrong when sending the Discord message.',
+        successful_command: process.env.options_successful_command || 'Sent command successfully.',
+        error_command: process.env.options_error_command || 'There was an error when trying to execute that command.',
+        invalid_permission_command:
+          process.env.options_invalid_permission_command || 'You are not allowed to use this command.',
         strings: {
           start_command: 'start server',
           stop_command: 'stop server',
@@ -115,7 +127,7 @@ class Discord {
   startBot() {
     this.client.once('ready', () => {
       executeShellScript(
-        `cd ${this.options.path} && screen -L -Logfile minecraft-server.log -dmS ${this.discord_screen_name}`,
+        `cd ${this.options.path} && screen -L -Logfile discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}bedrock_server"`,
       )
       logging('Bot is online.')
     })
@@ -126,98 +138,94 @@ class Discord {
    */
   async startCommands() {
     this.client.on('message', (message: Message) => {
-      if (!message.content.startsWith(this.options.discord_message_prefix) || message.author.bot) return
-
-      const args: any = message.content.slice(this.options.discord_message_prefix.length)
-      const command: string = args.toLowerCase()
+      const command: string = message.content.toLowerCase()
       let author: string = message.author.username
       let splitDiscordRole: string = this.options.discord_role.split(',')
 
       // Command 1: Start Server Command
-      // /mm start server
+      // mbm start server
       if (
         command === `${this.options.discord_command} ${this.options.strings.start_command}` &&
         message.member!.roles.cache.some((r: { name: string }) => splitDiscordRole.includes(r.name))
       ) {
         try {
           logging('Command entered by: ' + author, command)
-          executeShellScript(`cd ${this.options.path} && mm -s`)
+          executeShellScript(`cd ${this.options.path} && mbm -s`)
           message.channel.send('Sent command successfully.')
         } catch (error) {
           logging(error)
-          message.channel.send('There was an error when trying to execute that command!')
+          message.channel.send(this.options.error_command)
         }
       }
       // Command 2: Stop Server Command
-      // /mm stop server
+      // mbm stop server
       else if (
         command === `${this.options.discord_command} ${this.options.strings.stop_command}` &&
         message.member!.roles.cache.some((r: { name: string }) => splitDiscordRole.includes(r.name))
       ) {
         logging('Command entered by: ' + author, command)
-        executeShellScript(`cd ${this.options.path} && mm -st`)
+        executeShellScript(`cd ${this.options.path} && mbm -st`)
         try {
-          message.channel.send('Sent command successfully.')
+          message.channel.send(this.options.successful_command)
         } catch (error) {
           logging(error)
-          message.channel.send('There was an error when trying to execute that command!')
+          message.channel.send(this.options.error_command)
         }
       }
       // Command 3: Restart Server Command
-      // /mm restart server
+      // mbm restart server
       else if (
         command === `${this.options.discord_command} ${this.options.strings.restart_command}` &&
         message.member!.roles.cache.some((r: { name: string }) => splitDiscordRole.includes(r.name))
       ) {
         logging('Command entered by: ' + author, command)
-        executeShellScript(`cd ${this.options.path} && mm -r`)
+        executeShellScript(`cd ${this.options.path} && mbm -r`)
         try {
-          message.channel.send('Sent command successfully.')
+          message.channel.send(this.options.successful_command)
         } catch (error) {
           logging(error)
-          message.channel.send('There was an error when trying to execute that command!')
+          message.channel.send(this.options.error_command)
         }
       }
       // Command 4: Help Command - List available Discord commands
-      // /mm help
+      // mbm help
       else if (
         command === `${this.options.discord_command} ${this.options.strings.help_command}` &&
         message.member!.roles.cache.some((r: { name: string }) => splitDiscordRole.includes(r.name))
       ) {
         try {
           message.channel.send(
-            'Available Commands: /mm start server, /mm stop server, /mm restart server, /mm help, /mm add [Gamertag], /mm remove [Gamertag]',
+            'Available Commands: mbm start server, mbm stop server, mbm restart server, mbm help, mbm add [Gamertag], mbm remove [Gamertag]',
           )
         } catch (error) {
           logging(error)
-          message.channel.send('There was an error when trying to execute that command!')
+          message.channel.send(this.options.error_command)
         }
       }
       // Command 5: Add user to server
-      // /mm add [Gamertag]
+      // mbm add [Gamertag]
       else if (
         command === `${this.options.discord_command} ${this.options.strings.add_command}` &&
         message.member!.roles.cache.some((r: { name: string }) => splitDiscordRole.includes(r.name))
       ) {
         logging(command)
-        let newMessage: string = message.toString().replace('/', '')
-        let split: string[] = newMessage.split(' ')
+        let split: string[] = message.toString().split(' ')
         let splitCommand: string = split && split[0] ? split[0] : ''
         let splitValue: string = split && split[1] ? split[1] : ''
 
         if (splitCommand && splitValue) {
           logging('Command entered by: ' + author, { splitCommand, splitValue })
-          message.channel.send('Sent command successfully.')
+          message.channel.send(this.options.successful_command)
         } else if (splitCommand && !splitValue) {
           logging('Command entered by: ' + author, { splitCommand })
-          message.channel.send('Sent command successfully.')
+          message.channel.send(this.options.successful_command)
         } else {
-          logging(author + 'There was an error when trying to execute that command!')
-          message.channel.send('There was an error when trying to execute that command!')
+          logging(author + this.options.error_command)
+          message.channel.send(this.options.error_command)
         }
       }
       // Command 6: Remove user to server
-      // /mm remove [Gamertag]
+      // mbm remove [Gamertag]
       else if (
         command === `${this.options.discord_command} ${this.options.strings.remove_command}` &&
         message.member!.roles.cache.some((r: { name: string }) => splitDiscordRole.includes(r.name))
@@ -230,18 +238,18 @@ class Discord {
 
         if (splitCommand && splitValue) {
           logging('Command entered by: ' + author, { splitCommand, splitValue })
-          message.channel.send('Sent command successfully.')
+          message.channel.send(this.options.successful_command)
         } else if (splitCommand && !splitValue) {
           logging('Command entered by: r' + author, { splitCommand })
-          message.channel.send('Sent command successfully.')
+          message.channel.send(this.options.successful_command)
         } else {
-          logging(author + 'There was an error when trying to execute that command!')
-          message.channel.send('There was an error when trying to execute that command!')
+          logging(author + this.options.error_command)
+          message.channel.send(this.options.error_command)
         }
       }
       // Send message back to channel with an error
       else {
-        message.reply('You are not allowed to use this command.')
+        message.reply(this.options.invalid_permission_command)
       }
     })
   }

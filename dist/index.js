@@ -26,7 +26,8 @@ commander_1.default
     .option('-st, --stop-server', 'Stops Minecraft Server')
     .option('-l, --logs', 'Shows the Minecraft Logs')
     .option('-d, --discord', 'Starts Discord')
-    .option('-b, --backup', 'Backup');
+    .option('-b, --backup', 'Backup')
+    .option('-sa, --start-all, Start Everything');
 commander_1.default.parse(process.argv);
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const options = commander_1.default.opts();
@@ -60,8 +61,8 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         minecraft.logs();
     }
     else if (options.discord) {
-        const minecraft = new discord_1.default({});
-        minecraft.startDiscord();
+        const discord = new discord_1.default({});
+        discord.startDiscord();
     }
     else if (options.backup) {
         try {
@@ -70,6 +71,18 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         }
         catch (error) {
             utils_1.logging('Error:', error);
+        }
+    }
+    else if (options.startAll) {
+        try {
+            const minecraft = new minecraft_1.default({});
+            yield minecraft.startServer();
+            const discord = new discord_1.default({});
+            discord.startDiscord();
+            process.exit();
+        }
+        catch (error) {
+            utils_1.logging('Error', error);
         }
     }
 });

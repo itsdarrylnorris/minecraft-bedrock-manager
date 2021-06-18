@@ -27,6 +27,7 @@ class Minecraft {
             player_connected: '[INFO] Player connected:',
         };
         this.minecraft_screen_name = 'Minecraft';
+        this.discord_screen_name = 'Discord';
         if (options && options.path) {
             this.options = options;
         }
@@ -132,10 +133,11 @@ class Minecraft {
         try {
             const latestVersionZip = versionLink && versionLink.split('/')[versionLink.split('/').length - 1];
             utils_1.logging(this.options.strings.not_up_to_date_server_message + latestVersionZip);
-            utils_1.executeShellScript(`cd ${this.options.download_path} && wget ${versionLink} && cd ${this.options.path} && ` +
-                `unzip -o "${this.options.download_path}${latestVersionZip}" -x "*server.properties*" "*permissions.json*" "*whitelist.json*" "*valid_known_packs.json*" 
-        && 
-        chmod 777 ${this.options.path}/bedrock_server`);
+            utils_1.executeShellScript(`cd ${this.options.download_path} && ` +
+                `wget ${versionLink} && ` +
+                `cd ${this.options.path} && ` +
+                `unzip -o "${this.options.download_path}${latestVersionZip}" -x "*server.properties*" "*permissions.json*" "*whitelist.json*" "*valid_known_packs.json*" && ` +
+                `chmod 777 ${this.options.path}/bedrock_server`);
         }
         catch (err) {
             utils_1.logging('Error with downloading version', this.options.strings.error_downloading_version);
@@ -146,7 +148,7 @@ class Minecraft {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 let files = yield fs_1.promises.readdir(this.options.download_path);
-                const count = files.filter((item) => item.includes('zip')).length;
+                const count = files.filter(item => item.includes('zip')).length;
                 if (count > this.options.numbers.max_number_files_in_downloads_folder) {
                     let oldFile = files[1];
                     utils_1.executeShellScript(`cd ${this.options.download_path} && rm ${oldFile}`);
@@ -168,6 +170,7 @@ class Minecraft {
     }
     logs() {
         return __awaiter(this, void 0, void 0, function* () {
+            utils_1.executeShellScript(`cd ${this.options.path} && screen -L -Logfile minecraft-discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.log_file}" `);
             utils_1.logging('Watching for changes');
             let file = yield fs_1.promises.readFile(this.options.log_file, 'utf8');
             let fileNumber = file.split(/\n/).length;
@@ -192,7 +195,10 @@ class Minecraft {
         });
     }
     getGamerTagFromLog(logString, logIndentifier) {
-        return logString.split(logIndentifier)[1].split(',')[0].split(' ')[1];
+        return logString
+            .split(logIndentifier)[1]
+            .split(',')[0]
+            .split(' ')[1];
     }
 }
 exports.default = Minecraft;

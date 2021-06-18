@@ -27,6 +27,7 @@ declare class Minecraft {
     private options;
     private logs_strings;
     private minecraft_screen_name;
+    private discord_screen_name;
     private discord_instance;
     constructor(options: MinecraftOptionsInterface | any);
     restartServer(): Promise<void>;

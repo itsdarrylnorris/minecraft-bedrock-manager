@@ -15,6 +15,7 @@ program
   .option('-l, --logs', 'Shows the Minecraft Logs')
   .option('-d, --discord', 'Starts Discord')
   .option('-b, --backup', 'Backup')
+  .option('-sa, --start-all, Start Everything')
 
 program.parse(process.argv)
 
@@ -48,14 +49,24 @@ const main = async () => {
     const minecraft = new Minecraft({})
     minecraft.logs()
   } else if (options.discord) {
-    const minecraft = new Discord({})
-    minecraft.startDiscord()
+    const discord = new Discord({})
+    discord.startDiscord()
   } else if (options.backup) {
     try {
       const minecraft = new Minecraft({})
       minecraft.backupServer()
     } catch (error) {
       logging('Error:', error)
+    }
+  } else if (options.startAll) {
+    try {
+      const minecraft = new Minecraft({})
+      await minecraft.startServer()
+      const discord = new Discord({})
+      discord.startDiscord()
+      process.exit()
+    } catch (error) {
+      logging('Error', error)
     }
   }
 }
