@@ -1,22 +1,17 @@
-// import { Client, Collection, Message, WebhookClient } from 'discord.js'
-import { Collection, Message, WebhookClient } from 'discord.js'
+import { Client, Collection, Message, WebhookClient } from 'discord.js'
 import os from 'os'
 import { executeShellScript, logging } from '../utils'
 require('dotenv').config()
-
-/**
- * Interface of Discord.
- */
 interface DiscordOptionsInterface {
   message: Message
-  // Webhook string
+  // Webhook String
   discord: MinecraftDiscordInterface | undefined
   sending_discord_message: string | undefined
   error_discord_message: string | undefined
 }
 
 /**
- * Interface of Discord, it contains any information related to discord.
+ * Interface of Discord, it contains any information related to discord.
  */
 interface MinecraftDiscordInterface {
   webhook: string | undefined
@@ -29,13 +24,6 @@ interface WebhookInterface {
   token: string
 }
 
-interface DiscordJSInterface {
-  on: any
-  once: any
-  login: any
-  Client: any
-}
-
 /**
  * Discord
  */
@@ -43,18 +31,16 @@ class Discord {
   // Options config
   private options: DiscordOptionsInterface | any
 
-  private client: DiscordJSInterface
+  private client: Client
 
   private discord_screen_name: string = 'Discord'
-
-  static Client: any
 
   /**
    * Constructor
    * @param options
    */
   constructor(options: DiscordOptionsInterface | any) {
-    const client = new Discord.Client()
+    const client = new Client()
     client.commands = new Collection()
     this.client = client
     if (options && options.path) {
