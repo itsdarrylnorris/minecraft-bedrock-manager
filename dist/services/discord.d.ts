@@ -18,7 +18,6 @@ declare class Discord {
     private options;
     private client;
     private discord_screen_name;
-    static Client: any;
     constructor(options: DiscordOptionsInterface | any);
     sendMessageToDiscord(string: string): Promise<void>;
     startDiscord(): Promise<void>;

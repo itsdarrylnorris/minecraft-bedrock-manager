@@ -2,9 +2,13 @@ import { Client, Collection, Message, WebhookClient } from 'discord.js'
 import os from 'os'
 import { executeShellScript, logging } from '../utils'
 require('dotenv').config()
+
+/**
+ * Interface of Discord.
+ */
 interface DiscordOptionsInterface {
   message: Message
-  // Webhook String
+  // Webhook string
   discord: MinecraftDiscordInterface | undefined
   sending_discord_message: string | undefined
   error_discord_message: string | undefined

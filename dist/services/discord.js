@@ -19,7 +19,7 @@ require('dotenv').config();
 class Discord {
     constructor(options) {
         this.discord_screen_name = 'Discord';
-        const client = new Discord.Client();
+        const client = new discord_js_1.Client();
         client.commands = new discord_js_1.Collection();
         this.client = client;
         if (options && options.path) {
