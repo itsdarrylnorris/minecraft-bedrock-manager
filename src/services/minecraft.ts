@@ -186,7 +186,15 @@ class Minecraft {
   async checkForLatestVersion(): Promise<string> {
     try {
       let downloadURL: string = this.options.strings.version_download
-      const response = await fetch(downloadURL)
+      // const response = await fetch(downloadURL)
+      logging('test')
+      const response = await fetch(downloadURL, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0',
+        },
+      })
       const html: any = await response.text()
       const $: cheerio.Root = cheerio.load(html)
       const button: cheerio.Cheerio = $(this.options.strings.download_button)
@@ -252,7 +260,7 @@ class Minecraft {
   async deleteOldestFile(): Promise<void> {
     try {
       let files: Array<string> = await fs.readdir(this.options.download_path)
-      const count: number = files.filter(item => item.includes('zip')).length
+      const count: number = files.filter((item) => item.includes('zip')).length
       if (count > this.options.numbers.max_number_files_in_downloads_folder) {
         let oldFile: string = files[1]
         executeShellScript(`cd ${this.options.download_path} && rm ${oldFile}`)
@@ -279,7 +287,7 @@ class Minecraft {
    */
   async logs() {
     executeShellScript(
-      `cd ${this.options.path} && screen -L -Logfile minecraft-discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.log_file}" `,
+      `cd ${this.options.path} && screen -L -Logfile minecraft-discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.log_file}"`,
     )
     logging('Watching for changes')
 
@@ -317,10 +325,7 @@ class Minecraft {
    * @TODO: We need to find the xuid as well and send to Discord.
    */
   getGamerTagFromLog(logString: string, logIndentifier: string): string {
-    return logString
-      .split(logIndentifier)[1]
-      .split(',')[0]
-      .split(' ')[1]
+    return logString.split(logIndentifier)[1].split(',')[0].split(' ')[1]
   }
 }
 export default Minecraft

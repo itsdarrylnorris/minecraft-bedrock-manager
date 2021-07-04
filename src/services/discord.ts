@@ -52,6 +52,9 @@ class Discord {
     } else {
       this.options = {
         path: process.env.OPTIONS_PATH || os.homedir() + '/MinecraftServer/',
+        log_file: process.env.LOG_FILE || os.homedir() + '/MinecraftServer/discord.log',
+        whitelist_file: process.env.LOG_FILE || os.homedir() + '/MinecraftServer/whitelist.json',
+        old_whitelist_file: process.env.LOG_FILE || os.homedir() + '/MinecraftServer/old-whitelist.json',
         discord_client:
           process && process.env && process.env.DISCORD_CLIENT ? process.env.DISCORD_CLIENT.toString() : '',
         discord_role: process && process.env && process.env.DISCORD_ROLE ? process.env.DISCORD_ROLE.toString() : '',
@@ -59,14 +62,18 @@ class Discord {
           process && process.env && process.env.DISCORD_COMMAND ? process.env.DISCORD_COMMAND.toString() : '',
         discord_id: process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : '',
         discord_token: process && process.env && process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.toString() : '',
-        sending_discord_message: process.env.options_sending_discord_message || 'Sending this message to Discord.',
-        error_discord_message:
-          process.env.options_error_discord_message || 'Something went wrong when sending the Discord message.',
-        successful_command: process.env.options_successful_command || 'Sent command successfully.',
-        error_command: process.env.options_error_command || 'There was an error when trying to execute that command.',
-        invalid_permission_command:
-          process.env.options_invalid_permission_command || 'You are not allowed to use this command.',
         strings: {
+          sending_discord_message: process.env.options_sending_discord_message || 'Sending this message to Discord.',
+          error_discord_message:
+            process.env.options_error_discord_message || 'Something went wrong when sending the Discord message.',
+          successful_command: process.env.options_successful_command || 'Sent command successfully.',
+          error_command: process.env.options_error_command || 'There was an error when trying to execute that command.',
+          invalid_permission_command:
+            process.env.options_invalid_permission_command || 'You are not allowed to use this command.',
+          help_command_message:
+            process.env.options_help_command_message ||
+            'Available Commands: mbm start server, mbm stop server, mbm restart server, mbm help, mbm add [Gamertag], mbm remove [Gamertag]',
+          command_entered_message: process.env.command_entered_message || 'Command entered by: ',
           start_command: 'start server',
           stop_command: 'stop server',
           restart_command: 'restart server',
@@ -79,9 +86,9 @@ class Discord {
   }
 
   /**
-   * Sends a message to Discord.
+   * Sends a message to Discord.
    *
-   * @param string String message for Discord.
+   * @param string String message for Discord.
    */
   async sendMessageToDiscord(string: string): Promise<void> {
     logging(this.options.strings.sending_discord_message, string)
@@ -107,7 +114,7 @@ class Discord {
       // Logging into Discord Client
       await this.loginClient()
     } catch (e) {
-      logging('Error Start Discord', e)
+      logging('Error with starting Discord', e)
     }
   }
 
@@ -117,7 +124,7 @@ class Discord {
   startBot() {
     this.client.once('ready', () => {
       executeShellScript(
-        `cd ${this.options.path} && screen -L -Logfile discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}bedrock_server"`,
+        `cd ${this.options.path} && screen -L -Logfile discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.log_file}"`,
       )
       logging('Bot is online.')
     })
@@ -128,6 +135,8 @@ class Discord {
    */
   async startCommands() {
     this.client.on('message', (message: Message) => {
+      if (message.author.bot) return
+
       const command: string = message.content.toLowerCase()
       let author: string = message.author.username
       let splitDiscordRole: string = this.options.discord_role.split(',')
@@ -139,12 +148,12 @@ class Discord {
         message.member!.roles.cache.some((r: { name: string }) => splitDiscordRole.includes(r.name))
       ) {
         try {
-          logging('Command entered by: ' + author, command)
-          executeShellScript(`cd ${this.options.path} && mbm -s`)
-          message.channel.send('Sent command successfully.')
+          logging(this.options.strings.command_entered_message + author, command)
+          executeShellScript(`cd ${this.options.path} && ${this.options.discord_command} -s`)
+          message.channel.send(this.options.strings.successful_command)
         } catch (error) {
           logging(error)
-          message.channel.send(this.options.error_command)
+          message.channel.send(this.options.strings.error_command)
         }
       }
       // Command 2: Stop Server Command
@@ -153,13 +162,13 @@ class Discord {
         command === `${this.options.discord_command} ${this.options.strings.stop_command}` &&
         message.member!.roles.cache.some((r: { name: string }) => splitDiscordRole.includes(r.name))
       ) {
-        logging('Command entered by: ' + author, command)
-        executeShellScript(`cd ${this.options.path} && mbm -st`)
+        logging(this.options.strings.command_entered_message + author, command)
+        executeShellScript(`cd ${this.options.path} && ${this.options.discord_command} -st`)
         try {
-          message.channel.send(this.options.successful_command)
+          message.channel.send(this.options.strings.successful_command)
         } catch (error) {
           logging(error)
-          message.channel.send(this.options.error_command)
+          message.channel.send(this.options.strings.error_command)
         }
       }
       // Command 3: Restart Server Command
@@ -168,13 +177,13 @@ class Discord {
         command === `${this.options.discord_command} ${this.options.strings.restart_command}` &&
         message.member!.roles.cache.some((r: { name: string }) => splitDiscordRole.includes(r.name))
       ) {
-        logging('Command entered by: ' + author, command)
-        executeShellScript(`cd ${this.options.path} && mbm -r`)
+        logging(this.options.strings.command_entered_message + author, command)
+        executeShellScript(`cd ${this.options.path} && ${this.options.discord_command} -r`)
         try {
-          message.channel.send(this.options.successful_command)
+          message.channel.send(this.options.strings.successful_command)
         } catch (error) {
           logging(error)
-          message.channel.send(this.options.error_command)
+          message.channel.send(this.options.strings.error_command)
         }
       }
       // Command 4: Help Command - List available Discord commands
@@ -184,62 +193,70 @@ class Discord {
         message.member!.roles.cache.some((r: { name: string }) => splitDiscordRole.includes(r.name))
       ) {
         try {
-          message.channel.send(
-            'Available Commands: mbm start server, mbm stop server, mbm restart server, mbm help, mbm add [Gamertag], mbm remove [Gamertag]',
-          )
+          message.channel.send(this.options.strings.help_command_message)
         } catch (error) {
           logging(error)
-          message.channel.send(this.options.error_command)
+          message.channel.send(this.options.strings.error_command)
         }
       }
       // Command 5: Add user to server
       // mbm add [Gamertag]
       else if (
-        command === `${this.options.discord_command} ${this.options.strings.add_command}` &&
+        command.includes(this.options.discord_command && this.options.strings.add_command) &&
         message.member!.roles.cache.some((r: { name: string }) => splitDiscordRole.includes(r.name))
       ) {
-        logging(command)
         let split: string[] = message.toString().split(' ')
         let splitCommand: string = split && split[0] ? split[0] : ''
-        let splitValue: string = split && split[1] ? split[1] : ''
+        let splitAdd: string = split && split[1] ? split[1] : ''
+        let splitUser: string = split && split[2] ? split[2] : ''
 
-        if (splitCommand && splitValue) {
-          logging('Command entered by: ' + author, { splitCommand, splitValue })
-          message.channel.send(this.options.successful_command)
-        } else if (splitCommand && !splitValue) {
-          logging('Command entered by: ' + author, { splitCommand })
-          message.channel.send(this.options.successful_command)
+        if (splitCommand && splitAdd && splitUser) {
+          logging(this.options.strings.command_entered_message + author, message.content)
+          try {
+            let date: Date = new Date()
+            // Backup whitelist.json file
+            executeShellScript(
+              `cd ${this.options.path} && git add ${
+                this.options.whitelist_file
+              } && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`,
+            )
+            // Make a copy of the whitelist.json file
+            executeShellScript(
+              `cd ${this.options.whitelist_file} && ` +
+                `cp ${this.options.whitelist_file} ${this.options.old_whitelist_file}`,
+            )
+
+            message.channel.send(this.options.strings.successful_command)
+          } catch (err) {
+            logging('Command Error', err)
+          }
         } else {
-          logging(author + this.options.error_command)
-          message.channel.send(this.options.error_command)
+          logging(author + this.options.strings.error_command)
+          message.channel.send(this.options.strings.error_command)
         }
       }
       // Command 6: Remove user to server
       // mbm remove [Gamertag]
       else if (
-        command === `${this.options.discord_command} ${this.options.strings.remove_command}` &&
+        command.includes(this.options.discord_command && this.options.strings.remove_command) &&
         message.member!.roles.cache.some((r: { name: string }) => splitDiscordRole.includes(r.name))
       ) {
-        logging(command)
-        let newMessage: string = message.toString().replace('/', '')
-        let split: string[] = newMessage.split(' ')
+        let split: string[] = message.toString().split(' ')
         let splitCommand: string = split && split[0] ? split[0] : ''
-        let splitValue: string = split && split[1] ? split[1] : ''
+        let splitRemove: string = split && split[1] ? split[1] : ''
+        let splitUser: string = split && split[2] ? split[2] : ''
 
-        if (splitCommand && splitValue) {
-          logging('Command entered by: ' + author, { splitCommand, splitValue })
-          message.channel.send(this.options.successful_command)
-        } else if (splitCommand && !splitValue) {
-          logging('Command entered by: r' + author, { splitCommand })
-          message.channel.send(this.options.successful_command)
+        if (splitCommand && splitRemove && splitUser) {
+          logging(this.options.strings.command_entered_message + author, { splitCommand, splitRemove, splitUser })
+          message.channel.send(this.options.strings.successful_command)
         } else {
-          logging(author + this.options.error_command)
-          message.channel.send(this.options.error_command)
+          logging(author + this.options.strings.error_command)
+          message.channel.send(this.options.strings.error_command)
         }
       }
       // Send message back to channel with an error
       else {
-        message.reply(this.options.invalid_permission_command)
+        message.reply(this.options.strings.invalid_permission_command)
       }
     })
   }

@@ -98,7 +98,14 @@ class Minecraft {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 let downloadURL = this.options.strings.version_download;
-                const response = yield node_fetch_1.default(downloadURL);
+                utils_1.logging('test');
+                const response = yield node_fetch_1.default(downloadURL, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0',
+                    },
+                });
                 const html = yield response.text();
                 const $ = cheerio_1.default.load(html);
                 const button = $(this.options.strings.download_button);
@@ -148,7 +155,7 @@ class Minecraft {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 let files = yield fs_1.promises.readdir(this.options.download_path);
-                const count = files.filter(item => item.includes('zip')).length;
+                const count = files.filter((item) => item.includes('zip')).length;
                 if (count > this.options.numbers.max_number_files_in_downloads_folder) {
                     let oldFile = files[1];
                     utils_1.executeShellScript(`cd ${this.options.download_path} && rm ${oldFile}`);
@@ -170,7 +177,7 @@ class Minecraft {
     }
     logs() {
         return __awaiter(this, void 0, void 0, function* () {
-            utils_1.executeShellScript(`cd ${this.options.path} && screen -L -Logfile minecraft-discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.log_file}" `);
+            utils_1.executeShellScript(`cd ${this.options.path} && screen -L -Logfile minecraft-discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.log_file}"`);
             utils_1.logging('Watching for changes');
             let file = yield fs_1.promises.readFile(this.options.log_file, 'utf8');
             let fileNumber = file.split(/\n/).length;
@@ -195,10 +202,7 @@ class Minecraft {
         });
     }
     getGamerTagFromLog(logString, logIndentifier) {
-        return logString
-            .split(logIndentifier)[1]
-            .split(',')[0]
-            .split(' ')[1];
+        return logString.split(logIndentifier)[1].split(',')[0].split(' ')[1];
     }
 }
 exports.default = Minecraft;
