@@ -13,6 +13,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const discord_js_1 = require("discord.js");
+const fs_1 = __importDefault(require("fs"));
+const promises_1 = require("fs/promises");
 const os_1 = __importDefault(require("os"));
 const utils_1 = require("../utils");
 require('dotenv').config();
@@ -44,7 +46,12 @@ class Discord {
                     invalid_permission_command: process.env.options_invalid_permission_command || 'You are not allowed to use this command.',
                     help_command_message: process.env.options_help_command_message ||
                         'Available Commands: mbm start server, mbm stop server, mbm restart server, mbm help, mbm add [Gamertag], mbm remove [Gamertag]',
-                    command_entered_message: process.env.command_entered_message || 'Command entered by: ',
+                    command_entered_message: process.env.options_command_entered_message || 'Command entered by: ',
+                    successful_added_user_message: process.env.options_successful_added_user_message ||
+                        ' has been added to the server. Restart the server to complete the adding process.',
+                    successful_removed_user_message: process.env.options_successful_removed_user_message ||
+                        ' has been removed from the server. Restart the server to complete the removal process.',
+                    error_with_reading_file: process.env.options_error_with_reading_file || 'Could not read whitelist.json file.',
                     start_command: 'start server',
                     stop_command: 'stop server',
                     restart_command: 'restart server',
@@ -62,8 +69,8 @@ class Discord {
                 const webhook = new discord_js_1.WebhookClient(this.options.discord_id, this.options.discord_token);
                 yield webhook.send(`[${os_1.default.hostname()}] ${string}`);
             }
-            catch (err) {
-                utils_1.logging(this.options.strings.error_discord_message, err);
+            catch (error) {
+                utils_1.logging(this.options.strings.error_discord_message, error);
             }
         });
     }
@@ -87,7 +94,7 @@ class Discord {
     }
     startCommands() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.client.on('message', (message) => {
+            this.client.on('message', (message) => __awaiter(this, void 0, void 0, function* () {
                 if (message.author.bot)
                     return;
                 const command = message.content.toLowerCase();
@@ -147,12 +154,44 @@ class Discord {
                     let splitUser = split && split[2] ? split[2] : '';
                     if (splitCommand && splitAdd && splitUser) {
                         utils_1.logging(this.options.strings.command_entered_message + author, message.content);
-                        utils_1.executeShellScript(`cd ${this.options.whitelist_file} && ` +
-                            `mv ${this.options.whitelist_file} ${this.options.old_whitelist_file}`);
-                        message.channel.send(this.options.strings.successful_command);
+                        try {
+                            let date = new Date();
+                            utils_1.executeShellScript(`cd ${this.options.path} && git add ${this.options.whitelist_file} && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`);
+                            let files = yield promises_1.readdir(this.options.path);
+                            if (files.filter((item) => item.includes(this.options.old_whitelist_file))) {
+                                utils_1.executeShellScript(`cd ${this.options.download_path} && ` + `rm ${this.options.old_whitelist_file}`);
+                            }
+                            utils_1.executeShellScript(`cd ${this.options.path} && ` + `cp ${this.options.whitelist_file} ${this.options.old_whitelist_file}`);
+                            var whitelistTable = [{}];
+                            let whitelistFile = this.options.whitelist_file;
+                            let ignoresPlayerLimit = false;
+                            let name = splitUser;
+                            let xuid = '2535428286950419';
+                            fs_1.default.readFile(this.options.whitelist_file, 'utf8', function readFileCallback(error, data) {
+                                if (error) {
+                                    utils_1.logging(this.options.strings.error_with_reading_file, error);
+                                    message.channel.send(this.options.strings.error_command);
+                                }
+                                else {
+                                    whitelistTable = JSON.parse(data);
+                                    whitelistTable.push({ ignoresPlayerLimit, name, xuid });
+                                    var whitelistJSON = JSON.stringify(whitelistTable);
+                                    fs_1.default.writeFile(whitelistFile, whitelistJSON, 'utf8', (error) => {
+                                        if (error) {
+                                            message.channel.send(this.options.strings.error_command);
+                                            throw error;
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                        catch (error) {
+                            utils_1.logging(error);
+                            message.channel.send(this.options.strings.error_command);
+                        }
                     }
                     else {
-                        utils_1.logging(author + this.options.strings.error_command);
+                        utils_1.logging(author + ' ' + this.options.strings.error_command);
                         message.channel.send(this.options.strings.error_command);
                     }
                 }
@@ -163,18 +202,54 @@ class Discord {
                     let splitRemove = split && split[1] ? split[1] : '';
                     let splitUser = split && split[2] ? split[2] : '';
                     if (splitCommand && splitRemove && splitUser) {
-                        utils_1.logging(this.options.strings.command_entered_message + author, { splitCommand, splitRemove, splitUser });
-                        message.channel.send(this.options.strings.successful_command);
+                        utils_1.logging(this.options.strings.command_entered_message + author, message.content);
+                        try {
+                            let date = new Date();
+                            utils_1.executeShellScript(`cd ${this.options.path} && git add ${this.options.whitelist_file} && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`);
+                            let files = yield promises_1.readdir(this.options.path);
+                            if (files.filter((item) => item.includes(this.options.old_whitelist_file))) {
+                                utils_1.executeShellScript(`cd ${this.options.download_path} && ` + `rm ${this.options.old_whitelist_file}`);
+                            }
+                            utils_1.executeShellScript(`cd ${this.options.path} && ` + `cp ${this.options.whitelist_file} ${this.options.old_whitelist_file}`);
+                            var whitelistTable = [{}];
+                            let whitelistFile = this.options.whitelist_file;
+                            fs_1.default.readFile(this.options.whitelist_file, 'utf8', function readFileCallback(error, data) {
+                                if (error) {
+                                    utils_1.logging(this.options.strings.error_with_reading_file, error);
+                                }
+                                else {
+                                    let whitelistData = JSON.parse(data);
+                                    let userNames = [];
+                                    whitelistData.forEach(function (whitelistData) {
+                                        userNames.push(whitelistData.name);
+                                    });
+                                    if (userNames.includes(splitUser)) {
+                                        let updatedData = whitelistData.filter((whitelistData) => whitelistData.name !== splitUser);
+                                        var whitelistJSON = JSON.stringify(updatedData);
+                                        fs_1.default.writeFile(whitelistFile, whitelistJSON, 'utf8', (error) => {
+                                            if (error) {
+                                                message.channel.send(this.options.strings.error_command);
+                                                throw error;
+                                            }
+                                        });
+                                    }
+                                }
+                            });
+                        }
+                        catch (error) {
+                            utils_1.logging(error);
+                            message.channel.send(this.options.strings.error_command);
+                        }
                     }
                     else {
-                        utils_1.logging(author + this.options.strings.error_command);
+                        utils_1.logging(author + ' ' + this.options.strings.error_command);
                         message.channel.send(this.options.strings.error_command);
                     }
                 }
                 else {
                     message.reply(this.options.strings.invalid_permission_command);
                 }
-            });
+            }));
         });
     }
     loginClient() {

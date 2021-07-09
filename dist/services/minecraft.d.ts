@@ -19,9 +19,9 @@ interface MinecraftStringsInterface {
     download_button: string | undefined;
     not_up_to_date_server_message: string | undefined;
     updated_server_message: string | undefined;
-    error_downloading_version: string | undefined;
-    deleted_oldest_version_success: string | undefined;
-    error_deleting_oldest_version: string | undefined;
+    error_downloading_version_message: string | undefined;
+    deleted_oldest_version_success_message: string | undefined;
+    error_deleting_oldest_version_message: string | undefined;
 }
 declare class Minecraft {
     private options;

@@ -17,18 +17,23 @@ interface MinecraftOptionsInterface {
   // Strings of whatever we are going to be posting at
   strings: MinecraftStringsInterface
 
+  // Numbers
+  numbers: MinecraftNumbersInterface
+
   // If set, we want to move the file into this location.
   backup_path: string | undefined
 
   // Path of all downloads
   download_path: string | undefined
+
+  // Path of all Minecraft Log Files
+  log_file: string | undefined
 }
 
 /**
  * Handling the strings as configuration so we can easily change them if needed.
  */
 interface MinecraftStringsInterface {
-  max_number_files_in_downloads_folder: number
   pre_backup_message: string | undefined
   post_backup_message: string | undefined
   error_backup_message: string | undefined
@@ -42,9 +47,13 @@ interface MinecraftStringsInterface {
   download_button: string | undefined
   not_up_to_date_server_message: string | undefined
   updated_server_message: string | undefined
-  error_downloading_version: string | undefined
-  deleted_oldest_version_success: string | undefined
-  error_deleting_oldest_version: string | undefined
+  error_downloading_version_message: string | undefined
+  deleted_oldest_version_success_message: string | undefined
+  error_deleting_oldest_version_message: string | undefined
+}
+
+interface MinecraftNumbersInterface {
+  max_number_files_in_downloads_folder: number
 }
 
 /**
@@ -107,12 +116,13 @@ class Minecraft {
             process.env.options_not_up_to_date_server_message ||
             `Server is not up to date. Updating server to latest version: `,
           updated_server_message: process.env.options_updated_server_message || `Server is up to date.`,
-          error_downloading_version:
-            process.env.options_error_downloading_version || `An error occurred while downloading latest file.`,
-          deleted_oldest_version_success:
-            process.env.options_deleted_oldest_version_success || `Oldest file has been deleted: `,
-          error_deleting_oldest_version:
-            process.env.options_error_deleting_oldest_version || `An error occurred while deleting the oldest file.`,
+          error_downloading_version_message:
+            process.env.options_error_downloading_version_message || `An error occurred while downloading latest file.`,
+          deleted_oldest_version_success_message:
+            process.env.options_deleted_oldest_version_success_message || `Oldest file has been deleted: `,
+          error_deleting_oldest_version_message:
+            process.env.options_error_deleting_oldest_version_message ||
+            `An error occurred while deleting the oldest file.`,
         },
       }
     }
@@ -136,8 +146,8 @@ class Minecraft {
 
       // Sends message to Discord that backup is complete
       this.discord_instance.sendMessageToDiscord(this.options.strings.post_backup_message)
-    } catch (e) {
-      logging(e)
+    } catch (error) {
+      logging(error)
     }
     return
   }
@@ -200,8 +210,8 @@ class Minecraft {
       const button: cheerio.Cheerio = $(this.options.strings.download_button)
       const buttonData: cheerio.Element = button[0]
       return Object.values(buttonData)[3].href || ''
-    } catch (err) {
-      logging('Checking for latest version', err)
+    } catch (error) {
+      logging('Checking for latest version', error)
     }
 
     return ''
@@ -223,8 +233,8 @@ class Minecraft {
       } else {
         logging(this.options.strings.updated_server_message)
       }
-    } catch (err) {
-      logging('Error with getting last item', err)
+    } catch (error) {
+      logging('Error with getting last item', error)
     }
   }
 
@@ -248,9 +258,9 @@ class Minecraft {
           `unzip -o "${this.options.download_path}${latestVersionZip}" -x "*server.properties*" "*permissions.json*" "*whitelist.json*" "*valid_known_packs.json*" && ` +
           `chmod 777 ${this.options.path}/bedrock_server`,
       )
-    } catch (err) {
-      logging('Error with downloading version', this.options.strings.error_downloading_version)
-      logging('Updating server', err)
+    } catch (error) {
+      logging('Error with downloading version', this.options.strings.error_downloading_version_message)
+      logging('Updating server', error)
     }
   }
 
@@ -264,11 +274,11 @@ class Minecraft {
       if (count > this.options.numbers.max_number_files_in_downloads_folder) {
         let oldFile: string = files[1]
         executeShellScript(`cd ${this.options.download_path} && rm ${oldFile}`)
-        logging(this.options.strings.deleted_oldest_version_success + oldFile)
+        logging(this.options.strings.deleted_oldest_version_success_message + oldFile)
       }
-    } catch (err) {
-      logging('Error with deleting oldest version', this.options.strings.error_deleting_oldest_version)
-      logging('Deleting oldest files', err)
+    } catch (error) {
+      logging('Error with deleting oldest version', this.options.strings.error_deleting_oldest_version_message)
+      logging('Deleting oldest files', error)
     }
   }
 

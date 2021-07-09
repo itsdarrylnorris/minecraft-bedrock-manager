@@ -1,17 +1,30 @@
 import { Client, Collection, Message, WebhookClient } from 'discord.js'
+import fs from 'fs'
+import { readdir } from 'fs/promises'
 import os from 'os'
 import { executeShellScript, logging } from '../utils'
 require('dotenv').config()
+
+//TODO: Add the appropriate messages everywhere
+// TODO: Fix interfaces
 
 /**
  * Interface of Discord.
  */
 interface DiscordOptionsInterface {
   message: Message
+
   // Webhook string
   discord: MinecraftDiscordInterface | undefined
-  sending_discord_message: string | undefined
-  error_discord_message: string | undefined
+
+  // Path of the location where all the files lives
+  path: string | undefined
+
+  // Path of all Minecraft Log Files
+  log_file: string | undefined
+
+  // Strings of whatever we are going to be posting at
+  strings: DiscordStringsInterface
 }
 
 /**
@@ -26,6 +39,10 @@ interface WebhookInterface {
   send: any
   id: string
   token: string
+}
+
+interface DiscordStringsInterface {
+  sending_discord_message: string | undefined
 }
 
 /**
@@ -73,7 +90,14 @@ class Discord {
           help_command_message:
             process.env.options_help_command_message ||
             'Available Commands: mbm start server, mbm stop server, mbm restart server, mbm help, mbm add [Gamertag], mbm remove [Gamertag]',
-          command_entered_message: process.env.command_entered_message || 'Command entered by: ',
+          command_entered_message: process.env.options_command_entered_message || 'Command entered by: ',
+          successful_added_user_message:
+            process.env.options_successful_added_user_message ||
+            ' has been added to the server. Restart the server to complete the adding process.',
+          successful_removed_user_message:
+            process.env.options_successful_removed_user_message ||
+            ' has been removed from the server. Restart the server to complete the removal process.',
+          error_with_reading_file: process.env.options_error_with_reading_file || 'Could not read whitelist.json file.',
           start_command: 'start server',
           stop_command: 'stop server',
           restart_command: 'restart server',
@@ -95,8 +119,8 @@ class Discord {
     try {
       const webhook: WebhookInterface = new WebhookClient(this.options.discord_id, this.options.discord_token)
       await webhook.send(`[${os.hostname()}] ${string}`)
-    } catch (err) {
-      logging(this.options.strings.error_discord_message, err)
+    } catch (error) {
+      logging(this.options.strings.error_discord_message, error)
     }
   }
 
@@ -134,7 +158,7 @@ class Discord {
    * Starts the Discord commands
    */
   async startCommands() {
-    this.client.on('message', (message: Message) => {
+    this.client.on('message', async (message: Message) => {
       if (message.author.bot) return
 
       const command: string = message.content.toLowerCase()
@@ -214,24 +238,55 @@ class Discord {
           logging(this.options.strings.command_entered_message + author, message.content)
           try {
             let date: Date = new Date()
+
             // Backup whitelist.json file
             executeShellScript(
               `cd ${this.options.path} && git add ${
                 this.options.whitelist_file
               } && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`,
             )
-            // Make a copy of the whitelist.json file
+
+            // Deletes old-whitelist.json file if available.
+            let files: Array<string> = await readdir(this.options.path)
+            if (files.filter((item) => item.includes(this.options.old_whitelist_file))) {
+              executeShellScript(`cd ${this.options.download_path} && ` + `rm ${this.options.old_whitelist_file}`)
+            }
+
+            // Make a copy of the whitelist.json file, renamed as old-whitelist.json file
             executeShellScript(
-              `cd ${this.options.whitelist_file} && ` +
-                `cp ${this.options.whitelist_file} ${this.options.old_whitelist_file}`,
+              `cd ${this.options.path} && ` + `cp ${this.options.whitelist_file} ${this.options.old_whitelist_file}`,
             )
 
-            message.channel.send(this.options.strings.successful_command)
-          } catch (err) {
-            logging('Command Error', err)
+            let whitelistTable = [{}]
+            let whitelistFile: string = this.options.whitelist_file
+            let ignoresPlayerLimit: boolean = false
+            let name: string = splitUser
+            // @TODO: Use the actual xuid
+            let xuid = '2535428286950419'
+
+            // Read whitelist.json file and edit it if it exists
+            fs.readFile(this.options.whitelist_file, 'utf8', function readFileCallback(this: any, error, data) {
+              if (error) {
+                logging(this.options.strings.error_with_reading_file, error)
+                message.channel.send(this.options.strings.error_command)
+              } else {
+                whitelistTable = JSON.parse(data)
+                whitelistTable.push({ ignoresPlayerLimit, name, xuid })
+                let whitelistJSON: string = JSON.stringify(whitelistTable)
+                fs.writeFile(whitelistFile, whitelistJSON, 'utf8', (error) => {
+                  if (error) {
+                    message.channel.send(this.options.strings.error_command)
+                    throw error
+                  }
+                })
+              }
+            })
+          } catch (error) {
+            logging(error)
+            message.channel.send(this.options.strings.error_command)
           }
         } else {
-          logging(author + this.options.strings.error_command)
+          logging(author + ' ' + this.options.strings.error_command)
           message.channel.send(this.options.strings.error_command)
         }
       }
@@ -247,10 +302,63 @@ class Discord {
         let splitUser: string = split && split[2] ? split[2] : ''
 
         if (splitCommand && splitRemove && splitUser) {
-          logging(this.options.strings.command_entered_message + author, { splitCommand, splitRemove, splitUser })
-          message.channel.send(this.options.strings.successful_command)
+          logging(this.options.strings.command_entered_message + author, message.content)
+          try {
+            let date: Date = new Date()
+
+            // Backup whitelist.json file
+            executeShellScript(
+              `cd ${this.options.path} && git add ${
+                this.options.whitelist_file
+              } && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`,
+            )
+
+            // Deletes old-whitelist.json file if available.
+            let files: Array<string> = await readdir(this.options.path)
+            if (files.filter((item) => item.includes(this.options.old_whitelist_file))) {
+              executeShellScript(`cd ${this.options.download_path} && ` + `rm ${this.options.old_whitelist_file}`)
+            }
+
+            // Make a copy of the whitelist.json file, renamed as old-whitelist.json file
+            executeShellScript(
+              `cd ${this.options.path} && ` + `cp ${this.options.whitelist_file} ${this.options.old_whitelist_file}`,
+            )
+
+            let whitelistFile: string = this.options.whitelist_file
+
+            // Read whitelist.json file and edit it if it exists
+            fs.readFile(this.options.whitelist_file, 'utf8', function readFileCallback(this: any, error, data) {
+              if (error) {
+                logging(this.options.strings.error_with_reading_file, error)
+              } else {
+                let whitelistData = JSON.parse(data)
+                let userNames: string[] = []
+
+                whitelistData.forEach(function (whitelistData: { name: string }) {
+                  userNames.push(whitelistData.name)
+                })
+
+                if (userNames.includes(splitUser)) {
+                  let updatedData: string[] = whitelistData.filter(
+                    (whitelistData: { name: string }) => whitelistData.name !== splitUser,
+                  )
+                  let whitelistJSON: string = JSON.stringify(updatedData)
+
+                  fs.writeFile(whitelistFile, whitelistJSON, 'utf8', (error) => {
+                    if (error) {
+                      message.channel.send(this.options.strings.error_command)
+                      throw error
+                    }
+                  })
+                }
+              }
+            })
+          } catch (error) {
+            logging(error)
+            message.channel.send(this.options.strings.error_command)
+          }
         } else {
-          logging(author + this.options.strings.error_command)
+          logging(author + ' ' + this.options.strings.error_command)
           message.channel.send(this.options.strings.error_command)
         }
       }
