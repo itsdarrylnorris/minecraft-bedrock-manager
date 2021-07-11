@@ -1,11 +1,12 @@
 interface MinecraftOptionsInterface {
     path: string | undefined;
-    strings: MinecraftStringsInterface;
     backup_path: string | undefined;
     download_path: string | undefined;
+    log_file: string | undefined;
+    strings: MinecraftStringsInterface;
+    numbers: MinecraftNumbersInterface;
 }
 interface MinecraftStringsInterface {
-    max_number_files_in_downloads_folder: number;
     pre_backup_message: string | undefined;
     post_backup_message: string | undefined;
     error_backup_message: string | undefined;
@@ -22,6 +23,9 @@ interface MinecraftStringsInterface {
     error_downloading_version_message: string | undefined;
     deleted_oldest_version_success_message: string | undefined;
     error_deleting_oldest_version_message: string | undefined;
+}
+interface MinecraftNumbersInterface {
+    max_number_files_in_downloads_folder: number;
 }
 declare class Minecraft {
     private options;

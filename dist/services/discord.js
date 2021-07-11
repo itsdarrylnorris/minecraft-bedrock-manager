@@ -47,11 +47,11 @@ class Discord {
                     help_command_message: process.env.options_help_command_message ||
                         'Available Commands: mbm start server, mbm stop server, mbm restart server, mbm help, mbm add [Gamertag], mbm remove [Gamertag]',
                     command_entered_message: process.env.options_command_entered_message || 'Command entered by: ',
-                    successful_added_user_message: process.env.options_successful_added_user_message ||
+                    successfully_added_user_message: process.env.options_successfully_added_user_message ||
                         ' has been added to the server. Restart the server to complete the adding process.',
-                    successful_removed_user_message: process.env.options_successful_removed_user_message ||
+                    successfully_removed_user_message: process.env.options_successfully_removed_user_message ||
                         ' has been removed from the server. Restart the server to complete the removal process.',
-                    error_with_reading_file: process.env.options_error_with_reading_file || 'Could not read whitelist.json file.',
+                    user_not_found: process.env.options_user_not_found || 'User cannot be found.',
                     start_command: 'start server',
                     stop_command: 'stop server',
                     restart_command: 'restart server',
@@ -159,31 +159,33 @@ class Discord {
                             utils_1.executeShellScript(`cd ${this.options.path} && git add ${this.options.whitelist_file} && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`);
                             let files = yield promises_1.readdir(this.options.path);
                             if (files.filter((item) => item.includes(this.options.old_whitelist_file))) {
-                                utils_1.executeShellScript(`cd ${this.options.download_path} && ` + `rm ${this.options.old_whitelist_file}`);
+                                utils_1.executeShellScript(`cd ${this.options.path} && ` + `rm ${this.options.old_whitelist_file}`);
                             }
                             utils_1.executeShellScript(`cd ${this.options.path} && ` + `cp ${this.options.whitelist_file} ${this.options.old_whitelist_file}`);
-                            var whitelistTable = [{}];
+                            let whitelistTable = [{}];
                             let whitelistFile = this.options.whitelist_file;
                             let ignoresPlayerLimit = false;
                             let name = splitUser;
                             let xuid = '2535428286950419';
                             fs_1.default.readFile(this.options.whitelist_file, 'utf8', function readFileCallback(error, data) {
                                 if (error) {
-                                    utils_1.logging(this.options.strings.error_with_reading_file, error);
-                                    message.channel.send(this.options.strings.error_command);
+                                    throw error;
                                 }
                                 else {
                                     whitelistTable = JSON.parse(data);
                                     whitelistTable.push({ ignoresPlayerLimit, name, xuid });
-                                    var whitelistJSON = JSON.stringify(whitelistTable);
-                                    fs_1.default.writeFile(whitelistFile, whitelistJSON, 'utf8', (error) => {
-                                        if (error) {
-                                            message.channel.send(this.options.strings.error_command);
-                                            throw error;
-                                        }
-                                    });
+                                    addUser(whitelistTable);
                                 }
                             });
+                            const addUser = (whitelistTable) => {
+                                let whitelistJSON = JSON.stringify(whitelistTable);
+                                fs_1.default.writeFile(whitelistFile, whitelistJSON, 'utf8', (error) => {
+                                    if (error) {
+                                        throw error;
+                                    }
+                                });
+                                message.channel.send(splitUser + this.options.strings.successfully_added_user_message);
+                            };
                         }
                         catch (error) {
                             utils_1.logging(error);
@@ -208,33 +210,39 @@ class Discord {
                             utils_1.executeShellScript(`cd ${this.options.path} && git add ${this.options.whitelist_file} && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`);
                             let files = yield promises_1.readdir(this.options.path);
                             if (files.filter((item) => item.includes(this.options.old_whitelist_file))) {
-                                utils_1.executeShellScript(`cd ${this.options.download_path} && ` + `rm ${this.options.old_whitelist_file}`);
+                                utils_1.executeShellScript(`cd ${this.options.path} && ` + `rm ${this.options.old_whitelist_file}`);
                             }
                             utils_1.executeShellScript(`cd ${this.options.path} && ` + `cp ${this.options.whitelist_file} ${this.options.old_whitelist_file}`);
-                            var whitelistTable = [{}];
                             let whitelistFile = this.options.whitelist_file;
+                            let userNames = [];
                             fs_1.default.readFile(this.options.whitelist_file, 'utf8', function readFileCallback(error, data) {
                                 if (error) {
                                     utils_1.logging(this.options.strings.error_with_reading_file, error);
                                 }
                                 else {
                                     let whitelistData = JSON.parse(data);
-                                    let userNames = [];
                                     whitelistData.forEach(function (whitelistData) {
                                         userNames.push(whitelistData.name);
                                     });
-                                    if (userNames.includes(splitUser)) {
-                                        let updatedData = whitelistData.filter((whitelistData) => whitelistData.name !== splitUser);
-                                        var whitelistJSON = JSON.stringify(updatedData);
-                                        fs_1.default.writeFile(whitelistFile, whitelistJSON, 'utf8', (error) => {
-                                            if (error) {
-                                                message.channel.send(this.options.strings.error_command);
-                                                throw error;
-                                            }
-                                        });
-                                    }
+                                    removeUser(whitelistData);
                                 }
                             });
+                            const removeUser = (whitelistData) => {
+                                if (userNames.includes(splitUser)) {
+                                    let updatedData = whitelistData.filter((whitelistData) => whitelistData.name !== splitUser);
+                                    let whitelistJSON = JSON.stringify(updatedData);
+                                    fs_1.default.writeFile(whitelistFile, whitelistJSON, 'utf8', (error) => {
+                                        if (error) {
+                                            message.channel.send(this.options.strings.error_command);
+                                            throw error;
+                                        }
+                                    });
+                                    message.channel.send(splitUser + this.options.strings.successfully_removed_user_message);
+                                }
+                                else {
+                                    message.channel.send(this.options.strings.user_not_found);
+                                }
+                            };
                         }
                         catch (error) {
                             utils_1.logging(error);

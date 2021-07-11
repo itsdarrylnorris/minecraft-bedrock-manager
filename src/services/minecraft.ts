@@ -8,30 +8,30 @@ import Discord from './discord'
 require('dotenv').config()
 
 /**
- * Interface of Minecraft.
+ * Minecraft Interface.
  */
 interface MinecraftOptionsInterface {
-  // Path of the location where all the files lives
+  // Path location of all files
   path: string | undefined
 
-  // Strings of whatever we are going to be posting at
+  // If set, moves files into a backup location
+  backup_path: string | undefined
+
+  // Path location of all downloads
+  download_path: string | undefined
+
+  // Minecraft log file
+  log_file: string | undefined
+
+  // Strings that are used to post
   strings: MinecraftStringsInterface
 
   // Numbers
   numbers: MinecraftNumbersInterface
-
-  // If set, we want to move the file into this location.
-  backup_path: string | undefined
-
-  // Path of all downloads
-  download_path: string | undefined
-
-  // Path of all Minecraft Log Files
-  log_file: string | undefined
 }
 
 /**
- * Handling the strings as configuration so we can easily change them if needed.
+ * Editable configuration for strings.
  */
 interface MinecraftStringsInterface {
   pre_backup_message: string | undefined
@@ -61,7 +61,7 @@ interface MinecraftNumbersInterface {
  *
  */
 class Minecraft {
-  // Options config
+  // Options configuration
   private options: MinecraftOptionsInterface | any
 
   private logs_strings: any = {
@@ -132,10 +132,11 @@ class Minecraft {
 
   /**
    * Start the execution.
+   *
    */
   async restartServer() {
     try {
-      // Sends message to Discord that a backup has begun
+      // Sends a message to Discord that a backup has begun
       await this.discord_instance.sendMessageToDiscord(this.options.strings.pre_backup_message)
 
       // Stops Minecraft server
@@ -144,7 +145,7 @@ class Minecraft {
       // Starts Minecraft server
       await this.startServer()
 
-      // Sends message to Discord that backup is complete
+      // Sends a message to Discord that backup is complete
       this.discord_instance.sendMessageToDiscord(this.options.strings.post_backup_message)
     } catch (error) {
       logging(error)
@@ -153,10 +154,11 @@ class Minecraft {
   }
 
   /**
-   * Starts the server using screen command.
+   * Starts the server using a screen command.
+   *
    */
   async startServer() {
-    // Sends message to Discord that server is stopping
+    // Sends a message to Discord that tne server is stopping
     logging(this.options.strings.stop_server_message)
 
     // Backups Server
@@ -171,6 +173,7 @@ class Minecraft {
     // Deletes oldest file if Download folder exceeds preferred capacity
     await this.deleteOldestFile()
 
+    // Starts a screen
     executeShellScript(
       `cd ${this.options.path} && screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}bedrock_server" `,
     )
@@ -181,6 +184,7 @@ class Minecraft {
 
   /**
    * Commits backup to Git Repository.
+   *
    */
   backupServer(): void {
     let date: Date = new Date()
@@ -192,6 +196,7 @@ class Minecraft {
 
   /**
    * Checks for latest version.
+   *
    */
   async checkForLatestVersion(): Promise<string> {
     try {
@@ -242,6 +247,7 @@ class Minecraft {
    * Updates Minecraft Server.
    *
    * @TODO: chmod -R 744 bedrock_server?
+   *
    * @param versionLink The link of the latest version from the website.
    */
   updateServer(versionLink: string | undefined): void {
@@ -266,6 +272,7 @@ class Minecraft {
 
   /**
    * Deletes oldest file if Download folder exceeds preferred capacity.
+   *
    */
   async deleteOldestFile(): Promise<void> {
     try {
@@ -284,6 +291,7 @@ class Minecraft {
 
   /**
    * Stops the server.
+   *
    */
   async stopServer() {
     logging(this.options.strings.stop_server_message)
@@ -330,9 +338,8 @@ class Minecraft {
   }
 
   /**
-   * Gets Gamertag from Log
+   * Gets Gamertag from Log.
    *
-   * @TODO: We need to find the xuid as well and send to Discord.
    */
   getGamerTagFromLog(logString: string, logIndentifier: string): string {
     return logString.split(logIndentifier)[1].split(',')[0].split(' ')[1]
