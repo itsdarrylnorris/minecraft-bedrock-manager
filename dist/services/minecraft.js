@@ -153,6 +153,7 @@ class Minecraft {
             }
             catch (error) {
                 utils_1.logging('Error while looking for xuid', error);
+                console.log(error);
             }
             return '';
         });

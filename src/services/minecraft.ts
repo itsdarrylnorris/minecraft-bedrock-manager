@@ -276,6 +276,7 @@ class Minecraft {
       return xuidString
     } catch (error) {
       logging('Error while looking for xuid', error)
+      console.log(error)
     }
 
     return ''
