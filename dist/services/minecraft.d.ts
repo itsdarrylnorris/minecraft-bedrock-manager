@@ -17,7 +17,9 @@ interface MinecraftStringsInterface {
     gamertag_join_server_message: string | undefined;
     gamertag_left_server_message: string | undefined;
     version_download: string | undefined;
+    xuid_download: string | undefined;
     download_button: string | undefined;
+    xuid_string: string | undefined;
     not_up_to_date_server_message: string | undefined;
     updated_server_message: string | undefined;
     error_downloading_version_message: string | undefined;
@@ -38,6 +40,7 @@ declare class Minecraft {
     startServer(): Promise<void>;
     backupServer(): void;
     checkForLatestVersion(): Promise<string>;
+    getXuidFromGamerTag(gamerTag?: string): Promise<string>;
     getLastItemInDownload(versionLink: string | undefined): Promise<void>;
     updateServer(versionLink: string | undefined): void;
     deleteOldestFile(): Promise<void>;

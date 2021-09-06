@@ -45,7 +45,9 @@ interface MinecraftStringsInterface {
   gamertag_join_server_message: string | undefined
   gamertag_left_server_message: string | undefined
   version_download: string | undefined
+  xuid_download: string | undefined
   download_button: string | undefined
+  xuid_string: string | undefined
   not_up_to_date_server_message: string | undefined
   updated_server_message: string | undefined
   error_downloading_version_message: string | undefined
@@ -112,7 +114,9 @@ class Minecraft {
             process.env.options_gamertag_left_server_message || 'left the Minecraft server.',
           version_download:
             process.env.options_versions_downloads || 'https://www.minecraft.net/en-us/download/server/bedrock/',
+          xuid_download: process.env.xuid_download || 'https://cxkes.me/xbox/xuid',
           download_button: process.env.options_download_button || '[data-platform="serverBedrockLinux"]',
+          xuid_string: process.env.xuid_string || '.col-md-8 div h1',
           not_up_to_date_server_message:
             process.env.options_not_up_to_date_server_message ||
             `Server is not up to date. Updating server to latest version: `,
@@ -210,9 +214,9 @@ class Minecraft {
       logging('Checking for latest version')
       let downloadURL: string = this.options.strings.version_download
 
-      const browser = await puppeteer.use(StealthPlugin()).launch({ 
-	args: ['--no-sandbox'], 
-        executablePath: '/usr/bin/chromium-browser'
+      const browser = await puppeteer.use(StealthPlugin()).launch({
+        args: ['--no-sandbox'],
+        executablePath: '/usr/bin/chromium-browser',
       })
       const page = await browser.newPage()
       await page.goto(downloadURL)
@@ -228,6 +232,48 @@ class Minecraft {
       return Object.values(buttonData)[3].href || ''
     } catch (error) {
       logging('Error while checking for latest version', error)
+    }
+
+    return ''
+  }
+
+  /**
+   * Get xuid from gamertag, using the website https://cxkes.me/xbox/xuid.
+   *
+   * @url https://cxkes.me/xbox/xuid
+   *
+   */
+  async getXuidFromGamerTag(gamerTag: string = ''): Promise<string> {
+    try {
+      logging('Looking for xuid')
+      let downloadURL: string = this.options.strings.xuid_download
+
+      const browser = await puppeteer.use(StealthPlugin()).launch({ args: ['--no-sandbox'] })
+      const page = await browser.newPage()
+      await page.goto(downloadURL)
+
+      await page.click('.form-check-input[value="1"]')
+      await page.focus('#gamertag')
+      await page.keyboard.type(gamerTag)
+
+      await Promise.all([page.click('button[type="submit"]'), page.waitForNavigation({ waitUntil: 'networkidle0' })])
+
+      const html = await page.content()
+      const $: cheerio.Root = cheerio.load(html)
+
+      const xuidPayload: cheerio.Cheerio = $(this.options.strings.xuid_string)
+      // @ts-ignore
+      const xuidString: string = xuidPayload[0].children[0].data
+
+      if (xuidString) {
+        logging(`Found xuid from gamertag. Gamertag: ${gamerTag}, xuid: ${xuidString}`)
+      }
+
+      await browser.close()
+
+      return xuidString
+    } catch (error) {
+      logging('Error while looking for xuid', error)
     }
 
     return ''

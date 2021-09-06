@@ -27,7 +27,8 @@ commander_1.default
     .option('-l, --logs', 'Shows the Minecraft Logs')
     .option('-d, --discord', 'Starts Discord')
     .option('-b, --backup', 'Backup')
-    .option('-sa, --start-all, Start Everything');
+    .option('-sa, --start-all, Start Everything')
+    .option('-x, --xuid, Find xuid from gamertag');
 commander_1.default.parse(process.argv);
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const options = commander_1.default.opts();
@@ -68,6 +69,21 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const minecraft = new minecraft_1.default({});
             minecraft.backupServer();
+        }
+        catch (error) {
+            utils_1.logging('Error:', error);
+        }
+    }
+    else if (options.xuid) {
+        try {
+            if (process.argv[3]) {
+                const minecraft = new minecraft_1.default({});
+                yield minecraft.getXuidFromGamerTag(process.argv[3]);
+                process.exit();
+            }
+            else {
+                utils_1.logging('Missing gamertag. Please add gamertag after the --xuid');
+            }
         }
         catch (error) {
             utils_1.logging('Error:', error);

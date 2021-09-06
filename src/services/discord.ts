@@ -3,6 +3,7 @@ import fs from 'fs'
 import { readdir } from 'fs/promises'
 import os from 'os'
 import { executeShellScript, logging } from '../utils'
+import Minecraft from './minecraft'
 require('dotenv').config()
 
 /**
@@ -299,8 +300,9 @@ class Discord {
             let whitelistFile: string = this.options.whitelist_file
             let ignoresPlayerLimit: boolean = false
             let name: string = splitUser
-            // @TODO: Use the actual xuid
-            let xuid = '2535428286950419'
+
+            const minecraft = new Minecraft({})
+            let xuid = await minecraft.getXuidFromGamerTag(name)
 
             // Read whitelist.json file
             fs.readFile(this.options.whitelist_file, 'utf8', function readFileCallback(this: any, error, data) {

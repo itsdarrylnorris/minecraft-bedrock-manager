@@ -53,7 +53,9 @@ class Minecraft {
                     gamertag_join_server_message: process.env.options_gamertag_join_server_message || 'joined the Minecraft server.',
                     gamertag_left_server_message: process.env.options_gamertag_left_server_message || 'left the Minecraft server.',
                     version_download: process.env.options_versions_downloads || 'https://www.minecraft.net/en-us/download/server/bedrock/',
+                    xuid_download: process.env.xuid_download || 'https://cxkes.me/xbox/xuid',
                     download_button: process.env.options_download_button || '[data-platform="serverBedrockLinux"]',
+                    xuid_string: process.env.xuid_string || '.col-md-8 div h1',
                     not_up_to_date_server_message: process.env.options_not_up_to_date_server_message ||
                         `Server is not up to date. Updating server to latest version: `,
                     updated_server_message: process.env.options_updated_server_message || `Server is up to date.`,
@@ -108,7 +110,7 @@ class Minecraft {
                 let downloadURL = this.options.strings.version_download;
                 const browser = yield puppeteer_extra_1.default.use(puppeteer_extra_plugin_stealth_1.default()).launch({
                     args: ['--no-sandbox'],
-                    executablePath: '/usr/bin/chromium-browser'
+                    executablePath: '/usr/bin/chromium-browser',
                 });
                 const page = yield browser.newPage();
                 yield page.goto(downloadURL);
@@ -121,6 +123,34 @@ class Minecraft {
             }
             catch (error) {
                 utils_1.logging('Error while checking for latest version', error);
+            }
+            return '';
+        });
+    }
+    getXuidFromGamerTag(gamerTag = '') {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                utils_1.logging('Looking for xuid');
+                let downloadURL = this.options.strings.xuid_download;
+                const browser = yield puppeteer_extra_1.default.use(puppeteer_extra_plugin_stealth_1.default()).launch({ args: ['--no-sandbox'] });
+                const page = yield browser.newPage();
+                yield page.goto(downloadURL);
+                yield page.click('.form-check-input[value="1"]');
+                yield page.focus('#gamertag');
+                yield page.keyboard.type(gamerTag);
+                yield Promise.all([page.click('button[type="submit"]'), page.waitForNavigation({ waitUntil: 'networkidle0' })]);
+                const html = yield page.content();
+                const $ = cheerio_1.default.load(html);
+                const xuidPayload = $(this.options.strings.xuid_string);
+                const xuidString = xuidPayload[0].children[0].data;
+                if (xuidString) {
+                    utils_1.logging(`Found xuid from gamertag. Gamertag:${gamerTag}, xuid: ${xuidString}`);
+                }
+                yield browser.close();
+                return xuidString;
+            }
+            catch (error) {
+                utils_1.logging('Error while looking for xuid', error);
             }
             return '';
         });

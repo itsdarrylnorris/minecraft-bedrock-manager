@@ -16,6 +16,7 @@ program
   .option('-d, --discord', 'Starts Discord')
   .option('-b, --backup', 'Backup')
   .option('-sa, --start-all, Start Everything')
+  .option('-x, --xuid, Find xuid from gamertag')
 
 program.parse(process.argv)
 
@@ -55,6 +56,18 @@ const main = async () => {
     try {
       const minecraft = new Minecraft({})
       minecraft.backupServer()
+    } catch (error) {
+      logging('Error:', error)
+    }
+  } else if (options.xuid) {
+    try {
+      if (process.argv[3]) {
+        const minecraft = new Minecraft({})
+        await minecraft.getXuidFromGamerTag(process.argv[3])
+        process.exit()
+      } else {
+        logging('Missing gamertag. Please add gamertag after the --xuid')
+      }
     } catch (error) {
       logging('Error:', error)
     }

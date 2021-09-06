@@ -17,6 +17,7 @@ const fs_1 = __importDefault(require("fs"));
 const promises_1 = require("fs/promises");
 const os_1 = __importDefault(require("os"));
 const utils_1 = require("../utils");
+const minecraft_1 = __importDefault(require("./minecraft"));
 require('dotenv').config();
 class Discord {
     constructor(options) {
@@ -166,7 +167,8 @@ class Discord {
                             let whitelistFile = this.options.whitelist_file;
                             let ignoresPlayerLimit = false;
                             let name = splitUser;
-                            let xuid = '2535428286950419';
+                            const minecraft = new minecraft_1.default({});
+                            let xuid = yield minecraft.getXuidFromGamerTag(name);
                             fs_1.default.readFile(this.options.whitelist_file, 'utf8', function readFileCallback(error, data) {
                                 if (error) {
                                     throw error;
