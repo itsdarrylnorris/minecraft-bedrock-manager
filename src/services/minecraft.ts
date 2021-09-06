@@ -248,7 +248,9 @@ class Minecraft {
       logging('Looking for xuid')
       let downloadURL: string = this.options.strings.xuid_download
 
-      const browser = await puppeteer.use(StealthPlugin()).launch({ args: ['--no-sandbox'] })
+      const browser = await puppeteer
+        .use(StealthPlugin())
+        .launch({ args: ['--no-sandbox'], executablePath: '/usr/bin/chromium-browser' })
       const page = await browser.newPage()
       await page.goto(downloadURL)
 
