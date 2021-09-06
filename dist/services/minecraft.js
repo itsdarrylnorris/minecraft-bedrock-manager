@@ -144,7 +144,7 @@ class Minecraft {
                 const xuidPayload = $(this.options.strings.xuid_string);
                 const xuidString = xuidPayload[0].children[0].data;
                 if (xuidString) {
-                    utils_1.logging(`Found xuid from gamertag. Gamertag:${gamerTag}, xuid: ${xuidString}`);
+                    utils_1.logging(`Found xuid from gamertag. Gamertag: ${gamerTag}, xuid: ${xuidString}`);
                 }
                 yield browser.close();
                 return xuidString;
