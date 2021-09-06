@@ -108,7 +108,7 @@ class Discord {
                         message.channel.send(this.options.strings.successful_command);
                     }
                     catch (error) {
-                        utils_1.logging(error);
+                        utils_1.logging('Error starting the server', error);
                         message.channel.send(this.options.strings.error_command);
                     }
                 }
@@ -120,7 +120,7 @@ class Discord {
                         message.channel.send(this.options.strings.successful_command);
                     }
                     catch (error) {
-                        utils_1.logging(error);
+                        utils_1.logging('Error stoping the server', error);
                         message.channel.send(this.options.strings.error_command);
                     }
                 }
@@ -132,7 +132,7 @@ class Discord {
                         message.channel.send(this.options.strings.successful_command);
                     }
                     catch (error) {
-                        utils_1.logging(error);
+                        utils_1.logging('Error restarting the server', error);
                         message.channel.send(this.options.strings.error_command);
                     }
                 }
@@ -142,7 +142,7 @@ class Discord {
                         message.channel.send(this.options.strings.help_command_message);
                     }
                     catch (error) {
-                        utils_1.logging(error);
+                        utils_1.logging('Error executing help command', error);
                         message.channel.send(this.options.strings.error_command);
                     }
                 }
@@ -188,7 +188,7 @@ class Discord {
                             };
                         }
                         catch (error) {
-                            utils_1.logging(error);
+                            utils_1.logging('Error adding someone to the whitelist', error);
                             message.channel.send(this.options.strings.error_command);
                         }
                     }
@@ -245,7 +245,7 @@ class Discord {
                             };
                         }
                         catch (error) {
-                            utils_1.logging(error);
+                            utils_1.logging('Error removing someone from the whitelist', error);
                             message.channel.send(this.options.strings.error_command);
                         }
                     }

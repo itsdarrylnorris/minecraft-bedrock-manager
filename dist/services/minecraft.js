@@ -104,20 +104,20 @@ class Minecraft {
     checkForLatestVersion() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                utils_1.logging('Checking for latest version');
                 let downloadURL = this.options.strings.version_download;
-                utils_1.logging('Testing1');
-                const browser = yield puppeteer_extra_1.default.use(puppeteer_extra_plugin_stealth_1.default()).launch();
+                const browser = yield puppeteer_extra_1.default.use(puppeteer_extra_plugin_stealth_1.default()).launch({ args: ['--no-sandbox'] });
                 const page = yield browser.newPage();
                 yield page.goto(downloadURL);
                 const html = yield page.content();
                 const $ = cheerio_1.default.load(html);
                 const button = $(this.options.strings.download_button);
                 const buttonData = button[0];
-                utils_1.logging('Testing2');
+                yield browser.close();
                 return Object.values(buttonData)[3].href || '';
             }
             catch (error) {
-                utils_1.logging('Checking for latest version', error);
+                utils_1.logging('Error while checking for latest version', error);
             }
             return '';
         });
