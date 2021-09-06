@@ -209,6 +209,7 @@ class Minecraft {
     try {
       let downloadURL: string = this.options.strings.version_download
 
+      logging('Testing1');
       const browser = await puppeteer.use(StealthPlugin()).launch()
       const page = await browser.newPage()
       await page.goto(downloadURL)
@@ -219,7 +220,8 @@ class Minecraft {
       const button: cheerio.Cheerio = $(this.options.strings.download_button)
       const buttonData: cheerio.Element = button[0]
 
-      await browser.close()
+      logging('Testing2');
+      //  await browser.close()
 
       return Object.values(buttonData)[3].href || ''
     } catch (error) {

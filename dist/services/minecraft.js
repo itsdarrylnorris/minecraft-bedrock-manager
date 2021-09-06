@@ -105,6 +105,7 @@ class Minecraft {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 let downloadURL = this.options.strings.version_download;
+                utils_1.logging('Testing1');
                 const browser = yield puppeteer_extra_1.default.use(puppeteer_extra_plugin_stealth_1.default()).launch();
                 const page = yield browser.newPage();
                 yield page.goto(downloadURL);
@@ -112,7 +113,7 @@ class Minecraft {
                 const $ = cheerio_1.default.load(html);
                 const button = $(this.options.strings.download_button);
                 const buttonData = button[0];
-                yield browser.close();
+                utils_1.logging('Testing2');
                 return Object.values(buttonData)[3].href || '';
             }
             catch (error) {
