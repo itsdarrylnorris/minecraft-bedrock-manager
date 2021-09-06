@@ -12,14 +12,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const cheerio_1 = __importDefault(require("cheerio"));
 const chokidar_1 = __importDefault(require("chokidar"));
 const fs_1 = require("fs");
-const node_fetch_1 = __importDefault(require("node-fetch"));
 const os_1 = __importDefault(require("os"));
 const utils_1 = require("../utils");
 const discord_1 = __importDefault(require("./discord"));
 require('dotenv').config();
+const puppeteer_extra_1 = __importDefault(require("puppeteer-extra"));
+const puppeteer_extra_plugin_stealth_1 = __importDefault(require("puppeteer-extra-plugin-stealth"));
+const cheerio_1 = __importDefault(require("cheerio"));
 class Minecraft {
     constructor(options) {
         this.logs_strings = {
@@ -84,8 +85,13 @@ class Minecraft {
             utils_1.logging(this.options.strings.stop_server_message);
             this.backupServer();
             let versionLink = yield this.checkForLatestVersion();
-            yield this.getLastItemInDownload(versionLink);
-            yield this.deleteOldestFile();
+            if (versionLink) {
+                yield this.getLastItemInDownload(versionLink);
+                yield this.deleteOldestFile();
+            }
+            else {
+                utils_1.logging('Could not find the latest version from the website.');
+            }
             utils_1.executeShellScript(`cd ${this.options.path} && screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}bedrock_server" `);
             this.discord_instance.sendMessageToDiscord(this.options.strings.start_server_message);
         });
@@ -99,18 +105,14 @@ class Minecraft {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 let downloadURL = this.options.strings.version_download;
-                utils_1.logging('test');
-                const response = yield node_fetch_1.default(downloadURL, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0',
-                    },
-                });
-                const html = yield response.text();
+                const browser = yield puppeteer_extra_1.default.use(puppeteer_extra_plugin_stealth_1.default()).launch();
+                const page = yield browser.newPage();
+                yield page.goto(downloadURL);
+                const html = yield page.content();
                 const $ = cheerio_1.default.load(html);
                 const button = $(this.options.strings.download_button);
                 const buttonData = button[0];
+                yield browser.close();
                 return Object.values(buttonData)[3].href || '';
             }
             catch (error) {
