@@ -132,7 +132,9 @@ class Minecraft {
             try {
                 utils_1.logging('Looking for xuid');
                 let downloadURL = this.options.strings.xuid_download;
-                const browser = yield puppeteer_extra_1.default.use(puppeteer_extra_plugin_stealth_1.default()).launch({ args: ['--no-sandbox'] });
+                const browser = yield puppeteer_extra_1.default
+                    .use(puppeteer_extra_plugin_stealth_1.default())
+                    .launch({ args: ['--no-sandbox'], executablePath: '/usr/bin/chromium-browser' });
                 const page = yield browser.newPage();
                 yield page.goto(downloadURL);
                 yield page.click('.form-check-input[value="1"]');
