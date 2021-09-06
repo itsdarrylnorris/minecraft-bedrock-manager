@@ -214,7 +214,7 @@ class Discord {
           executeShellScript(`cd ${this.options.path} && ${this.options.discord_command} -s`)
           message.channel.send(this.options.strings.successful_command)
         } catch (error) {
-          logging(error)
+          logging('Error starting the server', error)
           message.channel.send(this.options.strings.error_command)
         }
       }
@@ -229,7 +229,7 @@ class Discord {
         try {
           message.channel.send(this.options.strings.successful_command)
         } catch (error) {
-          logging(error)
+          logging('Error stoping the server', error)
           message.channel.send(this.options.strings.error_command)
         }
       }
@@ -244,7 +244,7 @@ class Discord {
         try {
           message.channel.send(this.options.strings.successful_command)
         } catch (error) {
-          logging(error)
+          logging('Error restarting the server', error)
           message.channel.send(this.options.strings.error_command)
         }
       }
@@ -257,7 +257,7 @@ class Discord {
         try {
           message.channel.send(this.options.strings.help_command_message)
         } catch (error) {
-          logging(error)
+          logging('Error executing help command', error)
           message.channel.send(this.options.strings.error_command)
         }
       }
@@ -325,7 +325,7 @@ class Discord {
               message.channel.send(splitUser + this.options.strings.successfully_added_user_message)
             }
           } catch (error) {
-            logging(error)
+            logging('Error adding someone to the whitelist', error)
             message.channel.send(this.options.strings.error_command)
           }
         } else {
@@ -405,7 +405,7 @@ class Discord {
               }
             }
           } catch (error) {
-            logging(error)
+            logging('Error removing someone from the whitelist', error)
             message.channel.send(this.options.strings.error_command)
           }
         } else {

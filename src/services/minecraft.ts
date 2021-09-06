@@ -207,10 +207,10 @@ class Minecraft {
    */
   async checkForLatestVersion(): Promise<string> {
     try {
+      logging('Checking for latest version')
       let downloadURL: string = this.options.strings.version_download
 
-      logging('Testing1');
-      const browser = await puppeteer.use(StealthPlugin()).launch()
+      const browser = await puppeteer.use(StealthPlugin()).launch({ args: ['--no-sandbox'] })
       const page = await browser.newPage()
       await page.goto(downloadURL)
 
@@ -220,12 +220,11 @@ class Minecraft {
       const button: cheerio.Cheerio = $(this.options.strings.download_button)
       const buttonData: cheerio.Element = button[0]
 
-      logging('Testing2');
-      //  await browser.close()
+      await browser.close()
 
       return Object.values(buttonData)[3].href || ''
     } catch (error) {
-      logging('Checking for latest version', error)
+      logging('Error while checking for latest version', error)
     }
 
     return ''
