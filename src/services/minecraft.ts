@@ -210,7 +210,10 @@ class Minecraft {
       logging('Checking for latest version')
       let downloadURL: string = this.options.strings.version_download
 
-      const browser = await puppeteer.use(StealthPlugin()).launch({ args: ['--no-sandbox'] })
+      const browser = await puppeteer.use(StealthPlugin()).launch({ 
+	args: ['--no-sandbox'], 
+        executablePath: '/usr/bin/chromium-browser'
+      })
       const page = await browser.newPage()
       await page.goto(downloadURL)
 
