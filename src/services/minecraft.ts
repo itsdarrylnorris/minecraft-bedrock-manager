@@ -1,11 +1,12 @@
-import cheerio from 'cheerio'
 import chokidar from 'chokidar'
 import { promises as fs } from 'fs'
-import fetch from 'node-fetch'
 import os from 'os'
 import { executeShellScript, logging } from '../utils'
 import Discord from './discord'
 require('dotenv').config()
+import puppeteer from 'puppeteer-extra'
+import StealthPlugin from 'puppeteer-extra-plugin-stealth'
+import cheerio from 'cheerio'
 
 /**
  * Minecraft Interface.
@@ -148,6 +149,7 @@ class Minecraft {
       // Sends a message to Discord that backup is complete
       this.discord_instance.sendMessageToDiscord(this.options.strings.post_backup_message)
     } catch (error) {
+      // @ts-ignore
       logging(error)
     }
     return
@@ -167,11 +169,16 @@ class Minecraft {
     // Checks for latest version
     let versionLink: string | undefined = await this.checkForLatestVersion()
 
-    // Gets last item in Download Folder
-    await this.getLastItemInDownload(versionLink)
+    // If we have a new version let's check if we need update.
+    if (versionLink) {
+      // Gets last item in Download Folder
+      await this.getLastItemInDownload(versionLink)
 
-    // Deletes oldest file if Download folder exceeds preferred capacity
-    await this.deleteOldestFile()
+      // Deletes oldest file if Download folder exceeds preferred capacity
+      await this.deleteOldestFile()
+    } else {
+      logging('Could not find the latest version from the website.')
+    }
 
     // Starts a screen
     executeShellScript(
@@ -201,19 +208,19 @@ class Minecraft {
   async checkForLatestVersion(): Promise<string> {
     try {
       let downloadURL: string = this.options.strings.version_download
-      // const response = await fetch(downloadURL)
-      logging('test')
-      const response = await fetch(downloadURL, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0',
-        },
-      })
-      const html: any = await response.text()
+
+      const browser = await puppeteer.use(StealthPlugin()).launch()
+      const page = await browser.newPage()
+      await page.goto(downloadURL)
+
+      const html = await page.content()
       const $: cheerio.Root = cheerio.load(html)
+
       const button: cheerio.Cheerio = $(this.options.strings.download_button)
       const buttonData: cheerio.Element = button[0]
+
+      await browser.close()
+
       return Object.values(buttonData)[3].href || ''
     } catch (error) {
       logging('Checking for latest version', error)
