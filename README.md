@@ -5,7 +5,6 @@ Minecraft Manager helps backup your Minecraft server by storing backups of your 
 | :warning: | This project still under active development; use it at your own risk. A lot things are going to change :). |
 | :-------: | :--------------------------------------------------------------------------------------------------------- |
 
-
 - [Building](#building)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -133,5 +132,7 @@ world_templates
 ### Setting up your GitHub Repository
 
 # Usage
+
+Requires Node version v16.8.0
 
 # TODO How to use the logs
