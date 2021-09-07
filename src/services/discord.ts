@@ -61,7 +61,12 @@ interface WebhookInterface {
   token: string
 }
 
+/**
+ * Editable configuration for strings.
+ */
 interface DiscordStringsInterface {
+  error_starting_discord_message: string | undefined
+  bot_is_online_message: string | undefined
   sending_discord_message: string | undefined
   error_discord_message: string | undefined
   successful_command: string | undefined
@@ -71,7 +76,8 @@ interface DiscordStringsInterface {
   command_entered_message: string | undefined
   successfully_added_user_message: string | undefined
   successfully_removed_user_message: string | undefined
-  user_not_found: string | undefined
+  user_not_found_message: string | undefined
+  xuid_not_found_message: string | undefined
   start_command: string | undefined
   stop_command: string | undefined
   restart_command: string | undefined
@@ -116,10 +122,13 @@ class Discord {
         discord_id: process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : '',
         discord_token: process && process.env && process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.toString() : '',
         strings: {
+          error_starting_discord_message:
+            process.env.options_error_starting_discord_message || 'Could not start Discord Bot.',
+          bot_is_online_message: process.env.options_bot_is_online_message || 'Bot is online!',
           sending_discord_message: process.env.options_sending_discord_message || 'Sending this message to Discord.',
           error_discord_message:
             process.env.options_error_discord_message || 'Something went wrong when sending the Discord message.',
-          successful_command: process.env.options_successful_command || 'Sent command successfully.',
+          successful_command_message: process.env.options_successful_command_message || 'Sent command successfully.',
           error_command: process.env.options_error_command || 'There was an error when trying to execute that command.',
           invalid_permission_command:
             process.env.options_invalid_permission_command || 'You are not allowed to use this command.',
@@ -133,7 +142,8 @@ class Discord {
           successfully_removed_user_message:
             process.env.options_successfully_removed_user_message ||
             ' has been removed from the server. Restart the server to complete the removal process.',
-          user_not_found: process.env.options_user_not_found || 'User cannot be found.',
+          user_not_found_message: process.env.options_user_not_found_message || 'User cannot be found.',
+          xuid_not_found_message: process.env.options_xuid_not_found_message || 'Could not find gamertag xuid',
           start_command: 'start server',
           stop_command: 'stop server',
           restart_command: 'restart server',
@@ -175,7 +185,7 @@ class Discord {
       // Logging into Discord Client
       await this.loginClient()
     } catch (e) {
-      logging('Error with starting Discord', e)
+      logging(this.options.strings.error_starting_discord_message, e)
     }
   }
 
@@ -188,7 +198,7 @@ class Discord {
       executeShellScript(
         `cd ${this.options.path} && screen -L -Logfile discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.log_file}"`,
       )
-      logging('Bot is online.')
+      logging(this.options.strings.bot_is_online_message)
     })
   }
 
@@ -215,7 +225,7 @@ class Discord {
           executeShellScript(`cd ${this.options.path} && ${this.options.discord_command} -s`)
           message.channel.send(this.options.strings.successful_command)
         } catch (error) {
-          logging('Error starting the server', error)
+          logging('Could not execute start command', error)
           message.channel.send(this.options.strings.error_command)
         }
       }
@@ -230,7 +240,7 @@ class Discord {
         try {
           message.channel.send(this.options.strings.successful_command)
         } catch (error) {
-          logging('Error stoping the server', error)
+          logging('Could not execute stop command', error)
           message.channel.send(this.options.strings.error_command)
         }
       }
@@ -245,7 +255,7 @@ class Discord {
         try {
           message.channel.send(this.options.strings.successful_command)
         } catch (error) {
-          logging('Error restarting the server', error)
+          logging('Could not execute restart command', error)
           message.channel.send(this.options.strings.error_command)
         }
       }
@@ -258,7 +268,7 @@ class Discord {
         try {
           message.channel.send(this.options.strings.help_command_message)
         } catch (error) {
-          logging('Error executing help command', error)
+          logging('Could not execute help command', error)
           message.channel.send(this.options.strings.error_command)
         }
       }
@@ -296,7 +306,7 @@ class Discord {
               `cd ${this.options.path} && ` + `cp ${this.options.whitelist_file} ${this.options.old_whitelist_file}`,
             )
 
-            let whitelistTable = [{}]
+            let whitelistTable: any = [{}]
             let whitelistFile: string = this.options.whitelist_file
             let ignoresPlayerLimit: boolean = false
             let name: string = splitUser
@@ -305,16 +315,24 @@ class Discord {
             let xuid = await minecraft.getXuidFromGamerTag(name)
 
             // Read whitelist.json file
-            fs.readFile(this.options.whitelist_file, 'utf8', function readFileCallback(this: any, error, data) {
-              if (error) {
-                throw error
-              } else {
-                whitelistTable = JSON.parse(data)
-                whitelistTable.push({ ignoresPlayerLimit, name, xuid })
+            const readFile = () => {
+              fs.readFile(this.options.whitelist_file, 'utf8', function readFileCallback(this: any, error, data) {
+                if (error) {
+                  throw error
+                } else {
+                  whitelistTable = JSON.parse(data)
+                  whitelistTable.push({ ignoresPlayerLimit, name, xuid })
 
-                addUser(whitelistTable)
-              }
-            })
+                  addUser(whitelistTable)
+                }
+              })
+            }
+
+            if (xuid !== '') {
+              readFile()
+            } else {
+              message.channel.send(this.options.strings.xuid_not_found_message)
+            }
 
             // Edit whitelist.json file
             const addUser = (whitelistTable: {}[]) => {
@@ -327,7 +345,7 @@ class Discord {
               message.channel.send(splitUser + this.options.strings.successfully_added_user_message)
             }
           } catch (error) {
-            logging('Error adding someone to the whitelist', error)
+            logging('Could not add xuid to whitelist', error)
             message.channel.send(this.options.strings.error_command)
           }
         } else {
@@ -403,11 +421,11 @@ class Discord {
                 })
                 message.channel.send(splitUser + this.options.strings.successfully_removed_user_message)
               } else {
-                message.channel.send(this.options.strings.user_not_found)
+                message.channel.send(this.options.strings.user_not_found_message)
               }
             }
           } catch (error) {
-            logging('Error removing someone from the whitelist', error)
+            logging('Could not remove xuid from whitelist', error)
             message.channel.send(this.options.strings.error_command)
           }
         } else {

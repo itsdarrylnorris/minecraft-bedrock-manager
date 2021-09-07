@@ -1,12 +1,12 @@
+import cheerio from 'cheerio'
 import chokidar from 'chokidar'
 import { promises as fs } from 'fs'
 import os from 'os'
+import puppeteer from 'puppeteer-extra'
+import StealthPlugin from 'puppeteer-extra-plugin-stealth'
 import { executeShellScript, logging } from '../utils'
 import Discord from './discord'
 require('dotenv').config()
-import puppeteer from 'puppeteer-extra'
-import StealthPlugin from 'puppeteer-extra-plugin-stealth'
-import cheerio from 'cheerio'
 
 /**
  * Minecraft Interface.
@@ -48,13 +48,22 @@ interface MinecraftStringsInterface {
   xuid_download: string | undefined
   download_button: string | undefined
   xuid_string: string | undefined
+  looking_for_xuid_message: string | undefined
+  checking_server_version_message: string | undefined
   not_up_to_date_server_message: string | undefined
   updated_server_message: string | undefined
   error_downloading_version_message: string | undefined
+  error_getting_version_message: string | undefined
   deleted_oldest_version_success_message: string | undefined
   error_deleting_oldest_version_message: string | undefined
+  watching_logging_message: string | undefined
+  error_cant_get_last_item_message: string | undefined
+  error_could_not_find_xuid_message: string | undefined
 }
 
+/**
+ * Editable configuration for numbers.
+ */
 interface MinecraftNumbersInterface {
   max_number_files_in_downloads_folder: number
 }
@@ -114,20 +123,30 @@ class Minecraft {
             process.env.options_gamertag_left_server_message || 'left the Minecraft server.',
           version_download:
             process.env.options_versions_downloads || 'https://www.minecraft.net/en-us/download/server/bedrock/',
-          xuid_download: process.env.xuid_download || 'https://cxkes.me/xbox/xuid',
+          xuid_download: process.env.options_xuid_download || 'https://cxkes.me/xbox/xuid',
           download_button: process.env.options_download_button || '[data-platform="serverBedrockLinux"]',
-          xuid_string: process.env.xuid_string || '.col-md-8 div h1',
+          xuid_string: process.env.options_xuid_string || '.col-md-8 div h1',
+          looking_for_xuid_message: process.env.options_looking_for_xuid_message || 'Looking for xuid.',
+          checking_server_version_message:
+            process.env.options_checking_server_version_message || 'Checking latest version of Minecraft.',
           not_up_to_date_server_message:
             process.env.options_not_up_to_date_server_message ||
-            `Server is not up to date. Updating server to latest version: `,
-          updated_server_message: process.env.options_updated_server_message || `Server is up to date.`,
+            'Server is not up to date. Updating server to latest version: ',
+          updated_server_message: process.env.options_updated_server_message || 'Server is up to date.',
           error_downloading_version_message:
-            process.env.options_error_downloading_version_message || `An error occurred while downloading latest file.`,
+            process.env.options_error_downloading_version_message || 'An error occurred while downloading latest file.',
+          error_getting_version_message:
+            process.env.options_error_getting_version_message || 'An error occurred while getting latest version',
           deleted_oldest_version_success_message:
-            process.env.options_deleted_oldest_version_success_message || `Oldest file has been deleted: `,
+            process.env.options_deleted_oldest_version_success_message || 'Oldest file has been deleted: ',
           error_deleting_oldest_version_message:
             process.env.options_error_deleting_oldest_version_message ||
-            `An error occurred while deleting the oldest file.`,
+            'An error occurred while deleting the oldest file.',
+          watching_logging_message: process.env.options_watching_logging_message || 'Watching for changes.',
+          error_cant_get_last_item_message:
+            process.env.options_error_cant_get_last_item_message || 'Error with getting last item in downloads folder.',
+          error_could_not_find_xuid_message:
+            process.env.options_error_could_not_find_xuid_message || 'Could not get xuid.',
         },
       }
     }
@@ -181,7 +200,7 @@ class Minecraft {
       // Deletes oldest file if Download folder exceeds preferred capacity
       await this.deleteOldestFile()
     } else {
-      logging('Could not find the latest version from the website.')
+      logging(this.options.strings.error_getting_version_message)
     }
 
     // Starts a screen
@@ -211,7 +230,7 @@ class Minecraft {
    */
   async checkForLatestVersion(): Promise<string> {
     try {
-      logging('Checking for latest version')
+      logging(this.options.strings.checking_server_version_message)
       let downloadURL: string = this.options.strings.version_download
 
       const browser = await puppeteer.use(StealthPlugin()).launch({
@@ -231,7 +250,7 @@ class Minecraft {
 
       return Object.values(buttonData)[3].href || ''
     } catch (error) {
-      logging('Error while checking for latest version', error)
+      logging(this.options.strings.error_getting_version_message, error)
     }
 
     return ''
@@ -245,7 +264,7 @@ class Minecraft {
    */
   async getXuidFromGamerTag(gamerTag: string = ''): Promise<string> {
     try {
-      logging('Looking for xuid')
+      logging(this.options.strings.looking_for_xuid_message)
       let downloadURL: string = this.options.strings.xuid_download
 
       const browser = await puppeteer
@@ -275,7 +294,7 @@ class Minecraft {
 
       return xuidString
     } catch (error) {
-      logging('Error while looking for xuid', error)
+      logging(this.options.strings.error_could_not_find_xuid_message, error)
       console.log(error)
     }
 
@@ -299,7 +318,7 @@ class Minecraft {
         logging(this.options.strings.updated_server_message)
       }
     } catch (error) {
-      logging('Error with getting last item', error)
+      logging(this.options.strings.error_cant_get_last_item_message, error)
     }
   }
 
@@ -325,8 +344,7 @@ class Minecraft {
           `chmod 777 ${this.options.path}/bedrock_server`,
       )
     } catch (error) {
-      logging('Error with downloading version', this.options.strings.error_downloading_version_message)
-      logging('Updating server', error)
+      logging(this.options.strings.error_downloading_version_message, error)
     }
   }
 
@@ -344,8 +362,7 @@ class Minecraft {
         logging(this.options.strings.deleted_oldest_version_success_message + oldFile)
       }
     } catch (error) {
-      logging('Error with deleting oldest version', this.options.strings.error_deleting_oldest_version_message)
-      logging('Deleting oldest files', error)
+      logging(this.options.strings.error_deleting_oldest_version_message, error)
     }
   }
 
@@ -367,7 +384,7 @@ class Minecraft {
     executeShellScript(
       `cd ${this.options.path} && screen -L -Logfile minecraft-discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.log_file}"`,
     )
-    logging('Watching for changes')
+    logging(this.options.strings.watching_logging_message)
 
     let file = await fs.readFile(this.options.log_file, 'utf8')
     let fileNumber = file.split(/\n/).length
