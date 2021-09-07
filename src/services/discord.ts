@@ -407,7 +407,9 @@ class Discord {
 
             // Edit whitelist.json file
             const removeUser = (whitelistData: any[]) => {
-              if (userNames.includes(splitUser)) {
+              if (!userNames.includes(splitUser)) {
+                message.channel.send(this.options.strings.user_not_found_message)
+              } else {
                 let updatedData: string[] = whitelistData.filter(
                   (whitelistData: { name: string }) => whitelistData.name !== splitUser,
                 )
@@ -420,8 +422,6 @@ class Discord {
                   }
                 })
                 message.channel.send(splitUser + this.options.strings.successfully_removed_user_message)
-              } else {
-                message.channel.send(this.options.strings.user_not_found_message)
               }
             }
           } catch (error) {
