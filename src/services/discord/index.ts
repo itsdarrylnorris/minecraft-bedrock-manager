@@ -105,7 +105,7 @@ class Discord {
    */
   constructor(options?: DiscordOptionsInterface) {
     // Create a new client instance
-    const client = new Client({ intents: [Intents.FLAGS.GUILDS] })
+    const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] })
     client.commands = new Collection()
     this.client = client
     if (options && options.path) {
@@ -189,7 +189,7 @@ class Discord {
       this.startBot()
 
       await this.startMessages()
-      console.log('pass')
+
       // Starts the Discord interactions
       await this.startInteractions()
 
@@ -205,7 +205,7 @@ class Discord {
    *
    */
   startBot() {
-    this.client.once('ready', () => {
+    this.client.on('ready', () => {
       executeShellScript(
         `cd ${this.options.path} && screen -L -Logfile discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.log_file}"`,
       )
@@ -220,12 +220,10 @@ class Discord {
    */
   async startMessages() {
     this.client.on('messageCreate', async (message: typeof Message) => {
-      console.log(message)
       if (message.author.bot) return
       const command: string = message.content.toLowerCase()
-      console.log(command)
       // Command 5: Add user to server
-      // /add [Gamertag]
+      // mbm add [Gamertag]
       if (
         command.includes((this.options.discord_command as string) && this.options.strings.add_command) &&
         message.member.roles.cache.some((role: any) => role.name === this.options.discord_role)
@@ -309,13 +307,13 @@ class Discord {
         }
       }
       // Command 6: Remove user to server
-      // /remove [Gamertag]
+      // mbm remove [Gamertag]
       else if (
         command.includes((this.options.discord_command as string) && this.options.strings.remove_command) &&
         message.member.roles.cache.some((role: any) => role.name === this.options.discord_role)
       ) {
         logging(this.options.strings.command_entered_message + message.author.username, message.content)
-        let split: string[] = message.oString().split(' ')
+        let split: string[] = message.toString().split(' ')
         let splitCommand: string = split && split[0] ? split[0] : ''
         let splitRemove: string = split && split[1] ? split[1] : ''
         let splitUser: string = split && split[2] ? split[2] : ''
@@ -458,174 +456,8 @@ class Discord {
           logging('Could not execute help command', error)
           interaction.reply(this.options.strings.error_command)
         }
-      }
-
-      // // Command 5: Add user to server
-      // // /add [Gamertag]
-      // else if (
-      //   commandName === this.options.strings.add_command &&
-      //   interaction.member.roles.cache.some((role: any) => role.name === this.options.discord_role)
-      // ) {
-      //   logging(this.options.strings.command_entered_message + interaction.user.username, interaction.commandName)
-      //   let split: string[] = interaction.toString().split(' ')
-      //   let splitCommand: string = split && split[0] ? split[0] : ''
-      //   let splitAdd: string = split && split[1] ? split[1] : ''
-      //   let splitUser: string = split && split[2] ? split[2] : ''
-
-      //   console.log(split, splitCommand, splitAdd, splitUser)
-
-      //   if (splitCommand && splitAdd && splitUser) {
-      //     try {
-      //       let date: Date = new Date()
-
-      //       // Backup whitelist.json file
-      //       executeShellScript(
-      //         `cd ${this.options.path} && git add ${
-      //           this.options.whitelist_file
-      //         } && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`,
-      //       )
-
-      //       // Delete old-whitelist.json file
-      //       let files: Array<string> = await readdir(this.options.path)
-      //       if (files.filter((item) => item.includes(this.options.old_whitelist_file))) {
-      //         executeShellScript(`cd ${this.options.path} && ` + `rm ${this.options.old_whitelist_file}`)
-      //       }
-
-      //       // Make a copy of the whitelist.json file, renamed as old-whitelist.json file
-      //       executeShellScript(
-      //         `cd ${this.options.path} && ` + `cp ${this.options.whitelist_file} ${this.options.old_whitelist_file}`,
-      //       )
-
-      //       let whitelistTable: any = [{}]
-      //       let whitelistFile: string = this.options.whitelist_file
-      //       let ignoresPlayerLimit: boolean = false
-      //       let name: string = splitUser
-
-      //       // const minecraft = new Minecraft()
-      //       // let xuid = await minecraft.getXuidFromGamerTag(name)
-      //       let xuid = '2535420684212926'
-
-      //       // Read whitelist.json file
-      //       const readFile = () => {
-      //         fs.readFile(this.options.whitelist_file, 'utf8', function readFileCallback(this: any, error, data) {
-      //           if (error) {
-      //             throw error
-      //           } else {
-      //             whitelistTable = JSON.parse(data)
-      //             whitelistTable.push({ ignoresPlayerLimit, name, xuid })
-
-      //             addUser(whitelistTable)
-      //           }
-      //         })
-      //       }
-
-      //       if (xuid !== '') {
-      //         readFile()
-      //       } else {
-      //         interaction.reply(this.options.strings.xuid_not_found_message)
-      //       }
-
-      //       // Edit whitelist.json file
-      //       const addUser = (whitelistTable: {}[]) => {
-      //         let whitelistJSON: string = JSON.stringify(whitelistTable)
-      //         fs.writeFile(whitelistFile, whitelistJSON, 'utf8', (error) => {
-      //           if (error) {
-      //             throw error
-      //           }
-      //         })
-      //         interaction.reply(splitUser + this.options.strings.successfully_added_user_message)
-      //       }
-      //     } catch (error) {
-      //       logging('Could not add xuid to whitelist', error)
-      //       interaction.reply(this.options.strings.error_command)
-      //     }
-      //   } else {
-      //     logging(this.options.strings.error_command)
-      //     interaction.reply(this.options.strings.error_command)
-      //   }
-      // }
-      // // Command 6: Remove user to server
-      // // /remove [Gamertag]
-      // else if (
-      //   commandName === this.options.strings.help_command &&
-      //   interaction.member.roles.cache.some((role: any) => role.name === this.options.discord_role)
-      // ) {
-      //   logging(this.options.strings.command_entered_message + interaction.user.username, commandName)
-      //   let split: string[] = interaction.toString().split(' ')
-      //   let splitCommand: string = split && split[0] ? split[0] : ''
-      //   let splitRemove: string = split && split[1] ? split[1] : ''
-      //   let splitUser: string = split && split[2] ? split[2] : ''
-
-      //   if (splitCommand && splitRemove && splitUser) {
-      //     try {
-      //       let date: Date = new Date()
-
-      //       // Backup whitelist.json file
-      //       executeShellScript(
-      //         `cd ${this.options.path} && git add ${
-      //           this.options.whitelist_file
-      //         } && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`,
-      //       )
-
-      //       // Delete old-whitelist.json file
-      //       let files: Array<string> = await readdir(this.options.path)
-      //       if (files.filter((item) => item.includes(this.options.old_whitelist_file))) {
-      //         executeShellScript(`cd ${this.options.path} && ` + `rm ${this.options.old_whitelist_file}`)
-      //       }
-
-      //       // Make a copy of the whitelist.json file, renamed as old-whitelist.json file
-      //       executeShellScript(
-      //         `cd ${this.options.path} && ` + `cp ${this.options.whitelist_file} ${this.options.old_whitelist_file}`,
-      //       )
-
-      //       let whitelistFile: string = this.options.whitelist_file
-      //       let userNames: string[] = []
-
-      //       // Read whitelist.json file
-      //       fs.readFile(this.options.whitelist_file, 'utf8', function readFileCallback(this: any, error, data) {
-      //         if (error) {
-      //           logging(this.options.strings.error_with_reading_file, error)
-      //         } else {
-      //           let whitelistData = JSON.parse(data)
-
-      //           whitelistData.forEach(function (whitelistData: { name: string }) {
-      //             userNames.push(whitelistData.name)
-      //           })
-
-      //           removeUser(whitelistData)
-      //         }
-      //       })
-
-      //       // Edit whitelist.json file
-      //       const removeUser = (whitelistData: any[]) => {
-      //         if (!userNames.includes(splitUser)) {
-      //           interaction.channel.send(this.options.strings.user_not_found_message)
-      //         } else {
-      //           let updatedData: string[] = whitelistData.filter(
-      //             (whitelistData: { name: string }) => whitelistData.name !== splitUser,
-      //           )
-      //           let whitelistJSON: string = JSON.stringify(updatedData)
-
-      //           fs.writeFile(whitelistFile, whitelistJSON, 'utf8', (error) => {
-      //             if (error) {
-      //               interaction.reply(this.options.strings.error_command)
-      //               throw error
-      //             }
-      //           })
-      //           interaction.reply(splitUser + this.options.strings.successfully_removed_user_message)
-      //         }
-      //       }
-      //     } catch (error) {
-      //       logging('Could not remove xuid from whitelist', error)
-      //       interaction.reply(this.options.strings.error_command)
-      //     }
-      //   } else {
-      //     logging(this.options.strings.error_command)
-      //     interaction.reply(this.options.strings.error_command)
-      //   }
-      // }
-      // Send message back to channel with an error
-      else {
+        // Send invalid permissions message to channel
+      } else {
         interaction.reply(this.options.strings.invalid_permission_command)
       }
     })

@@ -24,12 +24,6 @@ const commands = [
   new SlashCommandBuilder()
     .setName(discord.options.strings.help_command)
     .setDescription(discord.options.strings.help_command_description),
-  // new SlashCommandBuilder()
-  //   .setName(discord.options.strings.add_command)
-  //   .setDescription(discord.options.strings.add_command_description),
-  // new SlashCommandBuilder()
-  //   .setName(discord.options.strings.remove_command)
-  //   .setDescription(discord.options.strings.remove_command_description),
 ].map((command) => command.toJSON())
 
 const rest = new REST({ version: '9' }).setToken(discord_token)

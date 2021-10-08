@@ -12,14 +12,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const fs_1 = __importDefault(require("fs"));
+const promises_1 = require("fs/promises");
 const os_1 = __importDefault(require("os"));
 const utils_1 = require("../../utils");
-const { Client, Collection, Intents, WebhookClient, WebhookInterface } = require('discord.js');
+const { Client, Collection, Intents, WebhookClient, WebhookInterface, Message } = require('discord.js');
 require('dotenv').config();
 class Discord {
     constructor(options) {
         this.discord_screen_name = 'Discord';
-        const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
+        const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
         client.commands = new Collection();
         this.client = client;
         if (options && options.path) {
@@ -86,7 +88,6 @@ class Discord {
             try {
                 this.startBot();
                 yield this.startMessages();
-                console.log('pass');
                 yield this.startInteractions();
                 yield this.loginClient();
             }
@@ -96,7 +97,7 @@ class Discord {
         });
     }
     startBot() {
-        this.client.once('ready', () => {
+        this.client.on('ready', () => {
             utils_1.executeShellScript(`cd ${this.options.path} && screen -L -Logfile discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.log_file}"`);
             this.client.user.setActivity('activity', { type: 'WATCHING' });
             utils_1.logging(this.options.strings.bot_is_online_message);
@@ -104,13 +105,128 @@ class Discord {
     }
     startMessages() {
         return __awaiter(this, void 0, void 0, function* () {
-            let prefix = '/';
-            this.client.on('messageCreate', (message) => {
-                if (!message.content.startsWith(prefix) || message.author.bot)
+            this.client.on('messageCreate', (message) => __awaiter(this, void 0, void 0, function* () {
+                if (message.author.bot)
                     return;
                 const command = message.content.toLowerCase();
-                console.log(command);
-            });
+                if (command.includes(this.options.discord_command && this.options.strings.add_command) &&
+                    message.member.roles.cache.some((role) => role.name === this.options.discord_role)) {
+                    utils_1.logging(this.options.strings.command_entered_message + message.author.username, message.content);
+                    let split = message.toString().split(' ');
+                    let splitCommand = split && split[0] ? split[0] : '';
+                    let splitAdd = split && split[1] ? split[1] : '';
+                    let splitUser = split && split[2] ? split[2] : '';
+                    console.log(split, splitCommand, splitAdd, splitUser);
+                    if (splitCommand && splitAdd && splitUser) {
+                        try {
+                            let date = new Date();
+                            utils_1.executeShellScript(`cd ${this.options.path} && git add ${this.options.whitelist_file} && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`);
+                            let files = yield promises_1.readdir(this.options.path);
+                            if (files.filter((item) => item.includes(this.options.old_whitelist_file))) {
+                                utils_1.executeShellScript(`cd ${this.options.path} && ` + `rm ${this.options.old_whitelist_file}`);
+                            }
+                            utils_1.executeShellScript(`cd ${this.options.path} && ` + `cp ${this.options.whitelist_file} ${this.options.old_whitelist_file}`);
+                            let whitelistTable = [{}];
+                            let whitelistFile = this.options.whitelist_file;
+                            let ignoresPlayerLimit = false;
+                            let name = splitUser;
+                            let xuid = '2535420684212926';
+                            const readFile = () => {
+                                fs_1.default.readFile(this.options.whitelist_file, 'utf8', function readFileCallback(error, data) {
+                                    if (error) {
+                                        throw error;
+                                    }
+                                    else {
+                                        whitelistTable = JSON.parse(data);
+                                        whitelistTable.push({ ignoresPlayerLimit, name, xuid });
+                                        addUser(whitelistTable);
+                                    }
+                                });
+                            };
+                            if (xuid !== '') {
+                                readFile();
+                            }
+                            else {
+                                message.channel.send(this.options.strings.xuid_not_found_message);
+                            }
+                            const addUser = (whitelistTable) => {
+                                let whitelistJSON = JSON.stringify(whitelistTable);
+                                fs_1.default.writeFile(whitelistFile, whitelistJSON, 'utf8', (error) => {
+                                    if (error) {
+                                        throw error;
+                                    }
+                                });
+                                message.channel.send(splitUser + this.options.strings.successfully_added_user_message);
+                            };
+                        }
+                        catch (error) {
+                            utils_1.logging('Could not add xuid to whitelist', error);
+                            message.channel.send(this.options.strings.error_command);
+                        }
+                    }
+                    else {
+                        utils_1.logging(this.options.strings.error_command);
+                        message.channel.send(this.options.strings.error_command);
+                    }
+                }
+                else if (command.includes(this.options.discord_command && this.options.strings.remove_command) &&
+                    message.member.roles.cache.some((role) => role.name === this.options.discord_role)) {
+                    utils_1.logging(this.options.strings.command_entered_message + message.author.username, message.content);
+                    let split = message.toString().split(' ');
+                    let splitCommand = split && split[0] ? split[0] : '';
+                    let splitRemove = split && split[1] ? split[1] : '';
+                    let splitUser = split && split[2] ? split[2] : '';
+                    if (splitCommand && splitRemove && splitUser) {
+                        try {
+                            let date = new Date();
+                            utils_1.executeShellScript(`cd ${this.options.path} && git add ${this.options.whitelist_file} && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`);
+                            let files = yield promises_1.readdir(this.options.path);
+                            if (files.filter((item) => item.includes(this.options.old_whitelist_file))) {
+                                utils_1.executeShellScript(`cd ${this.options.path} && ` + `rm ${this.options.old_whitelist_file}`);
+                            }
+                            utils_1.executeShellScript(`cd ${this.options.path} && ` + `cp ${this.options.whitelist_file} ${this.options.old_whitelist_file}`);
+                            let whitelistFile = this.options.whitelist_file;
+                            let userNames = [];
+                            fs_1.default.readFile(this.options.whitelist_file, 'utf8', function readFileCallback(error, data) {
+                                if (error) {
+                                    utils_1.logging(this.options.strings.error_with_reading_file, error);
+                                }
+                                else {
+                                    let whitelistData = JSON.parse(data);
+                                    whitelistData.forEach(function (whitelistData) {
+                                        userNames.push(whitelistData.name);
+                                    });
+                                    removeUser(whitelistData);
+                                }
+                            });
+                            const removeUser = (whitelistData) => {
+                                if (!userNames.includes(splitUser)) {
+                                    message.channel.send(this.options.strings.user_not_found_message);
+                                }
+                                else {
+                                    let updatedData = whitelistData.filter((whitelistData) => whitelistData.name !== splitUser);
+                                    let whitelistJSON = JSON.stringify(updatedData);
+                                    fs_1.default.writeFile(whitelistFile, whitelistJSON, 'utf8', (error) => {
+                                        if (error) {
+                                            message.channel.send(this.options.strings.error_command);
+                                            throw error;
+                                        }
+                                    });
+                                    message.channel.send(splitUser + this.options.strings.successfully_removed_user_message);
+                                }
+                            };
+                        }
+                        catch (error) {
+                            utils_1.logging('Could not remove xuid from whitelist', error);
+                            message.channel.send(this.options.strings.error_command);
+                        }
+                    }
+                    else {
+                        utils_1.logging(this.options.strings.error_command);
+                        message.channel.send(this.options.strings.error_command);
+                    }
+                }
+            }));
         });
     }
     startInteractions() {
