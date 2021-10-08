@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const chalk_1 = __importDefault(require("chalk"));
 const commander_1 = __importDefault(require("commander"));
 const figlet_1 = __importDefault(require("figlet"));
-const discord_1 = __importDefault(require("./services/discord"));
+const index_1 = __importDefault(require("./services/discord/index"));
 const minecraft_1 = __importDefault(require("./services/minecraft"));
 const utils_1 = require("./utils");
 commander_1.default.version('0.0.1');
@@ -39,7 +39,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     }
     else if (options.startServer) {
         try {
-            const minecraft = new minecraft_1.default({});
+            const minecraft = new minecraft_1.default();
             yield minecraft.startServer();
             process.exit();
         }
@@ -48,26 +48,26 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         }
     }
     else if (options.restartServer) {
-        const minecraft = new minecraft_1.default({});
+        const minecraft = new minecraft_1.default();
         yield minecraft.restartServer();
         process.exit();
     }
     else if (options.stopServer) {
-        const minecraft = new minecraft_1.default({});
+        const minecraft = new minecraft_1.default();
         yield minecraft.stopServer();
         process.exit();
     }
     else if (options.logs) {
-        const minecraft = new minecraft_1.default({});
+        const minecraft = new minecraft_1.default();
         minecraft.logs();
     }
     else if (options.discord) {
-        const discord = new discord_1.default({});
+        const discord = new index_1.default();
         discord.startDiscord();
     }
     else if (options.backup) {
         try {
-            const minecraft = new minecraft_1.default({});
+            const minecraft = new minecraft_1.default();
             minecraft.backupServer();
         }
         catch (error) {
@@ -77,7 +77,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     else if (options.xuid) {
         try {
             if (process.argv[3]) {
-                const minecraft = new minecraft_1.default({});
+                const minecraft = new minecraft_1.default();
                 yield minecraft.getXuidFromGamerTag(process.argv[3]);
                 process.exit();
             }
@@ -91,10 +91,8 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     }
     else if (options.startAll) {
         try {
-            const minecraft = new minecraft_1.default({});
+            const minecraft = new minecraft_1.default();
             yield minecraft.startServer();
-            const discord = new discord_1.default({});
-            discord.startDiscord();
             process.exit();
         }
         catch (error) {

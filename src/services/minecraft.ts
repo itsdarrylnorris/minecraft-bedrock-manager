@@ -5,7 +5,7 @@ import os from 'os'
 import puppeteer from 'puppeteer-extra'
 import StealthPlugin from 'puppeteer-extra-plugin-stealth'
 import { executeShellScript, logging } from '../utils'
-import Discord from './discord'
+import Discord from './discord/index'
 require('dotenv').config()
 
 /**
@@ -92,7 +92,7 @@ class Minecraft {
    * @param options
    */
 
-  constructor(options: MinecraftOptionsInterface | any) {
+  constructor(options?: MinecraftOptionsInterface) {
     if (options && options.path) {
       this.options = options
     } else {
@@ -151,7 +151,7 @@ class Minecraft {
       }
     }
 
-    this.discord_instance = new Discord({})
+    this.discord_instance = new Discord()
   }
 
   /**

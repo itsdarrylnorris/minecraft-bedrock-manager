@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 import program from 'commander'
 import figlet from 'figlet'
-import Discord from './services/discord'
+import Discord from './services/discord/index'
 import Minecraft from './services/minecraft'
 import { logging } from './utils'
 
@@ -32,29 +32,29 @@ const main = async () => {
     program.help()
   } else if (options.startServer) {
     try {
-      const minecraft = new Minecraft({})
+      const minecraft = new Minecraft()
       await minecraft.startServer()
       process.exit()
     } catch (error) {
       logging('Error:', error)
     }
   } else if (options.restartServer) {
-    const minecraft = new Minecraft({})
+    const minecraft = new Minecraft()
     await minecraft.restartServer()
     process.exit()
   } else if (options.stopServer) {
-    const minecraft = new Minecraft({})
+    const minecraft = new Minecraft()
     await minecraft.stopServer()
     process.exit()
   } else if (options.logs) {
-    const minecraft = new Minecraft({})
+    const minecraft = new Minecraft()
     minecraft.logs()
   } else if (options.discord) {
-    const discord = new Discord({})
+    const discord = new Discord()
     discord.startDiscord()
   } else if (options.backup) {
     try {
-      const minecraft = new Minecraft({})
+      const minecraft = new Minecraft()
       minecraft.backupServer()
     } catch (error) {
       logging('Error:', error)
@@ -62,7 +62,7 @@ const main = async () => {
   } else if (options.xuid) {
     try {
       if (process.argv[3]) {
-        const minecraft = new Minecraft({})
+        const minecraft = new Minecraft()
         await minecraft.getXuidFromGamerTag(process.argv[3])
         process.exit()
       } else {
@@ -73,10 +73,10 @@ const main = async () => {
     }
   } else if (options.startAll) {
     try {
-      const minecraft = new Minecraft({})
+      const minecraft = new Minecraft()
       await minecraft.startServer()
-      const discord = new Discord({})
-      discord.startDiscord()
+      // const discord = new Discord({})
+      // discord.startDiscord()
       process.exit()
     } catch (error) {
       logging('Error', error)
