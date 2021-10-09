@@ -19,7 +19,7 @@ const os_1 = __importDefault(require("os"));
 const puppeteer_extra_1 = __importDefault(require("puppeteer-extra"));
 const puppeteer_extra_plugin_stealth_1 = __importDefault(require("puppeteer-extra-plugin-stealth"));
 const utils_1 = require("../utils");
-const index_1 = __importDefault(require("./discord/index"));
+const discord_1 = __importDefault(require("./discord"));
 require('dotenv').config();
 class Minecraft {
     constructor(options) {
@@ -72,7 +72,7 @@ class Minecraft {
                 },
             };
         }
-        this.discord_instance = new index_1.default();
+        this.discord_instance = new discord_1.default();
     }
     restartServer() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -140,7 +140,7 @@ class Minecraft {
                 let downloadURL = this.options.strings.xuid_download;
                 const browser = yield puppeteer_extra_1.default
                     .use(puppeteer_extra_plugin_stealth_1.default())
-                    .launch({ args: ['--no-sandbox'], executablePath: '/usr/bin/chromium-browser' });
+                    .launch({ headless: false, args: ['--no-sandbox'], executablePath: '/usr/bin/chromium-browser' });
                 const page = yield browser.newPage();
                 yield page.goto(downloadURL);
                 yield page.click('.form-check-input[value="1"]');

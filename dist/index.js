@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const chalk_1 = __importDefault(require("chalk"));
 const commander_1 = __importDefault(require("commander"));
 const figlet_1 = __importDefault(require("figlet"));
-const index_1 = __importDefault(require("./services/discord/index"));
+const discord_1 = __importDefault(require("./services/discord"));
 const minecraft_1 = __importDefault(require("./services/minecraft"));
 const utils_1 = require("./utils");
 commander_1.default.version('0.0.1');
@@ -26,6 +26,7 @@ commander_1.default
     .option('-st, --stop-server', 'Stops Minecraft Server')
     .option('-l, --logs', 'Shows the Minecraft Logs')
     .option('-d, --discord', 'Starts Discord')
+    .option('-dc, --deploy-commands', 'Deploy Commands')
     .option('-b, --backup', 'Backup')
     .option('-sa, --start-all, Start Everything')
     .option('-x, --xuid, Find xuid from gamertag');
@@ -62,8 +63,12 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         minecraft.logs();
     }
     else if (options.discord) {
-        const discord = new index_1.default();
+        const discord = new discord_1.default();
         discord.startDiscord();
+    }
+    else if (options.deployCommands) {
+        const discord = new discord_1.default();
+        discord.deployCommands();
     }
     else if (options.backup) {
         try {

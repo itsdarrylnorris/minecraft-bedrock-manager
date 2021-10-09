@@ -5,7 +5,7 @@ import os from 'os'
 import puppeteer from 'puppeteer-extra'
 import StealthPlugin from 'puppeteer-extra-plugin-stealth'
 import { executeShellScript, logging } from '../utils'
-import Discord from './discord/index'
+import Discord from './discord'
 require('dotenv').config()
 
 /**
@@ -269,7 +269,7 @@ class Minecraft {
 
       const browser = await puppeteer
         .use(StealthPlugin())
-        .launch({ args: ['--no-sandbox'], executablePath: '/usr/bin/chromium-browser' })
+        .launch({ headless: false, args: ['--no-sandbox'], executablePath: '/usr/bin/chromium-browser' })
       const page = await browser.newPage()
       await page.goto(downloadURL)
 

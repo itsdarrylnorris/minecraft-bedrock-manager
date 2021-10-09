@@ -15,8 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(require("fs"));
 const promises_1 = require("fs/promises");
 const os_1 = __importDefault(require("os"));
-const utils_1 = require("../../utils");
-const minecraft_1 = __importDefault(require("../minecraft"));
+const utils_1 = require("../utils");
+const minecraft_1 = __importDefault(require("./minecraft"));
 const { Client, Collection, Intents, WebhookClient, WebhookInterface, Message } = require('discord.js');
 require('dotenv').config();
 const { REST } = require('@discordjs/rest');
@@ -362,4 +362,4 @@ class Discord {
     }
 }
 exports.default = Discord;
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=discord.js.map

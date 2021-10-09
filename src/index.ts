@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 import program from 'commander'
 import figlet from 'figlet'
-import Discord from './services/discord/index'
+import Discord from './services/discord'
 import Minecraft from './services/minecraft'
 import { logging } from './utils'
 
@@ -14,6 +14,7 @@ program
   .option('-st, --stop-server', 'Stops Minecraft Server')
   .option('-l, --logs', 'Shows the Minecraft Logs')
   .option('-d, --discord', 'Starts Discord')
+  .option('-dc, --deploy-commands', 'Deploy Commands')
   .option('-b, --backup', 'Backup')
   .option('-sa, --start-all, Start Everything')
   .option('-x, --xuid, Find xuid from gamertag')
@@ -52,6 +53,9 @@ const main = async () => {
   } else if (options.discord) {
     const discord = new Discord()
     discord.startDiscord()
+  } else if (options.deployCommands) {
+    const discord = new Discord()
+    discord.deployCommands()
   } else if (options.backup) {
     try {
       const minecraft = new Minecraft()

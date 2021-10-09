@@ -1,11 +1,14 @@
 import fs, { PathLike } from 'fs'
 import { readdir } from 'fs/promises'
 import os from 'os'
-import { executeShellScript, logging } from '../../utils'
+import { executeShellScript, logging } from '../utils'
+import Minecraft from './minecraft'
 const { Client, Collection, Intents, WebhookClient, WebhookInterface, Message } = require('discord.js')
 require('dotenv').config()
-
-// const discord_token = process && process.env && process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.toString() : ''
+const { REST } = require('@discordjs/rest')
+const { Routes } = require('discord-api-types/v9')
+const { SlashCommandBuilder } = require('@discordjs/builders')
+export {}
 
 /**
  * Discord Interface.
@@ -38,6 +41,9 @@ interface DiscordOptionsInterface {
   // Discord Token
   discord_token: string | undefined
 
+  // Client Id
+  client_id: string | undefined
+
   // Strings that are used to post
   strings: DiscordStringsInterface
 }
@@ -67,7 +73,6 @@ interface DiscordStringsInterface {
   error_command: string
   successful_command_message: string
   invalid_permission_command: string
-  help_command_message: string
   command_entered_message: string
   successfully_added_user_message: string
   successfully_removed_user_message: string
@@ -123,6 +128,7 @@ class Discord {
           process && process.env && process.env.DISCORD_COMMAND ? process.env.DISCORD_COMMAND.toString() : '',
         discord_id: process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : '',
         discord_token: process && process.env && process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.toString() : '',
+        client_id: process && process.env && process.env.CLIENT_ID ? process.env.CLIENT_ID.toString() : '',
         strings: {
           error_starting_discord_message:
             process.env.options_error_starting_discord_message || 'Could not start Discord Bot.',
@@ -135,9 +141,7 @@ class Discord {
           error_command: process.env.options_error_command || 'There was an error when trying to execute that command.',
           invalid_permission_command:
             process.env.options_invalid_permission_command || 'You are not allowed to use this command.',
-          help_command_message:
-            process.env.options_help_command_message ||
-            'Available Commands: /start server, /stop server, /restart server, /help, /add [Gamertag], /remove [Gamertag]',
+
           command_entered_message: process.env.options_command_entered_message || 'Command entered by: ',
           successfully_added_user_message:
             process.env.options_successfully_added_user_message ||
@@ -195,6 +199,19 @@ class Discord {
 
       // Logging into Discord Client
       await this.loginClient()
+    } catch (error) {
+      logging(this.options.strings.error_starting_discord_message, error)
+    }
+  }
+
+  /**
+   * Deploy Discord Commands.
+   *
+   */
+  async deployCommands() {
+    try {
+      // Deploy Commands
+      this.deploy()
     } catch (error) {
       logging(this.options.strings.error_starting_discord_message, error)
     }
@@ -263,9 +280,8 @@ class Discord {
             let ignoresPlayerLimit: boolean = false
             let name: string = splitUser
 
-            // const minecraft = new Minecraft()
-            // let xuid = await minecraft.getXuidFromGamerTag(name)
-            let xuid = '2535420684212926'
+            const minecraft = new Minecraft()
+            let xuid = await minecraft.getXuidFromGamerTag(name)
 
             // Read whitelist.json file
             const readFile = () => {
@@ -451,7 +467,32 @@ class Discord {
       ) {
         logging(this.options.strings.command_entered_message + interaction.user.username, commandName)
         try {
-          interaction.reply(this.options.strings.help_command_message)
+          interaction.reply(
+            '**Available Commands:** \n' +
+              '-  /' +
+              this.options.strings.start_command +
+              '\n' +
+              '-  /' +
+              this.options.strings.stop_command +
+              '\n' +
+              '-  /' +
+              this.options.strings.restart_command +
+              '\n' +
+              '-  /' +
+              this.options.strings.help_command +
+              '\n' +
+              '- ' +
+              this.options.discord_command +
+              ' ' +
+              this.options.strings.add_command +
+              ' [Gamertag]' +
+              '\n' +
+              '- ' +
+              this.options.discord_command +
+              ' ' +
+              this.options.strings.remove_command +
+              ' [Gamertag]',
+          )
         } catch (error) {
           logging('Could not execute help command', error)
           interaction.reply(this.options.strings.error_command)
@@ -469,6 +510,41 @@ class Discord {
    */
   async loginClient() {
     this.client.login(this.options.discord_token)
+  }
+
+  /**
+   * Deploy Commands.
+   *
+   */
+  async deploy() {
+    const commands = [
+      new SlashCommandBuilder()
+        .setName(this.options.strings.start_command)
+        .setDescription(this.options.strings.start_command_description),
+      new SlashCommandBuilder()
+        .setName(this.options.strings.stop_command)
+        .setDescription(this.options.strings.stop_command_description),
+      new SlashCommandBuilder()
+        .setName(this.options.strings.restart_command)
+        .setDescription(this.options.strings.restart_command_description),
+      new SlashCommandBuilder()
+        .setName(this.options.strings.help_command)
+        .setDescription(this.options.strings.help_command_description),
+    ].map((command) => command.toJSON())
+
+    const rest = new REST({ version: '9' }).setToken(this.options.discord_token)
+
+    ;(async () => {
+      try {
+        await rest.put(Routes.applicationGuildCommands(this.options.client_id, this.options.discord_id), {
+          body: commands,
+        })
+
+        console.log('Successfully registered application commands.')
+      } catch (error) {
+        console.error(error)
+      }
+    })()
   }
 }
 
