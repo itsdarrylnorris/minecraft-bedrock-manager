@@ -20,11 +20,17 @@ interface MinecraftStringsInterface {
     xuid_download: string | undefined;
     download_button: string | undefined;
     xuid_string: string | undefined;
+    looking_for_xuid_message: string | undefined;
+    checking_server_version_message: string | undefined;
     not_up_to_date_server_message: string | undefined;
     updated_server_message: string | undefined;
     error_downloading_version_message: string | undefined;
+    error_getting_version_message: string | undefined;
     deleted_oldest_version_success_message: string | undefined;
     error_deleting_oldest_version_message: string | undefined;
+    watching_logging_message: string | undefined;
+    error_cant_get_last_item_message: string | undefined;
+    error_could_not_find_xuid_message: string | undefined;
 }
 interface MinecraftNumbersInterface {
     max_number_files_in_downloads_folder: number;
@@ -35,7 +41,7 @@ declare class Minecraft {
     private minecraft_screen_name;
     private discord_screen_name;
     private discord_instance;
-    constructor(options: MinecraftOptionsInterface | any);
+    constructor(options?: MinecraftOptionsInterface);
     restartServer(): Promise<void>;
     startServer(): Promise<void>;
     backupServer(): void;

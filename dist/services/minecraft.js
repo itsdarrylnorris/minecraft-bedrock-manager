@@ -12,15 +12,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const cheerio_1 = __importDefault(require("cheerio"));
 const chokidar_1 = __importDefault(require("chokidar"));
 const fs_1 = require("fs");
 const os_1 = __importDefault(require("os"));
+const puppeteer_extra_1 = __importDefault(require("puppeteer-extra"));
+const puppeteer_extra_plugin_stealth_1 = __importDefault(require("puppeteer-extra-plugin-stealth"));
 const utils_1 = require("../utils");
 const discord_1 = __importDefault(require("./discord"));
 require('dotenv').config();
-const puppeteer_extra_1 = __importDefault(require("puppeteer-extra"));
-const puppeteer_extra_plugin_stealth_1 = __importDefault(require("puppeteer-extra-plugin-stealth"));
-const cheerio_1 = __importDefault(require("cheerio"));
 class Minecraft {
     constructor(options) {
         this.logs_strings = {
@@ -53,20 +53,26 @@ class Minecraft {
                     gamertag_join_server_message: process.env.options_gamertag_join_server_message || 'joined the Minecraft server.',
                     gamertag_left_server_message: process.env.options_gamertag_left_server_message || 'left the Minecraft server.',
                     version_download: process.env.options_versions_downloads || 'https://www.minecraft.net/en-us/download/server/bedrock/',
-                    xuid_download: process.env.xuid_download || 'https://cxkes.me/xbox/xuid',
+                    xuid_download: process.env.options_xuid_download || 'https://cxkes.me/xbox/xuid',
                     download_button: process.env.options_download_button || '[data-platform="serverBedrockLinux"]',
-                    xuid_string: process.env.xuid_string || '.col-md-8 div h1',
+                    xuid_string: process.env.options_xuid_string || '.col-md-8 div h1',
+                    looking_for_xuid_message: process.env.options_looking_for_xuid_message || 'Looking for xuid.',
+                    checking_server_version_message: process.env.options_checking_server_version_message || 'Checking latest version of Minecraft.',
                     not_up_to_date_server_message: process.env.options_not_up_to_date_server_message ||
-                        `Server is not up to date. Updating server to latest version: `,
-                    updated_server_message: process.env.options_updated_server_message || `Server is up to date.`,
-                    error_downloading_version_message: process.env.options_error_downloading_version_message || `An error occurred while downloading latest file.`,
-                    deleted_oldest_version_success_message: process.env.options_deleted_oldest_version_success_message || `Oldest file has been deleted: `,
+                        'Server is not up to date. Updating server to latest version: ',
+                    updated_server_message: process.env.options_updated_server_message || 'Server is up to date.',
+                    error_downloading_version_message: process.env.options_error_downloading_version_message || 'An error occurred while downloading latest file.',
+                    error_getting_version_message: process.env.options_error_getting_version_message || 'An error occurred while getting latest version',
+                    deleted_oldest_version_success_message: process.env.options_deleted_oldest_version_success_message || 'Oldest file has been deleted: ',
                     error_deleting_oldest_version_message: process.env.options_error_deleting_oldest_version_message ||
-                        `An error occurred while deleting the oldest file.`,
+                        'An error occurred while deleting the oldest file.',
+                    watching_logging_message: process.env.options_watching_logging_message || 'Watching for changes.',
+                    error_cant_get_last_item_message: process.env.options_error_cant_get_last_item_message || 'Error with getting last item in downloads folder.',
+                    error_could_not_find_xuid_message: process.env.options_error_could_not_find_xuid_message || 'Could not get xuid.',
                 },
             };
         }
-        this.discord_instance = new discord_1.default({});
+        this.discord_instance = new discord_1.default();
     }
     restartServer() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -92,7 +98,7 @@ class Minecraft {
                 yield this.deleteOldestFile();
             }
             else {
-                utils_1.logging('Could not find the latest version from the website.');
+                utils_1.logging(this.options.strings.error_getting_version_message);
             }
             utils_1.executeShellScript(`cd ${this.options.path} && screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}bedrock_server" `);
             this.discord_instance.sendMessageToDiscord(this.options.strings.start_server_message);
@@ -106,7 +112,7 @@ class Minecraft {
     checkForLatestVersion() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                utils_1.logging('Checking for latest version');
+                utils_1.logging(this.options.strings.checking_server_version_message);
                 let downloadURL = this.options.strings.version_download;
                 const browser = yield puppeteer_extra_1.default.use(puppeteer_extra_plugin_stealth_1.default()).launch({
                     args: ['--no-sandbox'],
@@ -122,7 +128,7 @@ class Minecraft {
                 return Object.values(buttonData)[3].href || '';
             }
             catch (error) {
-                utils_1.logging('Error while checking for latest version', error);
+                utils_1.logging(this.options.strings.error_getting_version_message, error);
             }
             return '';
         });
@@ -130,11 +136,11 @@ class Minecraft {
     getXuidFromGamerTag(gamerTag = '') {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                utils_1.logging('Looking for xuid');
+                utils_1.logging(this.options.strings.looking_for_xuid_message);
                 let downloadURL = this.options.strings.xuid_download;
                 const browser = yield puppeteer_extra_1.default
                     .use(puppeteer_extra_plugin_stealth_1.default())
-                    .launch({ args: ['--no-sandbox'], executablePath: '/usr/bin/chromium-browser' });
+                    .launch({ headless: false, args: ['--no-sandbox'], executablePath: '/usr/bin/chromium-browser' });
                 const page = yield browser.newPage();
                 yield page.goto(downloadURL);
                 yield page.click('.form-check-input[value="1"]');
@@ -152,7 +158,7 @@ class Minecraft {
                 return xuidString;
             }
             catch (error) {
-                utils_1.logging('Error while looking for xuid', error);
+                utils_1.logging(this.options.strings.error_could_not_find_xuid_message, error);
                 console.log(error);
             }
             return '';
@@ -172,7 +178,7 @@ class Minecraft {
                 }
             }
             catch (error) {
-                utils_1.logging('Error with getting last item', error);
+                utils_1.logging(this.options.strings.error_cant_get_last_item_message, error);
             }
         });
     }
@@ -187,8 +193,7 @@ class Minecraft {
                 `chmod 777 ${this.options.path}/bedrock_server`);
         }
         catch (error) {
-            utils_1.logging('Error with downloading version', this.options.strings.error_downloading_version_message);
-            utils_1.logging('Updating server', error);
+            utils_1.logging(this.options.strings.error_downloading_version_message, error);
         }
     }
     deleteOldestFile() {
@@ -203,8 +208,7 @@ class Minecraft {
                 }
             }
             catch (error) {
-                utils_1.logging('Error with deleting oldest version', this.options.strings.error_deleting_oldest_version_message);
-                utils_1.logging('Deleting oldest files', error);
+                utils_1.logging(this.options.strings.error_deleting_oldest_version_message, error);
             }
         });
     }
@@ -218,7 +222,7 @@ class Minecraft {
     logs() {
         return __awaiter(this, void 0, void 0, function* () {
             utils_1.executeShellScript(`cd ${this.options.path} && screen -L -Logfile minecraft-discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.log_file}"`);
-            utils_1.logging('Watching for changes');
+            utils_1.logging(this.options.strings.watching_logging_message);
             let file = yield fs_1.promises.readFile(this.options.log_file, 'utf8');
             let fileNumber = file.split(/\n/).length;
             chokidar_1.default.watch(this.options.log_file).on('all', (evt, path) => __awaiter(this, void 0, void 0, function* () {
