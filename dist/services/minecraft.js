@@ -80,7 +80,7 @@ class Minecraft {
                 yield this.discord_instance.sendMessageToDiscord(this.options.strings.pre_backup_message);
                 yield this.stopServer();
                 yield this.startServer();
-                this.discord_instance.sendMessageToDiscord(this.options.strings.post_backup_message);
+                yield this.discord_instance.sendMessageToDiscord(this.options.strings.post_backup_message);
             }
             catch (error) {
                 utils_1.logging(error);
@@ -90,7 +90,6 @@ class Minecraft {
     }
     startServer() {
         return __awaiter(this, void 0, void 0, function* () {
-            utils_1.logging(this.options.strings.stop_server_message);
             this.backupServer();
             let versionLink = yield this.checkForLatestVersion();
             if (versionLink) {
@@ -107,7 +106,12 @@ class Minecraft {
     backupServer() {
         let date = new Date();
         let script = `cd ${this.options.path} && git add . && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`;
-        utils_1.executeShellScript(script);
+        try {
+            utils_1.executeShellScript(script);
+        }
+        catch (error) {
+            utils_1.logging(this.options.strings.error_backup_message, error);
+        }
     }
     checkForLatestVersion() {
         return __awaiter(this, void 0, void 0, function* () {

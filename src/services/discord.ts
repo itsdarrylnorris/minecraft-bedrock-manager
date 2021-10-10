@@ -3,12 +3,13 @@ import { readdir } from 'fs/promises'
 import os from 'os'
 import { executeShellScript, logging } from '../utils'
 import Minecraft from './minecraft'
-const { Client, Collection, Intents, WebhookClient, WebhookInterface, Message } = require('discord.js')
-require('dotenv').config()
-const { REST } = require('@discordjs/rest')
-const { Routes } = require('discord-api-types/v9')
-const { SlashCommandBuilder } = require('@discordjs/builders')
-export {}
+import { Client, Collection, Intents, WebhookClient, Message } from 'discord.js'
+import { REST } from '@discordjs/rest'
+import { Routes } from 'discord-api-types/v9'
+import { SlashCommandBuilder } from '@discordjs/builders'
+
+import dotenv from 'dotenv'
+dotenv.config()
 
 /**
  * Discord Interface.
@@ -194,8 +195,14 @@ class Discord {
   async sendMessageToDiscord(string: string): Promise<void> {
     logging(this.options.strings.sending_discord_message, string)
     try {
-      const webhook: typeof WebhookInterface = new WebhookClient(this.options.discord_id, this.options.discord_token)
-      await webhook.send(`[${os.hostname()}] ${string}`)
+      if (this.options.discord_id && this.options.discord_token) {
+        const webhook: any = new WebhookClient(this.options.discord_id, this.options.discord_token)
+        await webhook.send(`[${os.hostname()}] ${string}`)
+      } else {
+        throw new Error(
+          `Missing discord config. Discord ID: ${this.options.discord_id}, Discord Token: ${this.options.discord_token}`,
+        )
+      }
     } catch (error) {
       logging(this.options.strings.error_discord_message, error)
     }

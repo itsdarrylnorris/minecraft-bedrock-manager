@@ -1,6 +1,5 @@
 /// <reference types="node" />
 import { PathLike } from 'fs';
-export {};
 interface DiscordOptionsInterface {
     path: PathLike;
     log_file: string | undefined;
@@ -27,6 +26,12 @@ interface DiscordStringsInterface {
     successfully_removed_user_message: string;
     user_not_found_message: string;
     xuid_not_found_message: string;
+    error_with_adding_xuid_to_whitelist: string;
+    error_with_removing_xuid_from_whitelist: string;
+    error_with_start_command: string;
+    error_with_stop_command: string;
+    error_with_restart_command: string;
+    error_with_help_command: string;
     start_command: string;
     stop_command: string;
     restart_command: string;
