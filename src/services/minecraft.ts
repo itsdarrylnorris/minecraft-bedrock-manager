@@ -170,7 +170,7 @@ class Minecraft {
       await this.startServer()
 
       // Sends a message to Discord that backup is complete
-      this.discord_instance.sendMessageToDiscord(this.options.strings.post_backup_message)
+      await this.discord_instance.sendMessageToDiscord(this.options.strings.post_backup_message)
     } catch (error) {
       // @ts-ignore
       logging(error)
@@ -183,16 +183,13 @@ class Minecraft {
    *
    */
   async startServer() {
-    // Sends a message to Discord that tne server is stopping
-    logging(this.options.strings.stop_server_message)
-
     // Backups Server
     this.backupServer()
 
     // Checks for latest version
     let versionLink: string | undefined = await this.checkForLatestVersion()
 
-    // If we have a new version let's check if we need update.
+    // Checks if the server is outdated
     if (versionLink) {
       // Gets last item in Download Folder
       await this.getLastItemInDownload(versionLink)
@@ -221,7 +218,11 @@ class Minecraft {
     let script: string = `cd ${
       this.options.path
     } && git add . && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`
-    executeShellScript(script)
+    try {
+      executeShellScript(script)
+    } catch (error) {
+      logging(this.options.strings.error_backup_message, error)
+    }
   }
 
   /**

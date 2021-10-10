@@ -58,18 +58,18 @@ class Discord {
                         ' has been removed from the server. Restart the server to complete the removal process.',
                     user_not_found_message: process.env.options_user_not_found_message || 'User cannot be found.',
                     xuid_not_found_message: process.env.options_xuid_not_found_message || 'Could not find gamertag xuid',
-                    start_command: 'start',
-                    stop_command: 'stop',
-                    restart_command: 'restart',
-                    help_command: 'help',
-                    add_command: 'add',
-                    remove_command: 'remove',
-                    start_command_description: 'Starts up the server.',
-                    stop_command_description: 'Stops up the server.',
-                    restart_command_description: 'Restarts up the server.',
-                    help_command_description: 'Replies with available Help Commands.',
-                    add_command_description: 'Finds user XUID and adds user to the server.',
-                    remove_command_description: 'Removes the user from the server.',
+                    start_command: process.env.options_start_command || 'start',
+                    stop_command: process.env.options_stop_command || 'stop',
+                    restart_command: process.env.options_restart_command || 'restart',
+                    help_command: process.env.options_help_command || 'help',
+                    add_command: process.env.options_add_command || 'add',
+                    remove_command: process.env.options_remove_command || 'remove',
+                    start_command_description: process.env.options_start_command_description || 'Starts up the server.',
+                    stop_command_description: process.env.options_stop_command_description || 'Stops up the server.',
+                    restart_command_description: process.env.options_restart_command_description || 'Restarts up the server.',
+                    help_command_description: process.env.options_help_command_description || 'Replies with available Help Commands.',
+                    successfully_deployed_commands: process.env.options_successfully_deployed_commands || 'Successfully registered application commands.',
+                    error_with_deploying_commands: process.env.options_error_with_deploying_commands || 'Error occurred while deploying commands:',
                 },
             };
         }
@@ -134,6 +134,7 @@ class Discord {
                         try {
                             let date = new Date();
                             utils_1.executeShellScript(`cd ${this.options.path} && git add ${this.options.whitelist_file} && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`);
+                            utils_1.logging('Could not add xuid to whitelist', date);
                             let files = yield promises_1.readdir(this.options.path);
                             if (files.filter((item) => item.includes(this.options.old_whitelist_file))) {
                                 utils_1.executeShellScript(`cd ${this.options.path} && ` + `rm ${this.options.old_whitelist_file}`);
@@ -352,10 +353,10 @@ class Discord {
                     yield rest.put(Routes.applicationGuildCommands(this.options.client_id, this.options.discord_id), {
                         body: commands,
                     });
-                    console.log('Successfully registered application commands.');
+                    utils_1.logging(this.options.strings.successfully_deployed_commands);
                 }
                 catch (error) {
-                    console.error(error);
+                    utils_1.logging(this.options.strings.error_with_deploying_commands, error);
                 }
             }))();
         });

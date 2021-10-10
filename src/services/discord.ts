@@ -78,6 +78,12 @@ interface DiscordStringsInterface {
   successfully_removed_user_message: string
   user_not_found_message: string
   xuid_not_found_message: string
+  error_with_adding_xuid_to_whitelist: string
+  error_with_removing_xuid_from_whitelist: string
+  error_with_start_command: string
+  error_with_stop_command: string
+  error_with_restart_command: string
+  error_with_help_command: string
   start_command: string
   stop_command: string
   restart_command: string
@@ -88,8 +94,8 @@ interface DiscordStringsInterface {
   stop_command_description: string
   restart_command_description: string
   help_command_description: string
-  add_command_description: string
-  remove_command_description: string
+  successfully_deployed_commands: string
+  error_with_deploying_commands: string
 }
 
 /**
@@ -150,19 +156,31 @@ class Discord {
             process.env.options_successfully_removed_user_message ||
             ' has been removed from the server. Restart the server to complete the removal process.',
           user_not_found_message: process.env.options_user_not_found_message || 'User cannot be found.',
-          xuid_not_found_message: process.env.options_xuid_not_found_message || 'Could not find gamertag xuid',
-          start_command: 'start',
-          stop_command: 'stop',
-          restart_command: 'restart',
-          help_command: 'help',
-          add_command: 'add',
-          remove_command: 'remove',
-          start_command_description: 'Starts up the server.',
-          stop_command_description: 'Stops up the server.',
-          restart_command_description: 'Restarts up the server.',
-          help_command_description: 'Replies with available Help Commands.',
-          add_command_description: 'Finds user XUID and adds user to the server.',
-          remove_command_description: 'Removes the user from the server.',
+          xuid_not_found_message: process.env.options_xuid_not_found_message || 'Could not find gamertag xuid.',
+          error_with_adding_xuid_to_whitelist:
+            process.env.options_error_with_adding_xuid_to_whitelist || 'Could not add xuid to whitelist file.',
+          error_with_removing_xuid_from_whitelist:
+            process.env.options_error_with_removing_xuid_from_whitelist || 'Could not remove xuid from whitelist file.',
+          error_with_start_command: process.env.options_error_with_start_command || 'Could not execute Start command.',
+          error_with_stop_command: process.env.options_error_with_stop_command || 'Could not execute Stop command.',
+          error_with_restart_command:
+            process.env.options_error_with_restart_command || 'Could not execute Restart command.',
+          error_with_help_command: process.env.options_error_with_help_command || 'Could not execute Help command.',
+          start_command: process.env.options_start_command || 'start',
+          stop_command: process.env.options_stop_command || 'stop',
+          restart_command: process.env.options_restart_command || 'restart',
+          help_command: process.env.options_help_command || 'help',
+          add_command: process.env.options_add_command || 'add',
+          remove_command: process.env.options_remove_command || 'remove',
+          start_command_description: process.env.options_start_command_description || 'Starts up the server.',
+          stop_command_description: process.env.options_stop_command_description || 'Stops up the server.',
+          restart_command_description: process.env.options_restart_command_description || 'Restarts up the server.',
+          help_command_description:
+            process.env.options_help_command_description || 'Replies with available Help Commands.',
+          successfully_deployed_commands:
+            process.env.options_successfully_deployed_commands || 'Successfully registered application commands.',
+          error_with_deploying_commands:
+            process.env.options_error_with_deploying_commands || 'Error occurred while deploying commands.',
         },
       }
     }
@@ -213,7 +231,7 @@ class Discord {
       // Deploy Commands
       this.deploy()
     } catch (error) {
-      logging(this.options.strings.error_starting_discord_message, error)
+      logging(this.options.strings.error_with_deploying_commands, error)
     }
   }
 
@@ -251,8 +269,6 @@ class Discord {
         let splitAdd: string = split && split[1] ? split[1] : ''
         let splitUser: string = split && split[2] ? split[2] : ''
 
-        console.log(split, splitCommand, splitAdd, splitUser)
-
         if (splitCommand && splitAdd && splitUser) {
           try {
             let date: Date = new Date()
@@ -280,6 +296,7 @@ class Discord {
             let ignoresPlayerLimit: boolean = false
             let name: string = splitUser
 
+            // Getting user's XUID
             const minecraft = new Minecraft()
             let xuid = await minecraft.getXuidFromGamerTag(name)
 
@@ -314,7 +331,7 @@ class Discord {
               message.channel.send(splitUser + this.options.strings.successfully_added_user_message)
             }
           } catch (error) {
-            logging('Could not add xuid to whitelist', error)
+            logging(this.options.strings.error_with_adding_xuid_to_whitelist, error)
             message.channel.send(this.options.strings.error_command)
           }
         } else {
@@ -394,7 +411,7 @@ class Discord {
               }
             }
           } catch (error) {
-            logging('Could not remove xuid from whitelist', error)
+            logging(this.options.strings.error_with_removing_xuid_from_whitelist, error)
             message.channel.send(this.options.strings.error_command)
           }
         } else {
@@ -426,7 +443,7 @@ class Discord {
           executeShellScript(`cd ${this.options.path} && ${this.options.discord_command} -s`)
           interaction.reply(this.options.strings.successful_command_message)
         } catch (error) {
-          logging('Could not execute start command', error)
+          logging(this.options.strings.error_with_start_command, error)
           interaction.reply(this.options.strings.error_command)
         }
         // Command 2: Stop Server Command
@@ -440,7 +457,7 @@ class Discord {
           executeShellScript(`cd ${this.options.path} && ${this.options.discord_command} -st`)
           interaction.reply(this.options.strings.successful_command_message)
         } catch (error) {
-          logging('Could not execute help command', error)
+          logging(this.options.strings.error_with_stop_command, error)
           interaction.reply(this.options.strings.error_command)
         }
       }
@@ -455,7 +472,7 @@ class Discord {
           executeShellScript(`cd ${this.options.path} && ${this.options.discord_command} -r`)
           interaction.reply(this.options.strings.successful_command_message)
         } catch (error) {
-          logging('Could not execute help command', error)
+          logging(this.options.strings.error_with_restart_command, error)
           interaction.reply(this.options.strings.error_command)
         }
       }
@@ -494,7 +511,7 @@ class Discord {
               ' [Gamertag]',
           )
         } catch (error) {
-          logging('Could not execute help command', error)
+          logging(this.options.strings.error_with_help_command, error)
           interaction.reply(this.options.strings.error_command)
         }
         // Send invalid permissions message to channel
@@ -540,9 +557,9 @@ class Discord {
           body: commands,
         })
 
-        console.log('Successfully registered application commands.')
+        logging(this.options.strings.successfully_deployed_commands)
       } catch (error) {
-        console.error(error)
+        logging(this.options.strings.error_with_deploying_commands, error)
       }
     })()
   }

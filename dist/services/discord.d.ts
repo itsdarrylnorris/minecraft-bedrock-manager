@@ -37,8 +37,8 @@ interface DiscordStringsInterface {
     stop_command_description: string;
     restart_command_description: string;
     help_command_description: string;
-    add_command_description: string;
-    remove_command_description: string;
+    successfully_deployed_commands: string;
+    error_with_deploying_commands: string;
 }
 declare class Discord {
     options: DiscordOptionsInterface;
