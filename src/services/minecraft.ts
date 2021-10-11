@@ -268,9 +268,14 @@ class Minecraft {
       logging(this.options.strings.looking_for_xuid_message)
       let downloadURL: string = this.options.strings.xuid_download
 
-      const browser = await puppeteer
-        .use(StealthPlugin())
-        .launch({ headless: false, args: ['--no-sandbox'], executablePath: '/usr/bin/chromium-browser' })
+      let args: any[] = []
+      let executablePath
+
+      if (process.platform !== 'darwin') {
+        args = ['--no-sandbox']
+        executablePath = '/usr/bin/chromium-browser'
+      }
+      const browser = await puppeteer.use(StealthPlugin()).launch({ headless: true, args, executablePath })
       const page = await browser.newPage()
       await page.goto(downloadURL)
 
@@ -296,7 +301,6 @@ class Minecraft {
       return xuidString
     } catch (error) {
       logging(this.options.strings.error_could_not_find_xuid_message, error)
-      console.log(error)
     }
 
     return ''

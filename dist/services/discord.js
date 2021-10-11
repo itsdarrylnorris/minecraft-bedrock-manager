@@ -12,21 +12,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const builders_1 = require("@discordjs/builders");
+const rest_1 = require("@discordjs/rest");
+const v9_1 = require("discord-api-types/v9");
+const discord_js_1 = require("discord.js");
+const dotenv_1 = __importDefault(require("dotenv"));
 const fs_1 = __importDefault(require("fs"));
 const promises_1 = require("fs/promises");
 const os_1 = __importDefault(require("os"));
 const utils_1 = require("../utils");
 const minecraft_1 = __importDefault(require("./minecraft"));
-const { Client, Collection, Intents, WebhookClient, WebhookInterface, Message } = require('discord.js');
-require('dotenv').config();
-const { REST } = require('@discordjs/rest');
-const { Routes } = require('discord-api-types/v9');
-const { SlashCommandBuilder } = require('@discordjs/builders');
+dotenv_1.default.config();
 class Discord {
     constructor(options) {
         this.discord_screen_name = 'Discord';
-        const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
-        client.commands = new Collection();
+        const client = new discord_js_1.Client({ intents: [discord_js_1.Intents.FLAGS.GUILDS, discord_js_1.Intents.FLAGS.GUILD_MESSAGES] });
+        client.commands = new discord_js_1.Collection();
         this.client = client;
         if (options && options.path) {
             this.options = options;
@@ -57,7 +58,13 @@ class Discord {
                     successfully_removed_user_message: process.env.options_successfully_removed_user_message ||
                         ' has been removed from the server. Restart the server to complete the removal process.',
                     user_not_found_message: process.env.options_user_not_found_message || 'User cannot be found.',
-                    xuid_not_found_message: process.env.options_xuid_not_found_message || 'Could not find gamertag xuid',
+                    xuid_not_found_message: process.env.options_xuid_not_found_message || 'Could not find gamertag xuid.',
+                    error_with_adding_xuid_to_whitelist: process.env.options_error_with_adding_xuid_to_whitelist || 'Could not add xuid to whitelist file.',
+                    error_with_removing_xuid_from_whitelist: process.env.options_error_with_removing_xuid_from_whitelist || 'Could not remove xuid from whitelist file.',
+                    error_with_start_command: process.env.options_error_with_start_command || 'Could not execute Start command.',
+                    error_with_stop_command: process.env.options_error_with_stop_command || 'Could not execute Stop command.',
+                    error_with_restart_command: process.env.options_error_with_restart_command || 'Could not execute Restart command.',
+                    error_with_help_command: process.env.options_error_with_help_command || 'Could not execute Help command.',
                     start_command: process.env.options_start_command || 'start',
                     stop_command: process.env.options_stop_command || 'stop',
                     restart_command: process.env.options_restart_command || 'restart',
@@ -69,7 +76,7 @@ class Discord {
                     restart_command_description: process.env.options_restart_command_description || 'Restarts up the server.',
                     help_command_description: process.env.options_help_command_description || 'Replies with available Help Commands.',
                     successfully_deployed_commands: process.env.options_successfully_deployed_commands || 'Successfully registered application commands.',
-                    error_with_deploying_commands: process.env.options_error_with_deploying_commands || 'Error occurred while deploying commands:',
+                    error_with_deploying_commands: process.env.options_error_with_deploying_commands || 'Error occurred while deploying commands.',
                 },
             };
         }
@@ -78,8 +85,13 @@ class Discord {
         return __awaiter(this, void 0, void 0, function* () {
             utils_1.logging(this.options.strings.sending_discord_message, string);
             try {
-                const webhook = new WebhookClient(this.options.discord_id, this.options.discord_token);
-                yield webhook.send(`[${os_1.default.hostname()}] ${string}`);
+                if (this.options.discord_id && this.options.discord_token) {
+                    const webhook = new Discord.WebhookClient(this.options.discord_id, this.options.discord_token);
+                    yield webhook.send(`[${os_1.default.hostname()}] ${string}`);
+                }
+                else {
+                    throw new Error(`Missing discord config. Discord ID: ${this.options.discord_id}, Discord Token: ${this.options.discord_token}`);
+                }
             }
             catch (error) {
                 utils_1.logging(this.options.strings.error_discord_message, error);
@@ -105,7 +117,7 @@ class Discord {
                 this.deploy();
             }
             catch (error) {
-                utils_1.logging(this.options.strings.error_starting_discord_message, error);
+                utils_1.logging(this.options.strings.error_with_deploying_commands, error);
             }
         });
     }
@@ -123,18 +135,18 @@ class Discord {
                     return;
                 const command = message.content.toLowerCase();
                 if (command.includes(this.options.discord_command && this.options.strings.add_command) &&
+                    message &&
+                    message.member &&
                     message.member.roles.cache.some((role) => role.name === this.options.discord_role)) {
                     utils_1.logging(this.options.strings.command_entered_message + message.author.username, message.content);
                     let split = message.toString().split(' ');
                     let splitCommand = split && split[0] ? split[0] : '';
                     let splitAdd = split && split[1] ? split[1] : '';
                     let splitUser = split && split[2] ? split[2] : '';
-                    console.log(split, splitCommand, splitAdd, splitUser);
                     if (splitCommand && splitAdd && splitUser) {
                         try {
                             let date = new Date();
                             utils_1.executeShellScript(`cd ${this.options.path} && git add ${this.options.whitelist_file} && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`);
-                            utils_1.logging('Could not add xuid to whitelist', date);
                             let files = yield promises_1.readdir(this.options.path);
                             if (files.filter((item) => item.includes(this.options.old_whitelist_file))) {
                                 utils_1.executeShellScript(`cd ${this.options.path} && ` + `rm ${this.options.old_whitelist_file}`);
@@ -175,7 +187,7 @@ class Discord {
                             };
                         }
                         catch (error) {
-                            utils_1.logging('Could not add xuid to whitelist', error);
+                            utils_1.logging(this.options.strings.error_with_adding_xuid_to_whitelist, error);
                             message.channel.send(this.options.strings.error_command);
                         }
                     }
@@ -185,6 +197,8 @@ class Discord {
                     }
                 }
                 else if (command.includes(this.options.discord_command && this.options.strings.remove_command) &&
+                    message &&
+                    message.member &&
                     message.member.roles.cache.some((role) => role.name === this.options.discord_role)) {
                     utils_1.logging(this.options.strings.command_entered_message + message.author.username, message.content);
                     let split = message.toString().split(' ');
@@ -232,7 +246,7 @@ class Discord {
                             };
                         }
                         catch (error) {
-                            utils_1.logging('Could not remove xuid from whitelist', error);
+                            utils_1.logging(this.options.strings.error_with_removing_xuid_from_whitelist, error);
                             message.channel.send(this.options.strings.error_command);
                         }
                     }
@@ -258,7 +272,7 @@ class Discord {
                         interaction.reply(this.options.strings.successful_command_message);
                     }
                     catch (error) {
-                        utils_1.logging('Could not execute start command', error);
+                        utils_1.logging(this.options.strings.error_with_start_command, error);
                         interaction.reply(this.options.strings.error_command);
                     }
                 }
@@ -270,7 +284,7 @@ class Discord {
                         interaction.reply(this.options.strings.successful_command_message);
                     }
                     catch (error) {
-                        utils_1.logging('Could not execute help command', error);
+                        utils_1.logging(this.options.strings.error_with_stop_command, error);
                         interaction.reply(this.options.strings.error_command);
                     }
                 }
@@ -282,7 +296,7 @@ class Discord {
                         interaction.reply(this.options.strings.successful_command_message);
                     }
                     catch (error) {
-                        utils_1.logging('Could not execute help command', error);
+                        utils_1.logging(this.options.strings.error_with_restart_command, error);
                         interaction.reply(this.options.strings.error_command);
                     }
                 }
@@ -316,7 +330,7 @@ class Discord {
                             ' [Gamertag]');
                     }
                     catch (error) {
-                        utils_1.logging('Could not execute help command', error);
+                        utils_1.logging(this.options.strings.error_with_help_command, error);
                         interaction.reply(this.options.strings.error_command);
                     }
                 }
@@ -334,23 +348,23 @@ class Discord {
     deploy() {
         return __awaiter(this, void 0, void 0, function* () {
             const commands = [
-                new SlashCommandBuilder()
+                new builders_1.SlashCommandBuilder()
                     .setName(this.options.strings.start_command)
                     .setDescription(this.options.strings.start_command_description),
-                new SlashCommandBuilder()
+                new builders_1.SlashCommandBuilder()
                     .setName(this.options.strings.stop_command)
                     .setDescription(this.options.strings.stop_command_description),
-                new SlashCommandBuilder()
+                new builders_1.SlashCommandBuilder()
                     .setName(this.options.strings.restart_command)
                     .setDescription(this.options.strings.restart_command_description),
-                new SlashCommandBuilder()
+                new builders_1.SlashCommandBuilder()
                     .setName(this.options.strings.help_command)
                     .setDescription(this.options.strings.help_command_description),
             ].map((command) => command.toJSON());
-            const rest = new REST({ version: '9' }).setToken(this.options.discord_token);
+            const rest = new rest_1.REST({ version: '9' }).setToken(this.options.discord_token);
             (() => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    yield rest.put(Routes.applicationGuildCommands(this.options.client_id, this.options.discord_id), {
+                    yield rest.put(v9_1.Routes.applicationGuildCommands(this.options.client_id, this.options.discord_id), {
                         body: commands,
                     });
                     utils_1.logging(this.options.strings.successfully_deployed_commands);
