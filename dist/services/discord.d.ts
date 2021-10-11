@@ -58,7 +58,6 @@ declare class Discord {
     options: DiscordOptionsInterface;
     client: ClientInterface;
     private discord_screen_name;
-    static WebhookClient: any;
     constructor(options?: DiscordOptionsInterface);
     sendMessageToDiscord(string: string): Promise<void>;
     startDiscord(): Promise<void>;
