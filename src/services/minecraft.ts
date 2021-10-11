@@ -265,10 +265,8 @@ class Minecraft {
    */
   async getXuidFromGamerTag(gamerTag: string = ''): Promise<string> {
     try {
-      console.log('gamerTag', gamerTag)
       logging(this.options.strings.looking_for_xuid_message)
       let downloadURL: string = this.options.strings.xuid_download
-      console.log('downloadURL', downloadURL)
 
       let args: any[] = []
       let executablePath
@@ -279,7 +277,6 @@ class Minecraft {
       }
       const browser = await puppeteer.use(StealthPlugin()).launch({ headless: true, args, executablePath })
       const page = await browser.newPage()
-      console.log('page', page)
       await page.goto(downloadURL)
 
       await page.click('.form-check-input[value="1"]')
@@ -289,15 +286,11 @@ class Minecraft {
       await Promise.all([page.click('button[type="submit"]'), page.waitForNavigation({ waitUntil: 'networkidle0' })])
 
       const html = await page.content()
-      console.log('html', html)
       const $: cheerio.Root = cheerio.load(html)
-      console.log('$', $)
 
       const xuidPayload: cheerio.Cheerio = $(this.options.strings.xuid_string)
-      console.log('xuidPayload', xuidPayload)
       // @ts-ignore
       const xuidString: string = xuidPayload[0].children[0].data
-      console.log('xuidString', xuidString)
 
       if (xuidString) {
         logging(`Found xuid from gamertag. Gamertag: ${gamerTag}, xuid: ${xuidString}`)
@@ -308,7 +301,6 @@ class Minecraft {
       return xuidString
     } catch (error) {
       logging(this.options.strings.error_could_not_find_xuid_message, error)
-      console.log(error)
     }
 
     return ''

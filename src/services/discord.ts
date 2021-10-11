@@ -315,7 +315,6 @@ class Discord {
             // Getting user's XUID
             const minecraft = new Minecraft()
             let xuid = await minecraft.getXuidFromGamerTag(name)
-            console.log('xuid', xuid)
 
             // Read whitelist.json file
             const readFile = () => {
@@ -334,7 +333,6 @@ class Discord {
             if (xuid !== '') {
               readFile()
             } else {
-              console.log(xuid)
               message.channel.send(this.options.strings.xuid_not_found_message)
             }
 
@@ -460,7 +458,7 @@ class Discord {
       ) {
         logging(this.options.strings.command_entered_message + interaction.user.username, commandName)
         try {
-          executeShellScript(`cd ${this.options.path} && ${this.options.discord_command} -s`) //@TODO: remove txt
+          executeShellScript(`cd ${this.options.path} && ${this.options.discord_command} -s`)
           interaction.reply(this.options.strings.successful_command_message)
         } catch (error) {
           logging(this.options.strings.error_with_start_command, error)
