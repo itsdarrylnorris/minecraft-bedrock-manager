@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { REST } from '@discordjs/rest'
 import { Routes } from 'discord-api-types/v9'
-import { Client, Collection, Intents, Message, Snowflake } from 'discord.js'
+import { Client, Collection, Intents, Message, Snowflake, WebhookClient } from 'discord.js'
 import dotenv from 'dotenv'
 import EventEmitter from 'events'
 import fs, { PathLike } from 'fs'
@@ -115,8 +115,6 @@ class Discord {
 
   private discord_screen_name: string = 'Discord'
 
-  static WebhookClient: any
-
   /**
    * Constructor
    * @param options
@@ -202,7 +200,10 @@ class Discord {
     logging(this.options.strings.sending_discord_message, string)
     try {
       if (this.options.discord_id && this.options.discord_token) {
-        const webhook: WebhookInterface = new Discord.WebhookClient(this.options.discord_id, this.options.discord_token)
+        const webhook: WebhookInterface = new WebhookClient({
+          id: this.options.discord_id,
+          token: this.options.discord_token,
+        })
         await webhook.send(`[${os.hostname()}] ${string}`)
       } else {
         throw new Error(
