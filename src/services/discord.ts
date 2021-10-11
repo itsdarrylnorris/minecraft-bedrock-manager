@@ -1,14 +1,14 @@
+import { SlashCommandBuilder } from '@discordjs/builders'
+import { REST } from '@discordjs/rest'
+import { Routes } from 'discord-api-types/v9'
+import { Client, Collection, Intents, Message, Snowflake } from 'discord.js'
+import dotenv from 'dotenv'
+import EventEmitter from 'events'
 import fs, { PathLike } from 'fs'
 import { readdir } from 'fs/promises'
 import os from 'os'
 import { executeShellScript, logging } from '../utils'
 import Minecraft from './minecraft'
-import { Client, Collection, Intents, WebhookClient, Message } from 'discord.js'
-import { REST } from '@discordjs/rest'
-import { Routes } from 'discord-api-types/v9'
-import { SlashCommandBuilder } from '@discordjs/builders'
-
-import dotenv from 'dotenv'
 dotenv.config()
 
 /**
@@ -37,7 +37,7 @@ interface DiscordOptionsInterface {
   discord_command: string | undefined
 
   // Discord Id
-  discord_id: string | undefined
+  discord_id: Snowflake | undefined
 
   // Discord Token
   discord_token: string | undefined
@@ -49,19 +49,23 @@ interface DiscordOptionsInterface {
   strings: DiscordStringsInterface
 }
 
-// /**
-//  * Interface of Discord, it contains any information related to discord.
-//  */
-// interface MinecraftDiscordInterface {
-//   webhook: string | undefined
-//   discord_info: WebhookInterface
-// }
+/**
+ * Webhook Interface.
+ */
+interface WebhookInterface {
+  send: any
+}
 
-// interface WebhookInterface {
-//   send: any
-//   id: string
-//   token: string
-// }
+/**
+ * Client Interface.
+ */
+interface ClientInterface {
+  on: any
+  user: any
+  commands?: string
+  login: any
+  client?: EventEmitter
+}
 
 /**
  * Editable configuration for strings.
@@ -107,9 +111,11 @@ class Discord {
   // Options configuration
   options: DiscordOptionsInterface
 
-  private client: typeof Client
+  client: ClientInterface
 
   private discord_screen_name: string = 'Discord'
+
+  static WebhookClient: any
 
   /**
    * Constructor
@@ -196,7 +202,7 @@ class Discord {
     logging(this.options.strings.sending_discord_message, string)
     try {
       if (this.options.discord_id && this.options.discord_token) {
-        const webhook: any = new WebhookClient(this.options.discord_id, this.options.discord_token)
+        const webhook: WebhookInterface = new Discord.WebhookClient(this.options.discord_id, this.options.discord_token)
         await webhook.send(`[${os.hostname()}] ${string}`)
       } else {
         throw new Error(
@@ -261,13 +267,16 @@ class Discord {
    *
    */
   async startMessages() {
-    this.client.on('messageCreate', async (message: typeof Message) => {
+    this.client.on('messageCreate', async (message: Message) => {
       if (message.author.bot) return
       const command: string = message.content.toLowerCase()
+
       // Command 5: Add user to server
       // mbm add [Gamertag]
       if (
         command.includes((this.options.discord_command as string) && this.options.strings.add_command) &&
+        message &&
+        message.member &&
         message.member.roles.cache.some((role: any) => role.name === this.options.discord_role)
       ) {
         logging(this.options.strings.command_entered_message + message.author.username, message.content)
@@ -306,6 +315,7 @@ class Discord {
             // Getting user's XUID
             const minecraft = new Minecraft()
             let xuid = await minecraft.getXuidFromGamerTag(name)
+            console.log('xuid', xuid)
 
             // Read whitelist.json file
             const readFile = () => {
@@ -324,6 +334,7 @@ class Discord {
             if (xuid !== '') {
               readFile()
             } else {
+              console.log(xuid)
               message.channel.send(this.options.strings.xuid_not_found_message)
             }
 
@@ -350,6 +361,8 @@ class Discord {
       // mbm remove [Gamertag]
       else if (
         command.includes((this.options.discord_command as string) && this.options.strings.remove_command) &&
+        message &&
+        message.member &&
         message.member.roles.cache.some((role: any) => role.name === this.options.discord_role)
       ) {
         logging(this.options.strings.command_entered_message + message.author.username, message.content)
@@ -447,7 +460,7 @@ class Discord {
       ) {
         logging(this.options.strings.command_entered_message + interaction.user.username, commandName)
         try {
-          executeShellScript(`cd ${this.options.path} && ${this.options.discord_command} -s`)
+          executeShellScript(`cd ${this.options.path} && ${this.options.discord_command} -s`) //@TODO: remove txt
           interaction.reply(this.options.strings.successful_command_message)
         } catch (error) {
           logging(this.options.strings.error_with_start_command, error)
@@ -556,13 +569,16 @@ class Discord {
         .setDescription(this.options.strings.help_command_description),
     ].map((command) => command.toJSON())
 
-    const rest = new REST({ version: '9' }).setToken(this.options.discord_token)
+    const rest = new REST({ version: '9' }).setToken(this.options.discord_token as string)
 
     ;(async () => {
       try {
-        await rest.put(Routes.applicationGuildCommands(this.options.client_id, this.options.discord_id), {
-          body: commands,
-        })
+        await rest.put(
+          Routes.applicationGuildCommands(this.options.client_id as string, this.options.discord_id as string),
+          {
+            body: commands,
+          },
+        )
 
         logging(this.options.strings.successfully_deployed_commands)
       } catch (error) {

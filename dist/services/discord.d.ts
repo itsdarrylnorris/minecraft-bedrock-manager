@@ -1,4 +1,6 @@
 /// <reference types="node" />
+import { Snowflake } from 'discord.js';
+import EventEmitter from 'events';
 import { PathLike } from 'fs';
 interface DiscordOptionsInterface {
     path: PathLike;
@@ -8,10 +10,17 @@ interface DiscordOptionsInterface {
     discord_client: string | undefined;
     discord_role: string | undefined;
     discord_command: string | undefined;
-    discord_id: string | undefined;
+    discord_id: Snowflake | undefined;
     discord_token: string | undefined;
     client_id: string | undefined;
     strings: DiscordStringsInterface;
+}
+interface ClientInterface {
+    on: any;
+    user: any;
+    commands?: string;
+    login: any;
+    client?: EventEmitter;
 }
 interface DiscordStringsInterface {
     error_starting_discord_message: string;
@@ -47,8 +56,9 @@ interface DiscordStringsInterface {
 }
 declare class Discord {
     options: DiscordOptionsInterface;
-    private client;
+    client: ClientInterface;
     private discord_screen_name;
+    static WebhookClient: any;
     constructor(options?: DiscordOptionsInterface);
     sendMessageToDiscord(string: string): Promise<void>;
     startDiscord(): Promise<void>;

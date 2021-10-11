@@ -12,15 +12,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const builders_1 = require("@discordjs/builders");
+const rest_1 = require("@discordjs/rest");
+const v9_1 = require("discord-api-types/v9");
+const discord_js_1 = require("discord.js");
+const dotenv_1 = __importDefault(require("dotenv"));
 const fs_1 = __importDefault(require("fs"));
 const promises_1 = require("fs/promises");
 const os_1 = __importDefault(require("os"));
 const utils_1 = require("../utils");
 const minecraft_1 = __importDefault(require("./minecraft"));
-const discord_js_1 = require("discord.js");
-const rest_1 = require("@discordjs/rest");
-const v9_1 = require("discord-api-types/v9");
-const builders_1 = require("@discordjs/builders");
+dotenv_1.default.config();
 class Discord {
     constructor(options) {
         this.discord_screen_name = 'Discord';
@@ -84,7 +86,7 @@ class Discord {
             utils_1.logging(this.options.strings.sending_discord_message, string);
             try {
                 if (this.options.discord_id && this.options.discord_token) {
-                    const webhook = new discord_js_1.WebhookClient(this.options.discord_id, this.options.discord_token);
+                    const webhook = new Discord.WebhookClient(this.options.discord_id, this.options.discord_token);
                     yield webhook.send(`[${os_1.default.hostname()}] ${string}`);
                 }
                 else {
@@ -133,6 +135,8 @@ class Discord {
                     return;
                 const command = message.content.toLowerCase();
                 if (command.includes(this.options.discord_command && this.options.strings.add_command) &&
+                    message &&
+                    message.member &&
                     message.member.roles.cache.some((role) => role.name === this.options.discord_role)) {
                     utils_1.logging(this.options.strings.command_entered_message + message.author.username, message.content);
                     let split = message.toString().split(' ');
@@ -154,6 +158,7 @@ class Discord {
                             let name = splitUser;
                             const minecraft = new minecraft_1.default();
                             let xuid = yield minecraft.getXuidFromGamerTag(name);
+                            console.log('xuid', xuid);
                             const readFile = () => {
                                 fs_1.default.readFile(this.options.whitelist_file, 'utf8', function readFileCallback(error, data) {
                                     if (error) {
@@ -170,6 +175,7 @@ class Discord {
                                 readFile();
                             }
                             else {
+                                console.log(xuid);
                                 message.channel.send(this.options.strings.xuid_not_found_message);
                             }
                             const addUser = (whitelistTable) => {
@@ -193,6 +199,8 @@ class Discord {
                     }
                 }
                 else if (command.includes(this.options.discord_command && this.options.strings.remove_command) &&
+                    message &&
+                    message.member &&
                     message.member.roles.cache.some((role) => role.name === this.options.discord_role)) {
                     utils_1.logging(this.options.strings.command_entered_message + message.author.username, message.content);
                     let split = message.toString().split(' ');

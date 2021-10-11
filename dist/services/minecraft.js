@@ -140,26 +140,20 @@ class Minecraft {
     getXuidFromGamerTag(gamerTag = '') {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                console.log('gamerTag', gamerTag);
                 utils_1.logging(this.options.strings.looking_for_xuid_message);
                 let downloadURL = this.options.strings.xuid_download;
+                console.log('downloadURL', downloadURL);
                 const browser = yield puppeteer_extra_1.default
                     .use(puppeteer_extra_plugin_stealth_1.default())
                     .launch({ headless: false, args: ['--no-sandbox'], executablePath: '/usr/bin/chromium-browser' });
                 const page = yield browser.newPage();
+                console.log('page', page);
                 yield page.goto(downloadURL);
                 yield page.click('.form-check-input[value="1"]');
                 yield page.focus('#gamertag');
                 yield page.keyboard.type(gamerTag);
-                yield Promise.all([page.click('button[type="submit"]'), page.waitForNavigation({ waitUntil: 'networkidle0' })]);
-                const html = yield page.content();
-                const $ = cheerio_1.default.load(html);
-                const xuidPayload = $(this.options.strings.xuid_string);
-                const xuidString = xuidPayload[0].children[0].data;
-                if (xuidString) {
-                    utils_1.logging(`Found xuid from gamertag. Gamertag: ${gamerTag}, xuid: ${xuidString}`);
-                }
                 yield browser.close();
-                return xuidString;
             }
             catch (error) {
                 utils_1.logging(this.options.strings.error_could_not_find_xuid_message, error);
