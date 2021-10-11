@@ -272,7 +272,8 @@ class Minecraft {
 
       let args: any[] = []
       let executablePath
-      if (process.env.ENVIRONMENT === 'PRODUCTION') {
+
+      if (process.platform !== 'darwin') {
         args = ['--no-sandbox']
         executablePath = '/usr/bin/chromium-browser'
       }

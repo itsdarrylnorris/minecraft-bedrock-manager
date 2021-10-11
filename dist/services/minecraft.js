@@ -146,7 +146,7 @@ class Minecraft {
                 console.log('downloadURL', downloadURL);
                 let args = [];
                 let executablePath;
-                if (process.env.ENVIRONMENT === 'PRODUCTION') {
+                if (process.platform !== 'darwin') {
                     args = ['--no-sandbox'];
                     executablePath = '/usr/bin/chromium-browser';
                 }
