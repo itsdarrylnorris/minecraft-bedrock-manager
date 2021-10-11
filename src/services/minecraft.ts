@@ -269,9 +269,14 @@ class Minecraft {
       logging(this.options.strings.looking_for_xuid_message)
       let downloadURL: string = this.options.strings.xuid_download
       console.log('downloadURL', downloadURL)
-      const browser = await puppeteer
-        .use(StealthPlugin())
-        .launch({ headless: false, args: ['--no-sandbox'], executablePath: '/usr/bin/chromium-browser' })
+
+      let args: any[] = []
+      let executablePath
+      if (process.env.ENVIRONMENT === 'PRODUCTION') {
+        args = ['--no-sandbox']
+        executablePath = '/usr/bin/chromium-browser'
+      }
+      const browser = await puppeteer.use(StealthPlugin()).launch({ headless: true, args, executablePath })
       const page = await browser.newPage()
       console.log('page', page)
       await page.goto(downloadURL)
@@ -280,26 +285,26 @@ class Minecraft {
       await page.focus('#gamertag')
       await page.keyboard.type(gamerTag)
 
-      // await Promise.all([page.click('button[type="submit"]'), page.waitForNavigation({ waitUntil: 'networkidle0' })])
+      await Promise.all([page.click('button[type="submit"]'), page.waitForNavigation({ waitUntil: 'networkidle0' })])
 
-      // const html = await page.content()
-      // console.log('html', html)
-      // const $: cheerio.Root = cheerio.load(html)
-      // console.log('$', $)
+      const html = await page.content()
+      console.log('html', html)
+      const $: cheerio.Root = cheerio.load(html)
+      console.log('$', $)
 
-      // const xuidPayload: cheerio.Cheerio = $(this.options.strings.xuid_string)
-      // console.log('xuidPayload', xuidPayload)
-      // // @ts-ignore
-      // const xuidString: string = xuidPayload[0].children[0].data
-      // console.log('xuidString', xuidString)
+      const xuidPayload: cheerio.Cheerio = $(this.options.strings.xuid_string)
+      console.log('xuidPayload', xuidPayload)
+      // @ts-ignore
+      const xuidString: string = xuidPayload[0].children[0].data
+      console.log('xuidString', xuidString)
 
-      // if (xuidString) {
-      //   logging(`Found xuid from gamertag. Gamertag: ${gamerTag}, xuid: ${xuidString}`)
-      // }
+      if (xuidString) {
+        logging(`Found xuid from gamertag. Gamertag: ${gamerTag}, xuid: ${xuidString}`)
+      }
 
       await browser.close()
 
-      // return xuidString
+      return xuidString
     } catch (error) {
       logging(this.options.strings.error_could_not_find_xuid_message, error)
       console.log(error)
