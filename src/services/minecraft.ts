@@ -381,14 +381,15 @@ class Minecraft {
     this.discord_instance.sendMessageToDiscord(this.options.strings.stop_server_message)
   }
 
+  async runLogs() {
+    executeShellScript(`screen -L -Logfile minecraft-discord.log -dmS Discord /bin/zsh -c "node mbm -l"`)
+  }
+
   /**
    * Adding logging for Discord.
    *
    */
   async logs() {
-    executeShellScript(
-      `cd ${this.options.path} && screen -L -Logfile minecraft-discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.log_file}"`,
-    )
     logging(this.options.strings.watching_logging_message)
 
     let file = await fs.readFile(this.options.log_file, 'utf8')

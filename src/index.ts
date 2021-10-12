@@ -16,8 +16,9 @@ program
   .option('-d, --discord', 'Starts Discord')
   .option('-dc, --deploy-commands', 'Deploy Commands')
   .option('-b, --backup', 'Backup')
-  .option('-sa, --start-all, Start Everything')
-  .option('-x, --xuid, Find xuid from gamertag')
+  .option('-sa, --start-all', 'Start Everything')
+  .option('-x, --xuid', 'Find xuid from gamertag')
+  .option('-rl, --run-logs', 'Run Minecraft logs on screen')
 
 program.parse(process.argv)
 
@@ -75,6 +76,9 @@ const main = async () => {
     } catch (error) {
       logging('Error:', error)
     }
+  } else if (options.runLogs) {
+    const minecraft = new Minecraft()
+    minecraft.runLogs()
   } else if (options.startAll) {
     try {
       const minecraft = new Minecraft()
