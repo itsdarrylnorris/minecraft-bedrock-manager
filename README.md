@@ -31,21 +31,19 @@ yarn deploy
 
 # Installation
 
-### Setting up your Discord Webhook
+<!-- ### Setting up your Discord Webhook
 
 1. Follow the instructions outlined under **MAKING A WEBHOOK** in this [article](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks).
 2. Press on **Copy Webhook URL**
 3. Paste the copied URL into your browser's search bar.
 4. Locate the webhook's id and token values.
 5. Copy and paste the webhook id to the DISCORD_ID in your .env file.
-6. Copy and paste the webhook token to the DISCORD_TOKEN in your .env file.
 
 For local development you can use these credentials
 
 ```
 DISCORD_ID="807879959074832415"
-DISCORD_TOKEN="0FEXP3YxCCU1z_FnwPHLMb-q0ZquR2wHKziHn1IkQxe3RD-KvyCGIFG2VHbZkF8ZsDem"
-```
+``` -->
 
 ### Setting up your Discord Application's Bot
 
@@ -59,16 +57,27 @@ DISCORD_TOKEN="0FEXP3YxCCU1z_FnwPHLMb-q0ZquR2wHKziHn1IkQxe3RD-KvyCGIFG2VHbZkF8Zs
 8. Click on the **Link** provided and you will be redirected to a Discord authorization page.
 9. Select your Server and select **Continue**.
 10. Double check the Bot's permissions and click on **Authorize**.
+11. Go back to this [website](https://discord.com/developers/applications) and click on **oAuth2**
+12. Scroll down and locate the **oAuth2 URL Generator** heading.
+13. Locate the **applications.commands** scope and mark the scope.
+14. Click on the **Copy** button that contains the URL and paste that URL into your browser. Press Enter to view the URL.
+15. Select your server and click on **Authorize**.
 
-### Additional set up for your .env file
+### Setting up your .env file
 
-If you have followed the instructions starting from the top, you should have the following so far:
+Your .env file must contain the following:
 
 - DISCORD_ID
-- DISCORD_TOKEN
-- DISCORD_CLIENT
 
-You will also need to add:
+Server ID
+
+- DISCORD_TOKEN
+
+Go to this [website](https://discord.com/developers/applications) and click on **Bot**. Locate your Bot's Token and click on **Copy**. Use the copied value as your DISCORD_TOKEN.
+
+- CLIENT_ID
+
+Go to this [website](https://discord.com/developers/applications) and click on **oAuth2**. Locate your Client ID (under Client Information) and click on **Copy**. Use the copied value as your CLIENT_ID.
 
 - DISCORD_ROLE
 
@@ -76,11 +85,11 @@ Add all the Discord server's roles that will have access to the Discord commands
 
 - DISCORD_COMMAND
 
-Add your preferred text to start the Discord command. Add the text after the Discord Prefix. Example: /**mm** start server
+Add your preferred text to start the Discord command. Add the text after the Discord Prefix. Example: **mbm** add [Gamertag]
 
 - ENVIRONMENT
 
-Configure the environment value to either Development or Production
+Configure the ENVIRONMENT value to either Development or Production
 
 Example of .env file:
 
@@ -90,7 +99,7 @@ DISCORD_TOKEN=[Discord Token]
 DISCORD_CLIENT=[Discord Client]
 DISCORD_ROLE="Devs, Admin"
 DISCORD_COMMAND=mbm
-ENVIRONMENT=DEVELOPMENT
+ENVIRONMENT=PRODUCTION
 ```
 
 ### Setting up your .gitignore file in local and production environment
@@ -136,3 +145,17 @@ world_templates
 Requires Node version v16.8.0
 
 # TODO How to use the logs
+
+# Available Commands
+
+- Display Help Commands (-h, --help)
+- Starts the Minecraft Server (-s, --start-server)
+- Restarts the Minecraft Server (-r, --restart-server)
+- Stops Minecraft Server (-st, --stop-server)
+- Shows the Minecraft Logs (-l, --logs)
+- Starts the Discord Bot (-d, --discord)
+- Deploy Discord Commands (-dc, --deploy-commands)
+- Backup the Minecraft Server (-b, --backup)
+- Start Everything (-sa, --start-all)
+- Find XUID From Gamertag (-x, --xuid)
+- Run Minecraft Logs on Screen (-rl, --run-logs)

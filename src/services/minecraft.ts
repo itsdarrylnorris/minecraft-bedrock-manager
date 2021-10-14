@@ -381,6 +381,10 @@ class Minecraft {
     this.discord_instance.sendMessageToDiscord(this.options.strings.stop_server_message)
   }
 
+  /**
+   * Run Logs.
+   *
+   */
   async runLogs() {
     executeShellScript(`screen -L -Logfile minecraft-discord.log -dmS Discord /bin/zsh -c "node mbm -l"`)
   }
