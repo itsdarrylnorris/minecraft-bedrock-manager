@@ -83,7 +83,7 @@ class Minecraft {
 
   private minecraft_screen_name: string = 'Minecraft'
 
-  private discord_screen_name: string = 'Discord'
+  // private discord_screen_name: string = 'Discord'
 
   private discord_instance: Discord
 

@@ -39,7 +39,6 @@ declare class Minecraft {
     private options;
     private logs_strings;
     private minecraft_screen_name;
-    private discord_screen_name;
     private discord_instance;
     constructor(options?: MinecraftOptionsInterface);
     restartServer(): Promise<void>;
@@ -51,6 +50,7 @@ declare class Minecraft {
     updateServer(versionLink: string | undefined): void;
     deleteOldestFile(): Promise<void>;
     stopServer(): Promise<void>;
+    runLogs(): Promise<void>;
     logs(): Promise<void>;
     getGamerTagFromLog(logString: string, logIndentifier: string): string;
 }

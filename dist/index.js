@@ -25,11 +25,12 @@ commander_1.default
     .option('-r, --restart-server', 'Restarts the Minecraft Server')
     .option('-st, --stop-server', 'Stops Minecraft Server')
     .option('-l, --logs', 'Shows the Minecraft Logs')
-    .option('-d, --discord', 'Starts Discord')
-    .option('-dc, --deploy-commands', 'Deploy Commands')
-    .option('-b, --backup', 'Backup')
-    .option('-sa, --start-all, Start Everything')
-    .option('-x, --xuid, Find xuid from gamertag');
+    .option('-d, --discord', 'Starts the Discord Bot')
+    .option('-dc, --deploy-commands', 'Deploy Discord Commands')
+    .option('-b, --backup', 'Backup the Minecraft Server')
+    .option('-sa, --start-all', 'Start Everything')
+    .option('-x, --xuid', 'Find xuid from gamertag')
+    .option('-rl, --run-logs', 'Run Minecraft Logs on screen');
 commander_1.default.parse(process.argv);
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const options = commander_1.default.opts();
@@ -45,7 +46,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
             process.exit();
         }
         catch (error) {
-            (0, utils_1.logging)('Error:', error);
+            utils_1.logging('Error:', error);
         }
     }
     else if (options.restartServer) {
@@ -76,7 +77,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
             minecraft.backupServer();
         }
         catch (error) {
-            (0, utils_1.logging)('Error:', error);
+            utils_1.logging('Error:', error);
         }
     }
     else if (options.xuid) {
@@ -87,12 +88,16 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
                 process.exit();
             }
             else {
-                (0, utils_1.logging)('Missing gamertag. Please add gamertag after the --xuid');
+                utils_1.logging('Missing gamertag. Please add gamertag after the --xuid');
             }
         }
         catch (error) {
-            (0, utils_1.logging)('Error:', error);
+            utils_1.logging('Error:', error);
         }
+    }
+    else if (options.runLogs) {
+        const minecraft = new minecraft_1.default();
+        minecraft.runLogs();
     }
     else if (options.startAll) {
         try {
@@ -101,7 +106,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
             process.exit();
         }
         catch (error) {
-            (0, utils_1.logging)('Error', error);
+            utils_1.logging('Error', error);
         }
     }
 });
