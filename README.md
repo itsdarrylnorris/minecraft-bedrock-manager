@@ -1,13 +1,21 @@
 # Minecraft Bedrock Manager
 
-Minecraft Manager helps backup your Minecraft server by storing backups of your server as zip files, sending Discord messages that a backup is underway, and sending custom messages to your Discord Community.
+Minecraft Bedrock Manager lets you store backups of your server in a GitHub repository, send Discord messages that a backup is underway, and provides Slash Commands that lets you manage your server.
 
-| :warning: | This project still under active development; use it at your own risk. A lot things are going to change :). |
-| :-------: | :--------------------------------------------------------------------------------------------------------- |
+| :warning: | This project is still under development. Use it at your own risk. A lot of things are going to change :). |
+| :-------: | :-------------------------------------------------------------------------------------------------------- |
 
 - [Building](#building)
 - [Installation](#installation)
+  - [Setting up your Discord Webhook](#setting-up-your-discord-webhook)
+  - [Setting up your Discord Application's Bot](#setting-up-your-discord-applications-bot)
+  - [Setting up your .env file](#setting-up-your-env-file)
+  - [Example of .env file](#example-of-env-file)
+  - [Setting up your .gitignore file in local and production environment](#setting-up-your-gitignore-file-in-local-and-production-environment)
+  - [Setting up your GitHub repository](#setting-up-your-github-repository)
 - [Usage](#usage)
+- [How to use the logs](#how-to-use-the-logs)
+- [Available Commands](#available-commands)
 
 # Building
 
@@ -31,21 +39,16 @@ yarn deploy
 
 # Installation
 
-<!-- ### Setting up your Discord Webhook
+## Setting up your Discord Webhook
 
 1. Follow the instructions outlined under **MAKING A WEBHOOK** in this [article](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks).
 2. Press on **Copy Webhook URL**
 3. Paste the copied URL into your browser's search bar.
 4. Locate the webhook's id and token values.
-5. Copy and paste the webhook id to the DISCORD_ID in your .env file.
+5. Copy and paste the webhook id to the WEBHOOK_ID in your .env file.
+6. Copy and paste the webhook id to the WEBHOOK_TOKEN in your .env file.
 
-For local development you can use these credentials
-
-```
-DISCORD_ID="807879959074832415"
-``` -->
-
-### Setting up your Discord Application's Bot
+## Setting up your Discord Application's Bot
 
 1. Go to this [website](https://discord.com/developers/applications) and click on **New Application**.
 2. Enter your applications' name and click on **Create**.
@@ -63,46 +66,48 @@ DISCORD_ID="807879959074832415"
 14. Click on the **Copy** button that contains the URL and paste that URL into your browser. Press Enter to view the URL.
 15. Select your server and click on **Authorize**.
 
-### Setting up your .env file
+## Setting up your .env file
 
 Your .env file must contain the following:
 
-- DISCORD_ID
+#### GUILD_ID
 
-Server ID
+[Enable developer mode in your Discord server.](https://www.thewindowsclub.com/wp-content/uploads/2021/08/Discord-Turn-on-Developer-Mode.png) Then, right click on your server's name on the top left corner in Discord. Click on **Copy ID** and use the copied value as your GUILD_ID.
 
-- DISCORD_TOKEN
+#### BOT_TOKEN
 
-Go to this [website](https://discord.com/developers/applications) and click on **Bot**. Locate your Bot's Token and click on **Copy**. Use the copied value as your DISCORD_TOKEN.
+Go to this [website](https://discord.com/developers/applications) and click on **Bot**. Locate your Bot's Token and click on **Copy**. Use the copied value as your BOT_TOKEN.
 
-- CLIENT_ID
+#### CLIENT_ID
 
 Go to this [website](https://discord.com/developers/applications) and click on **oAuth2**. Locate your Client ID (under Client Information) and click on **Copy**. Use the copied value as your CLIENT_ID.
 
-- DISCORD_ROLE
+#### DISCORD_ROLE
 
 Add all the Discord server's roles that will have access to the Discord commands.
 
-- DISCORD_COMMAND
+#### DISCORD_COMMAND
 
 Add your preferred text to start the Discord command. Add the text after the Discord Prefix. Example: **mbm** add [Gamertag]
 
-- ENVIRONMENT
+#### ENVIRONMENT
 
 Configure the ENVIRONMENT value to either Development or Production
 
-Example of .env file:
+## Example of .env file
 
 ```
-DISCORD_ID=[Discord ID]
-DISCORD_TOKEN=[Discord Token]
-DISCORD_CLIENT=[Discord Client]
+WEBHOOK_ID=[Webhook ID]
+WEBHOOK_TOKEN=[Webhook TOKEN]
+GUILD_ID=[Guild ID]
+BOT_TOKEN=[Bot Token]
+CLIENT_ID=[Client Id]
 DISCORD_ROLE="Devs, Admin"
 DISCORD_COMMAND=mbm
 ENVIRONMENT=PRODUCTION
 ```
 
-### Setting up your .gitignore file in local and production environment
+## Setting up your .gitignore file in local and production environment
 
 Add the following:
 
@@ -138,13 +143,17 @@ world_templates
 ####
 ```
 
-### Setting up your GitHub Repository
+## Setting up your GitHub repository
+
+Blah
 
 # Usage
 
 Requires Node version v16.8.0
 
-# TODO How to use the logs
+# How to use the logs
+
+Blah
 
 # Available Commands
 
