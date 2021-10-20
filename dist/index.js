@@ -46,7 +46,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
             process.exit();
         }
         catch (error) {
-            utils_1.logging('Error:', error);
+            (0, utils_1.logging)('Error:', error);
         }
     }
     else if (options.restartServer) {
@@ -77,7 +77,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
             minecraft.backupServer();
         }
         catch (error) {
-            utils_1.logging('Error:', error);
+            (0, utils_1.logging)('Error:', error);
         }
     }
     else if (options.xuid) {
@@ -88,11 +88,11 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
                 process.exit();
             }
             else {
-                utils_1.logging('Missing gamertag. Please add gamertag after the --xuid');
+                (0, utils_1.logging)('Missing gamertag. Please add gamertag after the --xuid');
             }
         }
         catch (error) {
-            utils_1.logging('Error:', error);
+            (0, utils_1.logging)('Error:', error);
         }
     }
     else if (options.runLogs) {
@@ -106,7 +106,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
             process.exit();
         }
         catch (error) {
-            utils_1.logging('Error', error);
+            (0, utils_1.logging)('Error', error);
         }
     }
 });

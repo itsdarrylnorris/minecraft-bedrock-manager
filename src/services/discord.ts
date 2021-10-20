@@ -119,7 +119,7 @@ class Discord {
 
   client: ClientInterface
 
-  private discord_screen_name: string = 'Discord'
+  private discord_screen_name: string = 'Discord-Bot'
 
   /**
    * Constructor
@@ -199,7 +199,7 @@ class Discord {
     }
   }
 
-  /**
+  /** TODO: Figure out why it works individually but not thru commands
    * Sends a interaction to Discord.
    *
    * @param string String interaction for Discord.
@@ -263,9 +263,7 @@ class Discord {
    */
   startBot() {
     this.client.on('ready', () => {
-      executeShellScript(
-        `cd ${this.options.path} && screen -L -Logfile discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.log_file}"`,
-      )
+      executeShellScript(`screen -L -Logfile discord-bot.log -dmS ${this.discord_screen_name}`)
       this.client.user.setActivity('activity', { type: 'WATCHING' })
       logging(this.options.strings.bot_is_online_message)
     })

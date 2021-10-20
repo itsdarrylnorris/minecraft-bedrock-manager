@@ -83,7 +83,7 @@ class Minecraft {
 
   private minecraft_screen_name: string = 'Minecraft'
 
-  // private discord_screen_name: string = 'Discord'
+  private discord_screen_name: string = 'Discord'
 
   private discord_instance: Discord
 
@@ -386,7 +386,9 @@ class Minecraft {
    *
    */
   async runLogs() {
-    executeShellScript(`screen -L -Logfile minecraft-discord.log -dmS Discord /bin/zsh -c "node mbm -l"`)
+    executeShellScript(
+      `screen -L -Logfile minecraft-discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "node mbm -l"`,
+    )
   }
 
   /**

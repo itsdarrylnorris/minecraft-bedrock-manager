@@ -1,6 +1,6 @@
 # Minecraft Bedrock Manager
 
-Minecraft Bedrock Manager lets you store backups of your server in a GitHub repository, send Discord messages that a backup is underway, and provides Slash Commands that lets you manage your server.
+Minecraft Bedrock Manager lets you store backups of your server in a Git repository, send Discord messages that a backup is underway, and provides Slash Commands that lets you manage your server.
 
 | :warning: | This project is still under development. Use it at your own risk. A lot of things are going to change :). |
 | :-------: | :-------------------------------------------------------------------------------------------------------- |
@@ -12,7 +12,7 @@ Minecraft Bedrock Manager lets you store backups of your server in a GitHub repo
   - [Setting up your .env file](#setting-up-your-env-file)
   - [Example of .env file](#example-of-env-file)
   - [Setting up your .gitignore file in local and production environment](#setting-up-your-gitignore-file-in-local-and-production-environment)
-  - [Setting up your GitHub repository](#setting-up-your-github-repository)
+  - [Setting up your Git repository](#setting-up-your-git-repository)
 - [Usage](#usage)
 - [How to use the logs](#how-to-use-the-logs)
 - [Available Commands](#available-commands)
@@ -143,13 +143,17 @@ world_templates
 ####
 ```
 
-## Setting up your GitHub repository
+## Setting up your Git repository
 
 Blah
 
 # Usage
 
-Requires Node version v16.8.0
+### Requires Node version v16.8.0
+
+### Deploy Discord Command Required After Any Slash Command Name Change
+
+Any time you change the Discord Slash Command string configuration, you will need to use the Deploy Discord Command to register the commands. If not used, your changes will not be registered.
 
 # How to use the logs
 

@@ -28,6 +28,7 @@ class Minecraft {
             player_connected: '[INFO] Player connected:',
         };
         this.minecraft_screen_name = 'Minecraft';
+        this.discord_screen_name = 'Discord';
         if (options && options.path) {
             this.options = options;
         }
@@ -82,7 +83,7 @@ class Minecraft {
                 yield this.discord_instance.sendMessageToDiscord(this.options.strings.post_backup_message);
             }
             catch (error) {
-                utils_1.logging(error);
+                (0, utils_1.logging)(error);
             }
             return;
         });
@@ -96,9 +97,9 @@ class Minecraft {
                 yield this.deleteOldestFile();
             }
             else {
-                utils_1.logging(this.options.strings.error_getting_version_message);
+                (0, utils_1.logging)(this.options.strings.error_getting_version_message);
             }
-            utils_1.executeShellScript(`cd ${this.options.path} && screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}bedrock_server" `);
+            (0, utils_1.executeShellScript)(`cd ${this.options.path} && screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}bedrock_server" `);
             this.discord_instance.sendMessageToDiscord(this.options.strings.start_server_message);
         });
     }
@@ -106,18 +107,18 @@ class Minecraft {
         let date = new Date();
         let script = `cd ${this.options.path} && git add . && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`;
         try {
-            utils_1.executeShellScript(script);
+            (0, utils_1.executeShellScript)(script);
         }
         catch (error) {
-            utils_1.logging(this.options.strings.error_backup_message, error);
+            (0, utils_1.logging)(this.options.strings.error_backup_message, error);
         }
     }
     checkForLatestVersion() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                utils_1.logging(this.options.strings.checking_server_version_message);
+                (0, utils_1.logging)(this.options.strings.checking_server_version_message);
                 let downloadURL = this.options.strings.version_download;
-                const browser = yield puppeteer_extra_1.default.use(puppeteer_extra_plugin_stealth_1.default()).launch({
+                const browser = yield puppeteer_extra_1.default.use((0, puppeteer_extra_plugin_stealth_1.default)()).launch({
                     args: ['--no-sandbox'],
                     executablePath: '/usr/bin/chromium-browser',
                 });
@@ -131,7 +132,7 @@ class Minecraft {
                 return Object.values(buttonData)[3].href || '';
             }
             catch (error) {
-                utils_1.logging(this.options.strings.error_getting_version_message, error);
+                (0, utils_1.logging)(this.options.strings.error_getting_version_message, error);
             }
             return '';
         });
@@ -139,7 +140,7 @@ class Minecraft {
     getXuidFromGamerTag(gamerTag = '') {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                utils_1.logging(this.options.strings.looking_for_xuid_message);
+                (0, utils_1.logging)(this.options.strings.looking_for_xuid_message);
                 let downloadURL = this.options.strings.xuid_download;
                 let args = [];
                 let executablePath;
@@ -147,7 +148,7 @@ class Minecraft {
                     args = ['--no-sandbox'];
                     executablePath = '/usr/bin/chromium-browser';
                 }
-                const browser = yield puppeteer_extra_1.default.use(puppeteer_extra_plugin_stealth_1.default()).launch({ headless: true, args, executablePath });
+                const browser = yield puppeteer_extra_1.default.use((0, puppeteer_extra_plugin_stealth_1.default)()).launch({ headless: true, args, executablePath });
                 const page = yield browser.newPage();
                 yield page.goto(downloadURL);
                 yield page.click('.form-check-input[value="1"]');
@@ -159,13 +160,13 @@ class Minecraft {
                 const xuidPayload = $(this.options.strings.xuid_string);
                 const xuidString = xuidPayload[0].children[0].data;
                 if (xuidString) {
-                    utils_1.logging(`Found xuid from gamertag. Gamertag: ${gamerTag}, xuid: ${xuidString}`);
+                    (0, utils_1.logging)(`Found xuid from gamertag. Gamertag: ${gamerTag}, xuid: ${xuidString}`);
                 }
                 yield browser.close();
                 return xuidString;
             }
             catch (error) {
-                utils_1.logging(this.options.strings.error_could_not_find_xuid_message, error);
+                (0, utils_1.logging)(this.options.strings.error_could_not_find_xuid_message, error);
             }
             return '';
         });
@@ -180,26 +181,26 @@ class Minecraft {
                     this.updateServer(versionLink);
                 }
                 else {
-                    utils_1.logging(this.options.strings.updated_server_message);
+                    (0, utils_1.logging)(this.options.strings.updated_server_message);
                 }
             }
             catch (error) {
-                utils_1.logging(this.options.strings.error_cant_get_last_item_message, error);
+                (0, utils_1.logging)(this.options.strings.error_cant_get_last_item_message, error);
             }
         });
     }
     updateServer(versionLink) {
         try {
             const latestVersionZip = versionLink && versionLink.split('/')[versionLink.split('/').length - 1];
-            utils_1.logging(this.options.strings.not_up_to_date_server_message + latestVersionZip);
-            utils_1.executeShellScript(`cd ${this.options.download_path} && ` +
+            (0, utils_1.logging)(this.options.strings.not_up_to_date_server_message + latestVersionZip);
+            (0, utils_1.executeShellScript)(`cd ${this.options.download_path} && ` +
                 `wget ${versionLink} && ` +
                 `cd ${this.options.path} && ` +
                 `unzip -o "${this.options.download_path}${latestVersionZip}" -x "*server.properties*" "*permissions.json*" "*whitelist.json*" "*valid_known_packs.json*" && ` +
                 `chmod 777 ${this.options.path}/bedrock_server`);
         }
         catch (error) {
-            utils_1.logging(this.options.strings.error_downloading_version_message, error);
+            (0, utils_1.logging)(this.options.strings.error_downloading_version_message, error);
         }
     }
     deleteOldestFile() {
@@ -209,30 +210,30 @@ class Minecraft {
                 const count = files.filter((item) => item.includes('zip')).length;
                 if (count > this.options.numbers.max_number_files_in_downloads_folder) {
                     let oldFile = files[1];
-                    utils_1.executeShellScript(`cd ${this.options.download_path} && rm ${oldFile}`);
-                    utils_1.logging(this.options.strings.deleted_oldest_version_success_message + oldFile);
+                    (0, utils_1.executeShellScript)(`cd ${this.options.download_path} && rm ${oldFile}`);
+                    (0, utils_1.logging)(this.options.strings.deleted_oldest_version_success_message + oldFile);
                 }
             }
             catch (error) {
-                utils_1.logging(this.options.strings.error_deleting_oldest_version_message, error);
+                (0, utils_1.logging)(this.options.strings.error_deleting_oldest_version_message, error);
             }
         });
     }
     stopServer() {
         return __awaiter(this, void 0, void 0, function* () {
-            utils_1.logging(this.options.strings.stop_server_message);
-            utils_1.executeShellScript(`screen -S ${this.minecraft_screen_name} -X kill`);
+            (0, utils_1.logging)(this.options.strings.stop_server_message);
+            (0, utils_1.executeShellScript)(`screen -S ${this.minecraft_screen_name} -X kill`);
             this.discord_instance.sendMessageToDiscord(this.options.strings.stop_server_message);
         });
     }
     runLogs() {
         return __awaiter(this, void 0, void 0, function* () {
-            utils_1.executeShellScript(`screen -L -Logfile minecraft-discord.log -dmS Discord /bin/zsh -c "node mbm -l"`);
+            (0, utils_1.executeShellScript)(`screen -L -Logfile minecraft-discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "node mbm -l"`);
         });
     }
     logs() {
         return __awaiter(this, void 0, void 0, function* () {
-            utils_1.logging(this.options.strings.watching_logging_message);
+            (0, utils_1.logging)(this.options.strings.watching_logging_message);
             let file = yield fs_1.promises.readFile(this.options.log_file, 'utf8');
             let fileNumber = file.split(/\n/).length;
             chokidar_1.default.watch(this.options.log_file).on('all', (evt, path) => __awaiter(this, void 0, void 0, function* () {
