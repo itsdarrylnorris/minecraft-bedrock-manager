@@ -26,7 +26,10 @@ commander_1.default
     .option('-st, --stop-server', 'Stops Minecraft Server')
     .option('-l, --logs', 'Shows the Minecraft Logs')
     .option('-d, --discord', 'Starts Discord')
-    .option('-b, --backup', 'Backup');
+    .option('-dc, --deploy-commands', 'Deploy Commands')
+    .option('-b, --backup', 'Backup')
+    .option('-sa, --start-all, Start Everything')
+    .option('-x, --xuid, Find xuid from gamertag');
 commander_1.default.parse(process.argv);
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const options = commander_1.default.opts();
@@ -37,39 +40,68 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     }
     else if (options.startServer) {
         try {
-            const minecraft = new minecraft_1.default({});
+            const minecraft = new minecraft_1.default();
             yield minecraft.startServer();
             process.exit();
         }
         catch (error) {
-            utils_1.logging('Error:', error);
+            (0, utils_1.logging)('Error:', error);
         }
     }
     else if (options.restartServer) {
-        const minecraft = new minecraft_1.default({});
+        const minecraft = new minecraft_1.default();
         yield minecraft.restartServer();
         process.exit();
     }
     else if (options.stopServer) {
-        const minecraft = new minecraft_1.default({});
+        const minecraft = new minecraft_1.default();
         yield minecraft.stopServer();
         process.exit();
     }
     else if (options.logs) {
-        const minecraft = new minecraft_1.default({});
+        const minecraft = new minecraft_1.default();
         minecraft.logs();
     }
     else if (options.discord) {
-        const minecraft = new discord_1.default({});
-        minecraft.startDiscord();
+        const discord = new discord_1.default();
+        discord.startDiscord();
+    }
+    else if (options.deployCommands) {
+        const discord = new discord_1.default();
+        discord.deployCommands();
     }
     else if (options.backup) {
         try {
-            const minecraft = new minecraft_1.default({});
+            const minecraft = new minecraft_1.default();
             minecraft.backupServer();
         }
         catch (error) {
-            utils_1.logging('Error:', error);
+            (0, utils_1.logging)('Error:', error);
+        }
+    }
+    else if (options.xuid) {
+        try {
+            if (process.argv[3]) {
+                const minecraft = new minecraft_1.default();
+                yield minecraft.getXuidFromGamerTag(process.argv[3]);
+                process.exit();
+            }
+            else {
+                (0, utils_1.logging)('Missing gamertag. Please add gamertag after the --xuid');
+            }
+        }
+        catch (error) {
+            (0, utils_1.logging)('Error:', error);
+        }
+    }
+    else if (options.startAll) {
+        try {
+            const minecraft = new minecraft_1.default();
+            yield minecraft.startServer();
+            process.exit();
+        }
+        catch (error) {
+            (0, utils_1.logging)('Error', error);
         }
     }
 });

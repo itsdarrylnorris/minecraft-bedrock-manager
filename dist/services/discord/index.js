@@ -12,22 +12,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const builders_1 = require("@discordjs/builders");
-const rest_1 = require("@discordjs/rest");
-const v9_1 = require("discord-api-types/v9");
-const discord_js_1 = require("discord.js");
-const dotenv_1 = __importDefault(require("dotenv"));
 const fs_1 = __importDefault(require("fs"));
 const promises_1 = require("fs/promises");
 const os_1 = __importDefault(require("os"));
-const utils_1 = require("../utils");
-const minecraft_1 = __importDefault(require("./minecraft"));
-dotenv_1.default.config();
+const utils_1 = require("../../utils");
+const minecraft_1 = __importDefault(require("../minecraft"));
+const { Client, Collection, Intents, WebhookClient, WebhookInterface, Message } = require('discord.js');
+require('dotenv').config();
+const { REST } = require('@discordjs/rest');
+const { Routes } = require('discord-api-types/v9');
+const { SlashCommandBuilder } = require('@discordjs/builders');
 class Discord {
     constructor(options) {
         this.discord_screen_name = 'Discord';
-        const client = new discord_js_1.Client({ intents: [discord_js_1.Intents.FLAGS.GUILDS, discord_js_1.Intents.FLAGS.GUILD_MESSAGES] });
-        client.commands = new discord_js_1.Collection();
+        const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
+        client.commands = new Collection();
         this.client = client;
         if (options && options.path) {
             this.options = options;
@@ -58,46 +57,32 @@ class Discord {
                     successfully_removed_user_message: process.env.options_successfully_removed_user_message ||
                         ' has been removed from the server. Restart the server to complete the removal process.',
                     user_not_found_message: process.env.options_user_not_found_message || 'User cannot be found.',
-                    xuid_not_found_message: process.env.options_xuid_not_found_message || 'Could not find gamertag xuid.',
-                    error_with_adding_xuid_to_whitelist: process.env.options_error_with_adding_xuid_to_whitelist || 'Could not add xuid to whitelist file.',
-                    error_with_removing_xuid_from_whitelist: process.env.options_error_with_removing_xuid_from_whitelist || 'Could not remove xuid from whitelist file.',
-                    error_with_start_command: process.env.options_error_with_start_command || 'Could not execute Start command.',
-                    error_with_stop_command: process.env.options_error_with_stop_command || 'Could not execute Stop command.',
-                    error_with_restart_command: process.env.options_error_with_restart_command || 'Could not execute Restart command.',
-                    error_with_help_command: process.env.options_error_with_help_command || 'Could not execute Help command.',
-                    start_command: process.env.options_start_command || 'start',
-                    stop_command: process.env.options_stop_command || 'stop',
-                    restart_command: process.env.options_restart_command || 'restart',
-                    help_command: process.env.options_help_command || 'help',
-                    add_command: process.env.options_add_command || 'add',
-                    remove_command: process.env.options_remove_command || 'remove',
-                    start_command_description: process.env.options_start_command_description || 'Starts up the server.',
-                    stop_command_description: process.env.options_stop_command_description || 'Stops up the server.',
-                    restart_command_description: process.env.options_restart_command_description || 'Restarts up the server.',
-                    help_command_description: process.env.options_help_command_description || 'Replies with available Help Commands.',
-                    successfully_deployed_commands: process.env.options_successfully_deployed_commands || 'Successfully registered application commands.',
-                    error_with_deploying_commands: process.env.options_error_with_deploying_commands || 'Error occurred while deploying commands.',
+                    xuid_not_found_message: process.env.options_xuid_not_found_message || 'Could not find gamertag xuid',
+                    start_command: 'start',
+                    stop_command: 'stop',
+                    restart_command: 'restart',
+                    help_command: 'help',
+                    add_command: 'add',
+                    remove_command: 'remove',
+                    start_command_description: 'Starts up the server.',
+                    stop_command_description: 'Stops up the server.',
+                    restart_command_description: 'Restarts up the server.',
+                    help_command_description: 'Replies with available Help Commands.',
+                    add_command_description: 'Finds user XUID and adds user to the server.',
+                    remove_command_description: 'Removes the user from the server.',
                 },
             };
         }
     }
     sendMessageToDiscord(string) {
         return __awaiter(this, void 0, void 0, function* () {
-            (0, utils_1.logging)(this.options.strings.sending_discord_message, string);
+            utils_1.logging(this.options.strings.sending_discord_message, string);
             try {
-                if (this.options.discord_id && this.options.discord_token) {
-                    const webhook = new discord_js_1.WebhookClient({
-                        id: this.options.discord_id,
-                        token: this.options.discord_token,
-                    });
-                    yield webhook.send(`[${os_1.default.hostname()}] ${string}`);
-                }
-                else {
-                    throw new Error(`Missing discord config. Discord ID: ${this.options.discord_id}, Discord Token: ${this.options.discord_token}`);
-                }
+                const webhook = new WebhookClient(this.options.discord_id, this.options.discord_token);
+                yield webhook.send(`[${os_1.default.hostname()}] ${string}`);
             }
             catch (error) {
-                (0, utils_1.logging)(this.options.strings.error_discord_message, error);
+                utils_1.logging(this.options.strings.error_discord_message, error);
             }
         });
     }
@@ -110,7 +95,7 @@ class Discord {
                 yield this.loginClient();
             }
             catch (error) {
-                (0, utils_1.logging)(this.options.strings.error_starting_discord_message, error);
+                utils_1.logging(this.options.strings.error_starting_discord_message, error);
             }
         });
     }
@@ -120,15 +105,15 @@ class Discord {
                 this.deploy();
             }
             catch (error) {
-                (0, utils_1.logging)(this.options.strings.error_with_deploying_commands, error);
+                utils_1.logging(this.options.strings.error_starting_discord_message, error);
             }
         });
     }
     startBot() {
         this.client.on('ready', () => {
-            (0, utils_1.executeShellScript)(`cd ${this.options.path} && screen -L -Logfile discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.log_file}"`);
+            utils_1.executeShellScript(`cd ${this.options.path} && screen -L -Logfile discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.log_file}"`);
             this.client.user.setActivity('activity', { type: 'WATCHING' });
-            (0, utils_1.logging)(this.options.strings.bot_is_online_message);
+            utils_1.logging(this.options.strings.bot_is_online_message);
         });
     }
     startMessages() {
@@ -138,23 +123,22 @@ class Discord {
                     return;
                 const command = message.content.toLowerCase();
                 if (command.includes(this.options.discord_command && this.options.strings.add_command) &&
-                    message &&
-                    message.member &&
                     message.member.roles.cache.some((role) => role.name === this.options.discord_role)) {
-                    (0, utils_1.logging)(this.options.strings.command_entered_message + message.author.username, message.content);
+                    utils_1.logging(this.options.strings.command_entered_message + message.author.username, message.content);
                     let split = message.toString().split(' ');
                     let splitCommand = split && split[0] ? split[0] : '';
                     let splitAdd = split && split[1] ? split[1] : '';
                     let splitUser = split && split[2] ? split[2] : '';
+                    console.log(split, splitCommand, splitAdd, splitUser);
                     if (splitCommand && splitAdd && splitUser) {
                         try {
                             let date = new Date();
-                            (0, utils_1.executeShellScript)(`cd ${this.options.path} && git add ${this.options.whitelist_file} && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`);
-                            let files = yield (0, promises_1.readdir)(this.options.path);
+                            utils_1.executeShellScript(`cd ${this.options.path} && git add ${this.options.whitelist_file} && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`);
+                            let files = yield promises_1.readdir(this.options.path);
                             if (files.filter((item) => item.includes(this.options.old_whitelist_file))) {
-                                (0, utils_1.executeShellScript)(`cd ${this.options.path} && ` + `rm ${this.options.old_whitelist_file}`);
+                                utils_1.executeShellScript(`cd ${this.options.path} && ` + `rm ${this.options.old_whitelist_file}`);
                             }
-                            (0, utils_1.executeShellScript)(`cd ${this.options.path} && ` + `cp ${this.options.whitelist_file} ${this.options.old_whitelist_file}`);
+                            utils_1.executeShellScript(`cd ${this.options.path} && ` + `cp ${this.options.whitelist_file} ${this.options.old_whitelist_file}`);
                             let whitelistTable = [{}];
                             let whitelistFile = this.options.whitelist_file;
                             let ignoresPlayerLimit = false;
@@ -190,20 +174,18 @@ class Discord {
                             };
                         }
                         catch (error) {
-                            (0, utils_1.logging)(this.options.strings.error_with_adding_xuid_to_whitelist, error);
+                            utils_1.logging('Could not add xuid to whitelist', error);
                             message.channel.send(this.options.strings.error_command);
                         }
                     }
                     else {
-                        (0, utils_1.logging)(this.options.strings.error_command);
+                        utils_1.logging(this.options.strings.error_command);
                         message.channel.send(this.options.strings.error_command);
                     }
                 }
                 else if (command.includes(this.options.discord_command && this.options.strings.remove_command) &&
-                    message &&
-                    message.member &&
                     message.member.roles.cache.some((role) => role.name === this.options.discord_role)) {
-                    (0, utils_1.logging)(this.options.strings.command_entered_message + message.author.username, message.content);
+                    utils_1.logging(this.options.strings.command_entered_message + message.author.username, message.content);
                     let split = message.toString().split(' ');
                     let splitCommand = split && split[0] ? split[0] : '';
                     let splitRemove = split && split[1] ? split[1] : '';
@@ -211,17 +193,17 @@ class Discord {
                     if (splitCommand && splitRemove && splitUser) {
                         try {
                             let date = new Date();
-                            (0, utils_1.executeShellScript)(`cd ${this.options.path} && git add ${this.options.whitelist_file} && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`);
-                            let files = yield (0, promises_1.readdir)(this.options.path);
+                            utils_1.executeShellScript(`cd ${this.options.path} && git add ${this.options.whitelist_file} && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`);
+                            let files = yield promises_1.readdir(this.options.path);
                             if (files.filter((item) => item.includes(this.options.old_whitelist_file))) {
-                                (0, utils_1.executeShellScript)(`cd ${this.options.path} && ` + `rm ${this.options.old_whitelist_file}`);
+                                utils_1.executeShellScript(`cd ${this.options.path} && ` + `rm ${this.options.old_whitelist_file}`);
                             }
-                            (0, utils_1.executeShellScript)(`cd ${this.options.path} && ` + `cp ${this.options.whitelist_file} ${this.options.old_whitelist_file}`);
+                            utils_1.executeShellScript(`cd ${this.options.path} && ` + `cp ${this.options.whitelist_file} ${this.options.old_whitelist_file}`);
                             let whitelistFile = this.options.whitelist_file;
                             let userNames = [];
                             fs_1.default.readFile(this.options.whitelist_file, 'utf8', function readFileCallback(error, data) {
                                 if (error) {
-                                    (0, utils_1.logging)(this.options.strings.error_with_reading_file, error);
+                                    utils_1.logging(this.options.strings.error_with_reading_file, error);
                                 }
                                 else {
                                     let whitelistData = JSON.parse(data);
@@ -249,12 +231,12 @@ class Discord {
                             };
                         }
                         catch (error) {
-                            (0, utils_1.logging)(this.options.strings.error_with_removing_xuid_from_whitelist, error);
+                            utils_1.logging('Could not remove xuid from whitelist', error);
                             message.channel.send(this.options.strings.error_command);
                         }
                     }
                     else {
-                        (0, utils_1.logging)(this.options.strings.error_command);
+                        utils_1.logging(this.options.strings.error_command);
                         message.channel.send(this.options.strings.error_command);
                     }
                 }
@@ -269,43 +251,43 @@ class Discord {
                 const { commandName } = interaction;
                 if (commandName === this.options.strings.start_command &&
                     interaction.member.roles.cache.some((role) => role.name === this.options.discord_role)) {
-                    (0, utils_1.logging)(this.options.strings.command_entered_message + interaction.user.username, commandName);
+                    utils_1.logging(this.options.strings.command_entered_message + interaction.user.username, commandName);
                     try {
-                        (0, utils_1.executeShellScript)(`cd ${this.options.path} && ${this.options.discord_command} -s`);
+                        utils_1.executeShellScript(`cd ${this.options.path} && ${this.options.discord_command} -s`);
                         interaction.reply(this.options.strings.successful_command_message);
                     }
                     catch (error) {
-                        (0, utils_1.logging)(this.options.strings.error_with_start_command, error);
+                        utils_1.logging('Could not execute start command', error);
                         interaction.reply(this.options.strings.error_command);
                     }
                 }
                 else if (commandName === this.options.strings.stop_command &&
                     interaction.member.roles.cache.some((role) => role.name === this.options.discord_role)) {
-                    (0, utils_1.logging)(this.options.strings.command_entered_message + interaction.user.username, commandName);
+                    utils_1.logging(this.options.strings.command_entered_message + interaction.user.username, commandName);
                     try {
-                        (0, utils_1.executeShellScript)(`cd ${this.options.path} && ${this.options.discord_command} -st`);
+                        utils_1.executeShellScript(`cd ${this.options.path} && ${this.options.discord_command} -st`);
                         interaction.reply(this.options.strings.successful_command_message);
                     }
                     catch (error) {
-                        (0, utils_1.logging)(this.options.strings.error_with_stop_command, error);
+                        utils_1.logging('Could not execute help command', error);
                         interaction.reply(this.options.strings.error_command);
                     }
                 }
                 else if (commandName === this.options.strings.restart_command &&
                     interaction.member.roles.cache.some((role) => role.name === this.options.discord_role)) {
-                    (0, utils_1.logging)(this.options.strings.command_entered_message + interaction.user.username, commandName);
+                    utils_1.logging(this.options.strings.command_entered_message + interaction.user.username, commandName);
                     try {
-                        (0, utils_1.executeShellScript)(`cd ${this.options.path} && ${this.options.discord_command} -r`);
+                        utils_1.executeShellScript(`cd ${this.options.path} && ${this.options.discord_command} -r`);
                         interaction.reply(this.options.strings.successful_command_message);
                     }
                     catch (error) {
-                        (0, utils_1.logging)(this.options.strings.error_with_restart_command, error);
+                        utils_1.logging('Could not execute help command', error);
                         interaction.reply(this.options.strings.error_command);
                     }
                 }
                 else if (commandName === this.options.strings.help_command &&
                     interaction.member.roles.cache.some((role) => role.name === this.options.discord_role)) {
-                    (0, utils_1.logging)(this.options.strings.command_entered_message + interaction.user.username, commandName);
+                    utils_1.logging(this.options.strings.command_entered_message + interaction.user.username, commandName);
                     try {
                         interaction.reply('**Available Commands:** \n' +
                             '-  /' +
@@ -333,7 +315,7 @@ class Discord {
                             ' [Gamertag]');
                     }
                     catch (error) {
-                        (0, utils_1.logging)(this.options.strings.error_with_help_command, error);
+                        utils_1.logging('Could not execute help command', error);
                         interaction.reply(this.options.strings.error_command);
                     }
                 }
@@ -351,33 +333,33 @@ class Discord {
     deploy() {
         return __awaiter(this, void 0, void 0, function* () {
             const commands = [
-                new builders_1.SlashCommandBuilder()
+                new SlashCommandBuilder()
                     .setName(this.options.strings.start_command)
                     .setDescription(this.options.strings.start_command_description),
-                new builders_1.SlashCommandBuilder()
+                new SlashCommandBuilder()
                     .setName(this.options.strings.stop_command)
                     .setDescription(this.options.strings.stop_command_description),
-                new builders_1.SlashCommandBuilder()
+                new SlashCommandBuilder()
                     .setName(this.options.strings.restart_command)
                     .setDescription(this.options.strings.restart_command_description),
-                new builders_1.SlashCommandBuilder()
+                new SlashCommandBuilder()
                     .setName(this.options.strings.help_command)
                     .setDescription(this.options.strings.help_command_description),
             ].map((command) => command.toJSON());
-            const rest = new rest_1.REST({ version: '9' }).setToken(this.options.discord_token);
+            const rest = new REST({ version: '9' }).setToken(this.options.discord_token);
             (() => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    yield rest.put(v9_1.Routes.applicationGuildCommands(this.options.client_id, this.options.discord_id), {
+                    yield rest.put(Routes.applicationGuildCommands(this.options.client_id, this.options.discord_id), {
                         body: commands,
                     });
-                    (0, utils_1.logging)(this.options.strings.successfully_deployed_commands);
+                    console.log('Successfully registered application commands.');
                 }
                 catch (error) {
-                    (0, utils_1.logging)(this.options.strings.error_with_deploying_commands, error);
+                    console.error(error);
                 }
             }))();
         });
     }
 }
 exports.default = Discord;
-//# sourceMappingURL=discord.js.map
+//# sourceMappingURL=index.js.map

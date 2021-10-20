@@ -1,7 +1,6 @@
 /// <reference types="node" />
-import { Snowflake } from 'discord.js';
-import EventEmitter from 'events';
 import { PathLike } from 'fs';
+export {};
 interface DiscordOptionsInterface {
     path: PathLike;
     log_file: string | undefined;
@@ -10,17 +9,10 @@ interface DiscordOptionsInterface {
     discord_client: string | undefined;
     discord_role: string | undefined;
     discord_command: string | undefined;
-    discord_id: Snowflake | undefined;
+    discord_id: string | undefined;
     discord_token: string | undefined;
     client_id: string | undefined;
     strings: DiscordStringsInterface;
-}
-interface ClientInterface {
-    on: any;
-    user: any;
-    commands?: string;
-    login: any;
-    client?: EventEmitter;
 }
 interface DiscordStringsInterface {
     error_starting_discord_message: string;
@@ -35,12 +27,6 @@ interface DiscordStringsInterface {
     successfully_removed_user_message: string;
     user_not_found_message: string;
     xuid_not_found_message: string;
-    error_with_adding_xuid_to_whitelist: string;
-    error_with_removing_xuid_from_whitelist: string;
-    error_with_start_command: string;
-    error_with_stop_command: string;
-    error_with_restart_command: string;
-    error_with_help_command: string;
     start_command: string;
     stop_command: string;
     restart_command: string;
@@ -51,12 +37,12 @@ interface DiscordStringsInterface {
     stop_command_description: string;
     restart_command_description: string;
     help_command_description: string;
-    successfully_deployed_commands: string;
-    error_with_deploying_commands: string;
+    add_command_description: string;
+    remove_command_description: string;
 }
 declare class Discord {
     options: DiscordOptionsInterface;
-    client: ClientInterface;
+    private client;
     private discord_screen_name;
     constructor(options?: DiscordOptionsInterface);
     sendMessageToDiscord(string: string): Promise<void>;

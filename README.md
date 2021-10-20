@@ -1,14 +1,9 @@
 # Minecraft Bedrock Manager
 
-Minecraft Manager helps backup your Minecraft server by storing backups of your server as zip files, sending Discord messages that a backup is underway, and sending custom messages to your Discord Community. 
+Minecraft Manager helps backup your Minecraft server by storing backups of your server as zip files, sending Discord messages that a backup is underway, and sending custom messages to your Discord Community.
 
-
-:warning: | This project still under active development; use it at your own risk. A lot things are going to change :).
-:---: | :---
-
-
-
-
+| :warning: | This project still under active development; use it at your own risk. A lot things are going to change :). |
+| :-------: | :--------------------------------------------------------------------------------------------------------- |
 
 - [Building](#building)
 - [Installation](#installation)
@@ -79,10 +74,6 @@ You will also need to add:
 
 Add all the Discord server's roles that will have access to the Discord commands.
 
-- DISCORD_PREFIX
-
-Add your preferred prefix to start the Discord command. Example: **/** mm start server
-
 - DISCORD_COMMAND
 
 Add your preferred text to start the Discord command. Add the text after the Discord Prefix. Example: /**mm** start server
@@ -98,8 +89,7 @@ DISCORD_ID=[Discord ID]
 DISCORD_TOKEN=[Discord Token]
 DISCORD_CLIENT=[Discord Client]
 DISCORD_ROLE="Devs, Admin"
-DISCORD_PREFIX=/
-DISCORD_COMMAND=mm
+DISCORD_COMMAND=mbm
 ENVIRONMENT=DEVELOPMENT
 ```
 
@@ -142,5 +132,7 @@ world_templates
 ### Setting up your GitHub Repository
 
 # Usage
+
+Requires Node version v16.8.0
 
 # TODO How to use the logs
