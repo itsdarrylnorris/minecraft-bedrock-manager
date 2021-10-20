@@ -36,11 +36,17 @@ interface DiscordOptionsInterface {
   // Phrase that starts the Discord command
   discord_command: string | undefined
 
-  // Discord Id
-  discord_id: Snowflake | undefined
+  // Guild Id
+  guild_id: Snowflake | undefined
 
-  // Discord Token
-  discord_token: string | undefined
+  // Webhook Id
+  webhook_id: Snowflake | undefined
+
+  // Webhook Token
+  webhook_token: string | undefined
+
+  // Bot Token
+  bot_token: string | undefined
 
   // Client Id
   client_id: string | undefined
@@ -113,7 +119,7 @@ class Discord {
 
   client: ClientInterface
 
-  private discord_screen_name: string = 'Discord'
+  private discord_screen_name: string = 'Discord-Bot'
 
   /**
    * Constructor
@@ -137,8 +143,10 @@ class Discord {
         discord_role: process && process.env && process.env.DISCORD_ROLE ? process.env.DISCORD_ROLE.toString() : '',
         discord_command:
           process && process.env && process.env.DISCORD_COMMAND ? process.env.DISCORD_COMMAND.toString() : '',
-        discord_id: process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : '',
-        discord_token: process && process.env && process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.toString() : '',
+        guild_id: process && process.env && process.env.GUILD_ID ? process.env.GUILD_ID.toString() : '',
+        webhook_id: process && process.env && process.env.WEBHOOK_ID ? process.env.WEBHOOK_ID.toString() : '',
+        webhook_token: process && process.env && process.env.WEBHOOK_TOKEN ? process.env.WEBHOOK_TOKEN.toString() : '',
+        bot_token: process && process.env && process.env.BOT_TOKEN ? process.env.BOT_TOKEN.toString() : '',
         client_id: process && process.env && process.env.CLIENT_ID ? process.env.CLIENT_ID.toString() : '',
         strings: {
           error_starting_discord_message:
@@ -191,7 +199,7 @@ class Discord {
     }
   }
 
-  /**
+  /** TODO: Figure out why it works individually but not thru commands
    * Sends a interaction to Discord.
    *
    * @param string String interaction for Discord.
@@ -199,15 +207,15 @@ class Discord {
   async sendMessageToDiscord(string: string): Promise<void> {
     logging(this.options.strings.sending_discord_message, string)
     try {
-      if (this.options.discord_id && this.options.discord_token) {
+      if (this.options.webhook_id && this.options.webhook_token) {
         const webhook: WebhookInterface = new WebhookClient({
-          id: this.options.discord_id,
-          token: this.options.discord_token,
+          id: this.options.webhook_id,
+          token: this.options.webhook_token,
         })
         await webhook.send(`[${os.hostname()}] ${string}`)
       } else {
         throw new Error(
-          `Missing discord config. Discord ID: ${this.options.discord_id}, Discord Token: ${this.options.discord_token}`,
+          `Missing discord config. Discord ID: ${this.options.webhook_id}, Discord Token: ${this.options.webhook_token}`,
         )
       }
     } catch (error) {
@@ -255,9 +263,7 @@ class Discord {
    */
   startBot() {
     this.client.on('ready', () => {
-      executeShellScript(
-        `cd ${this.options.path} && screen -L -Logfile discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.log_file}"`,
-      )
+      executeShellScript(`screen -L -Logfile discord-bot.log -dmS ${this.discord_screen_name}`)
       this.client.user.setActivity('activity', { type: 'WATCHING' })
       logging(this.options.strings.bot_is_online_message)
     })
@@ -545,7 +551,7 @@ class Discord {
    *
    */
   async loginClient() {
-    this.client.login(this.options.discord_token)
+    this.client.login(this.options.bot_token)
   }
 
   /**
@@ -568,12 +574,12 @@ class Discord {
         .setDescription(this.options.strings.help_command_description),
     ].map((command) => command.toJSON())
 
-    const rest = new REST({ version: '9' }).setToken(this.options.discord_token as string)
+    const rest = new REST({ version: '9' }).setToken(this.options.bot_token as string)
 
     ;(async () => {
       try {
         await rest.put(
-          Routes.applicationGuildCommands(this.options.client_id as string, this.options.discord_id as string),
+          Routes.applicationGuildCommands(this.options.client_id as string, this.options.guild_id as string),
           {
             body: commands,
           },

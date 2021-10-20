@@ -226,9 +226,13 @@ class Minecraft {
             this.discord_instance.sendMessageToDiscord(this.options.strings.stop_server_message);
         });
     }
+    runLogs() {
+        return __awaiter(this, void 0, void 0, function* () {
+            (0, utils_1.executeShellScript)(`screen -L -Logfile minecraft-discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "node mbm -l"`);
+        });
+    }
     logs() {
         return __awaiter(this, void 0, void 0, function* () {
-            (0, utils_1.executeShellScript)(`cd ${this.options.path} && screen -L -Logfile minecraft-discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.log_file}"`);
             (0, utils_1.logging)(this.options.strings.watching_logging_message);
             let file = yield fs_1.promises.readFile(this.options.log_file, 'utf8');
             let fileNumber = file.split(/\n/).length;

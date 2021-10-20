@@ -25,7 +25,7 @@ const minecraft_1 = __importDefault(require("./minecraft"));
 dotenv_1.default.config();
 class Discord {
     constructor(options) {
-        this.discord_screen_name = 'Discord';
+        this.discord_screen_name = 'Discord-Bot';
         const client = new discord_js_1.Client({ intents: [discord_js_1.Intents.FLAGS.GUILDS, discord_js_1.Intents.FLAGS.GUILD_MESSAGES] });
         client.commands = new discord_js_1.Collection();
         this.client = client;
@@ -41,8 +41,10 @@ class Discord {
                 discord_client: process && process.env && process.env.DISCORD_CLIENT ? process.env.DISCORD_CLIENT.toString() : '',
                 discord_role: process && process.env && process.env.DISCORD_ROLE ? process.env.DISCORD_ROLE.toString() : '',
                 discord_command: process && process.env && process.env.DISCORD_COMMAND ? process.env.DISCORD_COMMAND.toString() : '',
-                discord_id: process && process.env && process.env.DISCORD_ID ? process.env.DISCORD_ID.toString() : '',
-                discord_token: process && process.env && process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.toString() : '',
+                guild_id: process && process.env && process.env.GUILD_ID ? process.env.GUILD_ID.toString() : '',
+                webhook_id: process && process.env && process.env.WEBHOOK_ID ? process.env.WEBHOOK_ID.toString() : '',
+                webhook_token: process && process.env && process.env.WEBHOOK_TOKEN ? process.env.WEBHOOK_TOKEN.toString() : '',
+                bot_token: process && process.env && process.env.BOT_TOKEN ? process.env.BOT_TOKEN.toString() : '',
                 client_id: process && process.env && process.env.CLIENT_ID ? process.env.CLIENT_ID.toString() : '',
                 strings: {
                     error_starting_discord_message: process.env.options_error_starting_discord_message || 'Could not start Discord Bot.',
@@ -85,15 +87,15 @@ class Discord {
         return __awaiter(this, void 0, void 0, function* () {
             (0, utils_1.logging)(this.options.strings.sending_discord_message, string);
             try {
-                if (this.options.discord_id && this.options.discord_token) {
+                if (this.options.webhook_id && this.options.webhook_token) {
                     const webhook = new discord_js_1.WebhookClient({
-                        id: this.options.discord_id,
-                        token: this.options.discord_token,
+                        id: this.options.webhook_id,
+                        token: this.options.webhook_token,
                     });
                     yield webhook.send(`[${os_1.default.hostname()}] ${string}`);
                 }
                 else {
-                    throw new Error(`Missing discord config. Discord ID: ${this.options.discord_id}, Discord Token: ${this.options.discord_token}`);
+                    throw new Error(`Missing discord config. Discord ID: ${this.options.webhook_id}, Discord Token: ${this.options.webhook_token}`);
                 }
             }
             catch (error) {
@@ -126,7 +128,7 @@ class Discord {
     }
     startBot() {
         this.client.on('ready', () => {
-            (0, utils_1.executeShellScript)(`cd ${this.options.path} && screen -L -Logfile discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.log_file}"`);
+            (0, utils_1.executeShellScript)(`screen -L -Logfile discord-bot.log -dmS ${this.discord_screen_name}`);
             this.client.user.setActivity('activity', { type: 'WATCHING' });
             (0, utils_1.logging)(this.options.strings.bot_is_online_message);
         });
@@ -345,7 +347,7 @@ class Discord {
     }
     loginClient() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.client.login(this.options.discord_token);
+            this.client.login(this.options.bot_token);
         });
     }
     deploy() {
@@ -364,10 +366,10 @@ class Discord {
                     .setName(this.options.strings.help_command)
                     .setDescription(this.options.strings.help_command_description),
             ].map((command) => command.toJSON());
-            const rest = new rest_1.REST({ version: '9' }).setToken(this.options.discord_token);
+            const rest = new rest_1.REST({ version: '9' }).setToken(this.options.bot_token);
             (() => __awaiter(this, void 0, void 0, function* () {
                 try {
-                    yield rest.put(v9_1.Routes.applicationGuildCommands(this.options.client_id, this.options.discord_id), {
+                    yield rest.put(v9_1.Routes.applicationGuildCommands(this.options.client_id, this.options.guild_id), {
                         body: commands,
                     });
                     (0, utils_1.logging)(this.options.strings.successfully_deployed_commands);

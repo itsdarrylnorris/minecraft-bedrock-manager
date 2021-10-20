@@ -51,6 +51,7 @@ declare class Minecraft {
     updateServer(versionLink: string | undefined): void;
     deleteOldestFile(): Promise<void>;
     stopServer(): Promise<void>;
+    runLogs(): Promise<void>;
     logs(): Promise<void>;
     getGamerTagFromLog(logString: string, logIndentifier: string): string;
 }

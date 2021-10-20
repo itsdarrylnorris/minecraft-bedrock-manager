@@ -1,13 +1,21 @@
 # Minecraft Bedrock Manager
 
-Minecraft Manager helps backup your Minecraft server by storing backups of your server as zip files, sending Discord messages that a backup is underway, and sending custom messages to your Discord Community.
+Minecraft Bedrock Manager lets you store backups of your server in a Git repository, send Discord messages that a backup is underway, and provides Slash Commands that lets you manage your server.
 
-| :warning: | This project still under active development; use it at your own risk. A lot things are going to change :). |
-| :-------: | :--------------------------------------------------------------------------------------------------------- |
+| :warning: | This project is still under development. Use it at your own risk. A lot of things are going to change :). |
+| :-------: | :-------------------------------------------------------------------------------------------------------- |
 
 - [Building](#building)
 - [Installation](#installation)
+  - [Setting up your Discord Webhook](#setting-up-your-discord-webhook)
+  - [Setting up your Discord Application's Bot](#setting-up-your-discord-applications-bot)
+  - [Setting up your .env file](#setting-up-your-env-file)
+  - [Example of .env file](#example-of-env-file)
+  - [Setting up your .gitignore file in local and production environment](#setting-up-your-gitignore-file-in-local-and-production-environment)
+  - [Setting up your Git repository](#setting-up-your-git-repository)
 - [Usage](#usage)
+- [How to use the logs](#how-to-use-the-logs)
+- [Available Commands](#available-commands)
 
 # Building
 
@@ -31,23 +39,16 @@ yarn deploy
 
 # Installation
 
-### Setting up your Discord Webhook
+## Setting up your Discord Webhook
 
 1. Follow the instructions outlined under **MAKING A WEBHOOK** in this [article](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks).
 2. Press on **Copy Webhook URL**
 3. Paste the copied URL into your browser's search bar.
 4. Locate the webhook's id and token values.
-5. Copy and paste the webhook id to the DISCORD_ID in your .env file.
-6. Copy and paste the webhook token to the DISCORD_TOKEN in your .env file.
+5. Copy and paste the webhook id to the WEBHOOK_ID in your .env file.
+6. Copy and paste the webhook id to the WEBHOOK_TOKEN in your .env file.
 
-For local development you can use these credentials
-
-```
-DISCORD_ID="807879959074832415"
-DISCORD_TOKEN="0FEXP3YxCCU1z_FnwPHLMb-q0ZquR2wHKziHn1IkQxe3RD-KvyCGIFG2VHbZkF8ZsDem"
-```
-
-### Setting up your Discord Application's Bot
+## Setting up your Discord Application's Bot
 
 1. Go to this [website](https://discord.com/developers/applications) and click on **New Application**.
 2. Enter your applications' name and click on **Create**.
@@ -59,41 +60,54 @@ DISCORD_TOKEN="0FEXP3YxCCU1z_FnwPHLMb-q0ZquR2wHKziHn1IkQxe3RD-KvyCGIFG2VHbZkF8Zs
 8. Click on the **Link** provided and you will be redirected to a Discord authorization page.
 9. Select your Server and select **Continue**.
 10. Double check the Bot's permissions and click on **Authorize**.
+11. Go back to this [website](https://discord.com/developers/applications) and click on **oAuth2**
+12. Scroll down and locate the **oAuth2 URL Generator** heading.
+13. Locate the **applications.commands** scope and mark the scope.
+14. Click on the **Copy** button that contains the URL and paste that URL into your browser. Press Enter to view the URL.
+15. Select your server and click on **Authorize**.
 
-### Additional set up for your .env file
+## Setting up your .env file
 
-If you have followed the instructions starting from the top, you should have the following so far:
+Your .env file must contain the following:
 
-- DISCORD_ID
-- DISCORD_TOKEN
-- DISCORD_CLIENT
+#### GUILD_ID
 
-You will also need to add:
+[Enable developer mode in your Discord server.](https://www.thewindowsclub.com/wp-content/uploads/2021/08/Discord-Turn-on-Developer-Mode.png) Then, right click on your server's name on the top left corner in Discord. Click on **Copy ID** and use the copied value as your GUILD_ID.
 
-- DISCORD_ROLE
+#### BOT_TOKEN
+
+Go to this [website](https://discord.com/developers/applications) and click on **Bot**. Locate your Bot's Token and click on **Copy**. Use the copied value as your BOT_TOKEN.
+
+#### CLIENT_ID
+
+Go to this [website](https://discord.com/developers/applications) and click on **oAuth2**. Locate your Client ID (under Client Information) and click on **Copy**. Use the copied value as your CLIENT_ID.
+
+#### DISCORD_ROLE
 
 Add all the Discord server's roles that will have access to the Discord commands.
 
-- DISCORD_COMMAND
+#### DISCORD_COMMAND
 
-Add your preferred text to start the Discord command. Add the text after the Discord Prefix. Example: /**mm** start server
+Add your preferred text to start the Discord command. Add the text after the Discord Prefix. Example: **mbm** add [Gamertag]
 
-- ENVIRONMENT
+#### ENVIRONMENT
 
-Configure the environment value to either Development or Production
+Configure the ENVIRONMENT value to either Development or Production
 
-Example of .env file:
+## Example of .env file
 
 ```
-DISCORD_ID=[Discord ID]
-DISCORD_TOKEN=[Discord Token]
-DISCORD_CLIENT=[Discord Client]
+WEBHOOK_ID=[Webhook ID]
+WEBHOOK_TOKEN=[Webhook TOKEN]
+GUILD_ID=[Guild ID]
+BOT_TOKEN=[Bot Token]
+CLIENT_ID=[Client Id]
 DISCORD_ROLE="Devs, Admin"
 DISCORD_COMMAND=mbm
-ENVIRONMENT=DEVELOPMENT
+ENVIRONMENT=PRODUCTION
 ```
 
-### Setting up your .gitignore file in local and production environment
+## Setting up your .gitignore file in local and production environment
 
 Add the following:
 
@@ -129,10 +143,32 @@ world_templates
 ####
 ```
 
-### Setting up your GitHub Repository
+## Setting up your Git repository
+
+Blah
 
 # Usage
 
-Requires Node version v16.8.0
+### Requires Node version v16.8.0
 
-# TODO How to use the logs
+### Deploy Discord Command Required After Any Slash Command Name Change
+
+Any time you change the Discord Slash Command string configuration, you will need to use the Deploy Discord Command to register the commands. If not used, your changes will not be registered.
+
+# How to use the logs
+
+Blah
+
+# Available Commands
+
+- Display Help Commands (-h, --help)
+- Starts the Minecraft Server (-s, --start-server)
+- Restarts the Minecraft Server (-r, --restart-server)
+- Stops Minecraft Server (-st, --stop-server)
+- Shows the Minecraft Logs (-l, --logs)
+- Starts the Discord Bot (-d, --discord)
+- Deploy Discord Commands (-dc, --deploy-commands)
+- Backup the Minecraft Server (-b, --backup)
+- Start Everything (-sa, --start-all)
+- Find XUID From Gamertag (-x, --xuid)
+- Run Minecraft Logs on Screen (-rl, --run-logs)

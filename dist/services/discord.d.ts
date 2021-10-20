@@ -10,8 +10,10 @@ interface DiscordOptionsInterface {
     discord_client: string | undefined;
     discord_role: string | undefined;
     discord_command: string | undefined;
-    discord_id: Snowflake | undefined;
-    discord_token: string | undefined;
+    guild_id: Snowflake | undefined;
+    webhook_id: Snowflake | undefined;
+    webhook_token: string | undefined;
+    bot_token: string | undefined;
     client_id: string | undefined;
     strings: DiscordStringsInterface;
 }
