@@ -206,7 +206,7 @@ class Minecraft {
     )
 
     // Sends message to Discord that server is starting up
-    this.discord_instance.sendMessageToDiscord(this.options.strings.start_server_message)
+    await this.discord_instance.sendMessageToDiscord(this.options.strings.start_server_message)
   }
 
   /**
@@ -378,7 +378,7 @@ class Minecraft {
   async stopServer() {
     logging(this.options.strings.stop_server_message)
     executeShellScript(`screen -S ${this.minecraft_screen_name} -X kill`)
-    this.discord_instance.sendMessageToDiscord(this.options.strings.stop_server_message)
+    await this.discord_instance.sendMessageToDiscord(this.options.strings.stop_server_message)
   }
 
   /**
@@ -410,12 +410,12 @@ class Minecraft {
 
           if (element.includes(this.logs_strings.player_disconnected)) {
             const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_disconnected)
-            this.discord_instance.sendMessageToDiscord(
+            await this.discord_instance.sendMessageToDiscord(
               gamerTag + ' ' + this.options.strings.gamertag_left_server_message,
             )
           } else if (element.includes(this.logs_strings.player_connected)) {
             const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_connected)
-            this.discord_instance.sendMessageToDiscord(
+            await this.discord_instance.sendMessageToDiscord(
               gamerTag + ' ' + this.options.strings.gamertag_join_server_message,
             )
           }

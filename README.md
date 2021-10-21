@@ -98,7 +98,7 @@ Configure the ENVIRONMENT value to either Development or Production
 
 ```
 WEBHOOK_ID=[Webhook ID]
-WEBHOOK_TOKEN=[Webhook TOKEN]
+WEBHOOK_TOKEN=[Webhook Token]
 GUILD_ID=[Guild ID]
 BOT_TOKEN=[Bot Token]
 CLIENT_ID=[Client Id]

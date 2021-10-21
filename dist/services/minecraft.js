@@ -100,7 +100,7 @@ class Minecraft {
                 (0, utils_1.logging)(this.options.strings.error_getting_version_message);
             }
             (0, utils_1.executeShellScript)(`cd ${this.options.path} && screen -L -Logfile minecraft-server.log -dmS ${this.minecraft_screen_name} /bin/zsh -c "LD_LIBRARY_PATH=${this.options.path} ${this.options.path}bedrock_server" `);
-            this.discord_instance.sendMessageToDiscord(this.options.strings.start_server_message);
+            yield this.discord_instance.sendMessageToDiscord(this.options.strings.start_server_message);
         });
     }
     backupServer() {
@@ -223,7 +223,7 @@ class Minecraft {
         return __awaiter(this, void 0, void 0, function* () {
             (0, utils_1.logging)(this.options.strings.stop_server_message);
             (0, utils_1.executeShellScript)(`screen -S ${this.minecraft_screen_name} -X kill`);
-            this.discord_instance.sendMessageToDiscord(this.options.strings.stop_server_message);
+            yield this.discord_instance.sendMessageToDiscord(this.options.strings.stop_server_message);
         });
     }
     runLogs() {
@@ -244,11 +244,11 @@ class Minecraft {
                         const element = newFile.split(/\n/)[newFileNumber - 2];
                         if (element.includes(this.logs_strings.player_disconnected)) {
                             const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_disconnected);
-                            this.discord_instance.sendMessageToDiscord(gamerTag + ' ' + this.options.strings.gamertag_left_server_message);
+                            yield this.discord_instance.sendMessageToDiscord(gamerTag + ' ' + this.options.strings.gamertag_left_server_message);
                         }
                         else if (element.includes(this.logs_strings.player_connected)) {
                             const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_connected);
-                            this.discord_instance.sendMessageToDiscord(gamerTag + ' ' + this.options.strings.gamertag_join_server_message);
+                            yield this.discord_instance.sendMessageToDiscord(gamerTag + ' ' + this.options.strings.gamertag_join_server_message);
                         }
                     }
                     fileNumber = newFile.split(/\n/).length;
