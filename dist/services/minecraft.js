@@ -45,7 +45,11 @@ class Minecraft {
                     pre_backup_message: process.env.options_pre_backup_message ||
                         'We are shutting down the server temporarily. We are making a backup.',
                     post_backup_message: process.env.options_post_backup_message || 'We are done with the backup. The server is back on.',
-                    error_backup_message: process.env.options_error_backup_message || 'Something went wrong while building out the backup.',
+                    error_backup_message: process.env.options_error_backup_message || 'Could not backup server.',
+                    error_restart_message: process.env.options_error_restart_message || 'Could not restart server.',
+                    error_stop_message: process.env.options_error_stop_message || 'Could not stop server.',
+                    error_run_logs_message: process.env.options_error_run_logs_message || 'Could not run logs.',
+                    error_watching_log_message: process.env.options_error_watching_log_message || 'Could not watch log file.',
                     start_server_message: process.env.options_start_server_message || 'Starting up the server.',
                     stop_server_message: process.env.options_stop_server_message || 'Stopping the server.',
                     start_compressing_files_message: process.env.options_start_compressing_files_message || 'Starting to compress files.',
@@ -83,14 +87,14 @@ class Minecraft {
                 yield this.discord_instance.sendMessageToDiscord(this.options.strings.post_backup_message);
             }
             catch (error) {
-                (0, utils_1.logging)(error);
+                (0, utils_1.logging)(this.options.strings.error_restart_message, error);
             }
             return;
         });
     }
     startServer() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.backupServer();
+            yield this.backupServer();
             let versionLink = yield this.checkForLatestVersion();
             if (versionLink) {
                 yield this.getLastItemInDownload(versionLink);
@@ -104,14 +108,16 @@ class Minecraft {
         });
     }
     backupServer() {
-        let date = new Date();
-        let script = `cd ${this.options.path} && git add . && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`;
-        try {
-            (0, utils_1.executeShellScript)(script);
-        }
-        catch (error) {
-            (0, utils_1.logging)(this.options.strings.error_backup_message, error);
-        }
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let date = new Date();
+                let script = `cd ${this.options.path} && git add . && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`;
+                (0, utils_1.executeShellScript)(script);
+            }
+            catch (error) {
+                (0, utils_1.logging)(this.options.strings.error_backup_message, error);
+            }
+        });
     }
     checkForLatestVersion() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -221,14 +227,24 @@ class Minecraft {
     }
     stopServer() {
         return __awaiter(this, void 0, void 0, function* () {
-            (0, utils_1.logging)(this.options.strings.stop_server_message);
-            (0, utils_1.executeShellScript)(`screen -S ${this.minecraft_screen_name} -X kill`);
-            yield this.discord_instance.sendMessageToDiscord(this.options.strings.stop_server_message);
+            try {
+                (0, utils_1.logging)(this.options.strings.stop_server_message);
+                (0, utils_1.executeShellScript)(`screen -S ${this.minecraft_screen_name} -X kill`);
+                yield this.discord_instance.sendMessageToDiscord(this.options.strings.stop_server_message);
+            }
+            catch (error) {
+                (0, utils_1.logging)(this.options.strings.error_stop_message, utils_1.logging);
+            }
         });
     }
     runLogs() {
         return __awaiter(this, void 0, void 0, function* () {
-            (0, utils_1.executeShellScript)(`screen -L -Logfile minecraft-discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "node mbm -l"`);
+            try {
+                (0, utils_1.executeShellScript)(`screen -L -Logfile minecraft-discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "node mbm -l"`);
+            }
+            catch (error) {
+                (0, utils_1.logging)(this.options.strings.error_run_logs_message, utils_1.logging);
+            }
         });
     }
     logs() {
@@ -236,28 +252,35 @@ class Minecraft {
             (0, utils_1.logging)(this.options.strings.watching_logging_message);
             let file = yield fs_1.promises.readFile(this.options.log_file, 'utf8');
             let fileNumber = file.split(/\n/).length;
-            chokidar_1.default.watch(this.options.log_file).on('all', (evt, path) => __awaiter(this, void 0, void 0, function* () {
-                if (evt === 'change') {
-                    let newFile = yield fs_1.promises.readFile(path, 'utf8');
-                    let newFileNumber = newFile.split(/\n/).length;
-                    if (fileNumber < newFileNumber) {
-                        const element = newFile.split(/\n/)[newFileNumber - 2];
-                        if (element.includes(this.logs_strings.player_disconnected)) {
-                            const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_disconnected);
-                            yield this.discord_instance.sendMessageToDiscord(gamerTag + ' ' + this.options.strings.gamertag_left_server_message);
+            try {
+                chokidar_1.default.watch(this.options.log_file).on('all', (evt, path) => __awaiter(this, void 0, void 0, function* () {
+                    if (evt === 'change') {
+                        let newFile = yield fs_1.promises.readFile(path, 'utf8');
+                        let newFileNumber = newFile.split(/\n/).length;
+                        if (fileNumber < newFileNumber) {
+                            const element = newFile.split(/\n/)[newFileNumber - 2];
+                            if (element.includes(this.logs_strings.player_disconnected)) {
+                                const gamerTag = yield this.getGamerTagFromLog(element, this.logs_strings.player_disconnected);
+                                yield this.discord_instance.sendMessageToDiscord(gamerTag + ' ' + this.options.strings.gamertag_left_server_message);
+                            }
+                            else if (element.includes(this.logs_strings.player_connected)) {
+                                const gamerTag = yield this.getGamerTagFromLog(element, this.logs_strings.player_connected);
+                                yield this.discord_instance.sendMessageToDiscord(gamerTag + ' ' + this.options.strings.gamertag_join_server_message);
+                            }
                         }
-                        else if (element.includes(this.logs_strings.player_connected)) {
-                            const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_connected);
-                            yield this.discord_instance.sendMessageToDiscord(gamerTag + ' ' + this.options.strings.gamertag_join_server_message);
-                        }
+                        fileNumber = newFile.split(/\n/).length;
                     }
-                    fileNumber = newFile.split(/\n/).length;
-                }
-            }));
+                }));
+            }
+            catch (error) {
+                (0, utils_1.logging)(this.options.strings.error_watching_log_message, error);
+            }
         });
     }
     getGamerTagFromLog(logString, logIndentifier) {
-        return logString.split(logIndentifier)[1].split(',')[0].split(' ')[1];
+        return __awaiter(this, void 0, void 0, function* () {
+            return logString.split(logIndentifier)[1].split(',')[0].split(' ')[1];
+        });
     }
 }
 exports.default = Minecraft;

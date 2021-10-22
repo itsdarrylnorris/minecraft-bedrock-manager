@@ -153,7 +153,7 @@ Blah
 
 ### Deploy Discord Command Required After Any Slash Command Name Change
 
-Any time you change the Discord Slash Command string configuration, you will need to use the Deploy Discord Command to register the commands. If not used, your changes will not be registered.
+Any time you change the Discord Slash Command string configuration, you will need to use the Deploy Discord Command (-dc, --deploy-commands) to register the commands. If not used, your changes will not be registered.
 
 # How to use the logs
 

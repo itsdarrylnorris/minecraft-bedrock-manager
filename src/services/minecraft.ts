@@ -38,6 +38,10 @@ interface MinecraftStringsInterface {
   pre_backup_message: string | undefined
   post_backup_message: string | undefined
   error_backup_message: string | undefined
+  error_restart_message: string | undefined
+  error_stop_message: string | undefined
+  error_run_logs_message: string | undefined
+  error_watching_log_message: string | undefined
   start_server_message: string | undefined
   stop_server_message: string | undefined
   start_compressing_files_message: string | undefined
@@ -110,8 +114,11 @@ class Minecraft {
             'We are shutting down the server temporarily. We are making a backup.',
           post_backup_message:
             process.env.options_post_backup_message || 'We are done with the backup. The server is back on.',
-          error_backup_message:
-            process.env.options_error_backup_message || 'Something went wrong while building out the backup.',
+          error_backup_message: process.env.options_error_backup_message || 'Could not backup server.',
+          error_restart_message: process.env.options_error_restart_message || 'Could not restart server.',
+          error_stop_message: process.env.options_error_stop_message || 'Could not stop server.',
+          error_run_logs_message: process.env.options_error_run_logs_message || 'Could not run logs.',
+          error_watching_log_message: process.env.options_error_watching_log_message || 'Could not watch log file.',
           start_server_message: process.env.options_start_server_message || 'Starting up the server.',
           stop_server_message: process.env.options_stop_server_message || 'Stopping the server.',
           start_compressing_files_message:
@@ -173,7 +180,7 @@ class Minecraft {
       await this.discord_instance.sendMessageToDiscord(this.options.strings.post_backup_message)
     } catch (error) {
       // @ts-ignore
-      logging(error)
+      logging(this.options.strings.error_restart_message, error)
     }
     return
   }
@@ -184,7 +191,7 @@ class Minecraft {
    */
   async startServer() {
     // Backups Server
-    this.backupServer()
+    await this.backupServer()
 
     // Checks for latest version
     let versionLink: string | undefined = await this.checkForLatestVersion()
@@ -213,12 +220,12 @@ class Minecraft {
    * Commits backup to Git Repository.
    *
    */
-  backupServer(): void {
-    let date: Date = new Date()
-    let script: string = `cd ${
-      this.options.path
-    } && git add . && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`
+  async backupServer(): Promise<void> {
     try {
+      let date: Date = new Date()
+      let script: string = `cd ${
+        this.options.path
+      } && git add . && git commit -m "Automatic Backup: ${date.toISOString()}" && git push`
       executeShellScript(script)
     } catch (error) {
       logging(this.options.strings.error_backup_message, error)
@@ -376,9 +383,13 @@ class Minecraft {
    *
    */
   async stopServer() {
-    logging(this.options.strings.stop_server_message)
-    executeShellScript(`screen -S ${this.minecraft_screen_name} -X kill`)
-    await this.discord_instance.sendMessageToDiscord(this.options.strings.stop_server_message)
+    try {
+      logging(this.options.strings.stop_server_message)
+      executeShellScript(`screen -S ${this.minecraft_screen_name} -X kill`)
+      await this.discord_instance.sendMessageToDiscord(this.options.strings.stop_server_message)
+    } catch (error) {
+      logging(this.options.strings.error_stop_message, logging)
+    }
   }
 
   /**
@@ -386,9 +397,13 @@ class Minecraft {
    *
    */
   async runLogs() {
-    executeShellScript(
-      `screen -L -Logfile minecraft-discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "node mbm -l"`,
-    )
+    try {
+      executeShellScript(
+        `screen -L -Logfile minecraft-discord.log -dmS ${this.discord_screen_name} /bin/zsh -c "node mbm -l"`,
+      )
+    } catch (error) {
+      logging(this.options.strings.error_run_logs_message, logging)
+    }
   }
 
   /**
@@ -400,37 +415,40 @@ class Minecraft {
 
     let file = await fs.readFile(this.options.log_file, 'utf8')
     let fileNumber = file.split(/\n/).length
+    try {
+      chokidar.watch(this.options.log_file).on('all', async (evt, path) => {
+        if (evt === 'change') {
+          let newFile = await fs.readFile(path, 'utf8')
+          let newFileNumber = newFile.split(/\n/).length
+          if (fileNumber < newFileNumber) {
+            const element = newFile.split(/\n/)[newFileNumber - 2]
 
-    chokidar.watch(this.options.log_file).on('all', async (evt, path) => {
-      if (evt === 'change') {
-        let newFile = await fs.readFile(path, 'utf8')
-        let newFileNumber = newFile.split(/\n/).length
-        if (fileNumber < newFileNumber) {
-          const element = newFile.split(/\n/)[newFileNumber - 2]
-
-          if (element.includes(this.logs_strings.player_disconnected)) {
-            const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_disconnected)
-            await this.discord_instance.sendMessageToDiscord(
-              gamerTag + ' ' + this.options.strings.gamertag_left_server_message,
-            )
-          } else if (element.includes(this.logs_strings.player_connected)) {
-            const gamerTag = this.getGamerTagFromLog(element, this.logs_strings.player_connected)
-            await this.discord_instance.sendMessageToDiscord(
-              gamerTag + ' ' + this.options.strings.gamertag_join_server_message,
-            )
+            if (element.includes(this.logs_strings.player_disconnected)) {
+              const gamerTag = await this.getGamerTagFromLog(element, this.logs_strings.player_disconnected)
+              await this.discord_instance.sendMessageToDiscord(
+                gamerTag + ' ' + this.options.strings.gamertag_left_server_message,
+              )
+            } else if (element.includes(this.logs_strings.player_connected)) {
+              const gamerTag = await this.getGamerTagFromLog(element, this.logs_strings.player_connected)
+              await this.discord_instance.sendMessageToDiscord(
+                gamerTag + ' ' + this.options.strings.gamertag_join_server_message,
+              )
+            }
           }
-        }
 
-        fileNumber = newFile.split(/\n/).length
-      }
-    })
+          fileNumber = newFile.split(/\n/).length
+        }
+      })
+    } catch (error) {
+      logging(this.options.strings.error_watching_log_message, error)
+    }
   }
 
   /**
    * Gets Gamertag from Log.
    *
    */
-  getGamerTagFromLog(logString: string, logIndentifier: string): string {
+  async getGamerTagFromLog(logString: string, logIndentifier: string): Promise<string> {
     return logString.split(logIndentifier)[1].split(',')[0].split(' ')[1]
   }
 }
