@@ -2,8 +2,6 @@
 
 Minecraft Bedrock Manager lets you store backups of your server in a Git repository, send Discord messages that a backup is underway, and provides Slash Commands that lets you manage your server.
 
-| :warning: | This project is still under development. Use it at your own risk. A lot of things are going to change :). |
-| :-------: | :-------------------------------------------------------------------------------------------------------- |
 
 - [Building](#building)
 - [Installation](#installation)
