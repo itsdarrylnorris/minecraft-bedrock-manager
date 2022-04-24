@@ -10,9 +10,7 @@ Minecraft Bedrock Manager lets you store backups of your server in a Git reposit
   - [Setting up your .env file](#setting-up-your-env-file)
   - [Example of .env file](#example-of-env-file)
   - [Setting up your .gitignore file in local and production environment](#setting-up-your-gitignore-file-in-local-and-production-environment)
-  - [Setting up your Git repository](#setting-up-your-git-repository)
 - [Usage](#usage)
-- [How to use the logs](#how-to-use-the-logs)
 - [Available Commands](#available-commands)
 
 # Building
@@ -141,21 +139,13 @@ world_templates
 ####
 ```
 
-## Setting up your Git repository
-
-Blah
-
 # Usage
 
 ### Requires Node version v16.8.0
 
-### Deploy Discord Command Required After Any Slash Command Name Change
+### Deploy Discord Command is required after any Slash Command Name change
 
 Any time you change the Discord Slash Command string configuration, you will need to use the Deploy Discord Command to register the commands. If not used, your changes will not be registered.
-
-# How to use the logs
-
-Blah
 
 # Available Commands
 
