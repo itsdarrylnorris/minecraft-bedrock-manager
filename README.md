@@ -94,7 +94,7 @@ Configure the ENVIRONMENT value to either Development or Production
 
 ```
 WEBHOOK_ID=[Webhook ID]
-WEBHOOK_TOKEN=[Webhook TOKEN]
+WEBHOOK_TOKEN=[Webhook Token]
 GUILD_ID=[Guild ID]
 BOT_TOKEN=[Bot Token]
 CLIENT_ID=[Client Id]
@@ -145,7 +145,7 @@ world_templates
 
 ### Deploy Discord Command is required after any Slash Command Name change
 
-Any time you change the Discord Slash Command string configuration, you will need to use the Deploy Discord Command to register the commands. If not used, your changes will not be registered.
+Any time you change the Discord Slash Command string configuration, you will need to use the Deploy Discord Command (-dc, --deploy-commands) to register the commands. If not used, your changes will not be registered.
 
 # Available Commands
 

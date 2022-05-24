@@ -10,6 +10,10 @@ interface MinecraftStringsInterface {
     pre_backup_message: string | undefined;
     post_backup_message: string | undefined;
     error_backup_message: string | undefined;
+    error_restart_message: string | undefined;
+    error_stop_message: string | undefined;
+    error_run_logs_message: string | undefined;
+    error_watching_log_message: string | undefined;
     start_server_message: string | undefined;
     stop_server_message: string | undefined;
     start_compressing_files_message: string | undefined;
@@ -44,7 +48,7 @@ declare class Minecraft {
     constructor(options?: MinecraftOptionsInterface);
     restartServer(): Promise<void>;
     startServer(): Promise<void>;
-    backupServer(): void;
+    backupServer(): Promise<void>;
     checkForLatestVersion(): Promise<string>;
     getXuidFromGamerTag(gamerTag?: string): Promise<string>;
     getLastItemInDownload(versionLink: string | undefined): Promise<void>;
@@ -53,6 +57,6 @@ declare class Minecraft {
     stopServer(): Promise<void>;
     runLogs(): Promise<void>;
     logs(): Promise<void>;
-    getGamerTagFromLog(logString: string, logIndentifier: string): string;
+    getGamerTagFromLog(logString: string, logIndentifier: string): Promise<string>;
 }
 export default Minecraft;

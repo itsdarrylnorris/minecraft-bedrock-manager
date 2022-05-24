@@ -199,7 +199,7 @@ class Discord {
     }
   }
 
-  /** TODO: Figure out why it works individually but not thru commands
+  /**
    * Sends a interaction to Discord.
    *
    * @param string String interaction for Discord.
